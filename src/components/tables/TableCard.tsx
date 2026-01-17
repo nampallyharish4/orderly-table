@@ -29,8 +29,8 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
         'hover:scale-[1.02] active:scale-[0.98]',
         isAnySmall ? 'w-1/2 p-3' : 'w-full p-4',
         isSmall && 'ml-auto',
-        isSmallLeft && 'mr-auto',
-        isSmallRight && 'ml-auto',
+        isSmallLeft && 'ml-auto',
+        isSmallRight && 'mr-auto',
         statusClass,
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
         !onClick && 'cursor-default'
