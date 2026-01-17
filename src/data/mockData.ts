@@ -1102,18 +1102,12 @@ export function generateOrderNumber(): string {
 // Helper function to calculate order totals
 export function calculateOrderTotals(items: OrderItem[], orderType: 'dine-in' | 'takeaway') {
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
-  const taxRate = 0.08; // 8% tax
-  const serviceChargeRate = orderType === 'dine-in' ? 0.10 : 0; // 10% service charge for dine-in only
-  
-  const taxAmount = subtotal * taxRate;
-  const serviceCharge = subtotal * serviceChargeRate;
-  const totalAmount = subtotal + taxAmount + serviceCharge;
   
   return {
     subtotal: Number(subtotal.toFixed(2)),
-    taxAmount: Number(taxAmount.toFixed(2)),
-    serviceCharge: Number(serviceCharge.toFixed(2)),
+    taxAmount: 0,
+    serviceCharge: 0,
     discountAmount: 0,
-    totalAmount: Number(totalAmount.toFixed(2)),
+    totalAmount: Number(subtotal.toFixed(2)),
   };
 }
