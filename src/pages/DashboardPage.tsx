@@ -45,16 +45,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome */}
+      {/* User Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">
-            Welcome back, {user?.name.split(' ')[0]}!
-          </h1>
-          <p className="text-muted-foreground">
-            Here's what's happening in your restaurant today.
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold">
+          {user?.name}
+        </h1>
         <div className="flex gap-2">
           <Button asChild variant="outline">
             <Link to="/tables">
