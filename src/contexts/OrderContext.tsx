@@ -21,7 +21,7 @@ interface OrderContextType {
   updateItemStatus: (orderId: string, itemId: string, status: OrderItemStatus) => void;
   
   // Table operations
-  updateTableStatus: (tableId: string, status: Table['status'], orderId?: string) => void;
+  updateTableStatus: (tableId: string, status: Table['status'], orderIds?: string[]) => void;
   
   // Filters
   getOrdersByStatus: (statuses: OrderStatus[]) => Order[];
@@ -143,12 +143,16 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
     setOrders(prev => [newOrder, ...prev]);
 
-    // Update table status if dine-in
+    // Update table status if dine-in - add order to table's order list
     if (currentOrder.tableId) {
       setTables(prev =>
         prev.map(t =>
           t.id === currentOrder.tableId
-            ? { ...t, status: 'occupied' as const, currentOrderId: newOrder.id }
+            ? { 
+                ...t, 
+                status: 'occupied' as const, 
+                currentOrderIds: [...t.currentOrderIds, newOrder.id] 
+              }
             : t
         )
       );
@@ -174,14 +178,18 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
         if (status === 'served' || status === 'collected') {
           updates.servedAt = new Date();
-          // Free up table
+          // Remove order from table's list
           if (order.tableId) {
             setTables(tables =>
-              tables.map(t =>
-                t.id === order.tableId
-                  ? { ...t, status: 'available' as const, currentOrderId: undefined }
-                  : t
-              )
+              tables.map(t => {
+                if (t.id !== order.tableId) return t;
+                const newOrderIds = t.currentOrderIds.filter(id => id !== orderId);
+                return { 
+                  ...t, 
+                  status: newOrderIds.length > 0 ? 'occupied' as const : 'available' as const, 
+                  currentOrderIds: newOrderIds 
+                };
+              })
             );
           }
         }
@@ -224,11 +232,11 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const updateTableStatus = useCallback((
     tableId: string,
     status: Table['status'],
-    orderId?: string
+    orderIds?: string[]
   ) => {
     setTables(prev =>
       prev.map(t =>
-        t.id === tableId ? { ...t, status, currentOrderId: orderId } : t
+        t.id === tableId ? { ...t, status, currentOrderIds: orderIds ?? t.currentOrderIds } : t
       )
     );
   }, []);

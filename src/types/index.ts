@@ -50,7 +50,7 @@ export interface Table {
   capacity: number;
   floor: string;
   status: TableStatus;
-  currentOrderId?: string;
+  currentOrderIds: string[];
 }
 
 export type OrderType = 'dine-in' | 'takeaway';

@@ -42,9 +42,11 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
         </div>
       </div>
 
-      {showOrder && table.currentOrderId && (
+      {showOrder && table.currentOrderIds.length > 0 && (
         <div className="mt-3 pt-3 border-t border-border/50">
-          <p className="text-xs text-muted-foreground">Active Order</p>
+          <p className="text-xs text-muted-foreground">
+            {table.currentOrderIds.length} Active Order{table.currentOrderIds.length > 1 ? 's' : ''}
+          </p>
         </div>
       )}
     </button>
