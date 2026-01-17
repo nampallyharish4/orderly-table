@@ -142,45 +142,29 @@ export default function TablesPage() {
       {/* Tables Grid */}
       {viewMode === 'grid' ? (
         <div className="space-y-8">
-          {Object.entries(tablesByFloor).map(([floor, floorTables]) => {
-            const regularTables = floorTables.filter(t => !(t as any).size);
-            const miniTables = floorTables.filter(t => (t as any).size === 'mini');
-            
-            return floorTables.length > 0 && (
+          {Object.entries(tablesByFloor).map(([floor, floorTables]) => (
+            floorTables.length > 0 && (
               <div key={floor}>
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   {floor} Floor
                   <Badge variant="secondary">{floorTables.length} tables</Badge>
                 </h2>
-                
-                {/* Regular tables - 2 column grid */}
-                {regularTables.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    {regularTables.map(table => (
+                <div className="grid grid-cols-2 gap-3">
+                  {floorTables.map(table => (
+                    (table as any).hidden ? (
+                      <div key={table.id} className="invisible" />
+                    ) : (
                       <TableCard
                         key={table.id}
                         table={table}
                         onClick={() => handleTableClick(table)}
                       />
-                    ))}
-                  </div>
-                )}
-                
-                {/* Mini tables - 3 column grid */}
-                {miniTables.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {miniTables.map(table => (
-                      <TableCard
-                        key={table.id}
-                        table={table}
-                        onClick={() => handleTableClick(table)}
-                      />
-                    ))}
-                  </div>
-                )}
+                    )
+                  ))}
+                </div>
               </div>
-            );
-          })}
+            )
+          ))}
         </div>
       ) : (
         <div className="space-y-2">

@@ -16,7 +16,10 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
     occupied: 'table-occupied',
   }[table.status];
 
-  const isMini = table.size === 'mini';
+  const isSmall = table.size === 'small';
+  const isSmallLeft = table.size === 'small-left';
+  const isSmallRight = table.size === 'small-right';
+  const isAnySmall = isSmall || isSmallLeft || isSmallRight;
 
   return (
     <button
@@ -24,7 +27,10 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
       className={cn(
         'rounded-xl border-2 text-left transition-all duration-200',
         'hover:scale-[1.02] active:scale-[0.98]',
-        isMini ? 'w-full p-2' : 'w-full p-4',
+        isAnySmall ? 'w-1/2 p-3' : 'w-full p-4',
+        isSmall && 'ml-auto',
+        isSmallLeft && 'ml-auto',
+        isSmallRight && 'mr-auto',
         statusClass,
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
         !onClick && 'cursor-default'
