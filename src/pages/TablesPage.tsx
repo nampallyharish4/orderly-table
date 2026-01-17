@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useOrders } from '@/contexts/OrderContext';
 import { useNavigate } from 'react-router-dom';
 import { TableCard } from '@/components/tables/TableCard';
+import { TableOrdersDialog } from '@/components/tables/TableOrdersDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableStatus } from '@/types';
-import { Plus, Filter, LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
 
 export default function TablesPage() {
   const { tables, createOrder } = useOrders();
@@ -15,6 +15,8 @@ export default function TablesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [floorFilter, setFloorFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<TableStatus | 'all'>('all');
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Get unique floors
   const floors = Array.from(new Set(tables.map(t => t.floor)));
@@ -33,9 +35,15 @@ export default function TablesPage() {
   }, {} as Record<string, Table[]>);
 
   const handleTableClick = (table: Table) => {
-    // Always allow creating new orders for any table
-    createOrder('dine-in', table.id);
-    navigate('/orders/new');
+    if (table.status === 'occupied' && table.currentOrderIds.length > 0) {
+      // Show dialog to select order or create new one
+      setSelectedTable(table);
+      setDialogOpen(true);
+    } else {
+      // Create new order directly for available table
+      createOrder('dine-in', table.id);
+      navigate('/orders/new');
+    }
   };
 
   const stats = {
@@ -192,6 +200,13 @@ export default function TablesPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Table Orders Dialog */}
+      <TableOrdersDialog 
+        table={selectedTable} 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen} 
+      />
     </div>
   );
 }
