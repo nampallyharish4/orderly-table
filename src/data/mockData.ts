@@ -299,7 +299,6 @@ export const mockTables: Table[] = [
   { id: 'table-9', tableNumber: 'P1', capacity: 4, floor: 'Patio', status: 'available', currentOrderIds: [] },
   { id: 'table-10', tableNumber: 'P2', capacity: 4, floor: 'Patio', status: 'available', currentOrderIds: [] },
   { id: 'table-11', tableNumber: 'P3', capacity: 6, floor: 'Patio', status: 'available', currentOrderIds: [] },
-  { id: 'table-12', tableNumber: 'B1', capacity: 10, floor: 'Banquet', status: 'available', currentOrderIds: [] },
 ];
 
 // Mock Orders - empty by default
