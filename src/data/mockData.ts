@@ -277,16 +277,28 @@ export const mockMenuItems: MenuItem[] = [
   },
 ];
 
-// Mock Tables
+// Mock Tables - Layout based on floor plan diagram
+// Row 1: T1, T3 (right side, larger tables)
+// Row 2: T6b, T6a, T4, T2 (4 columns)
+// Row 3: T8, T7, T5, T4 (4 columns)
 export const mockTables: Table[] = [
-  { id: 'table-1', tableNumber: 'T1', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
-  { id: 'table-2', tableNumber: 'T2', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
-  { id: 'table-4', tableNumber: 'T3', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
-  { id: 'table-6a', tableNumber: 'T6a', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
-  { id: 'table-6b', tableNumber: 'T6b', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  // Large Tables floor - arranged in specific grid pattern
+  // Row 1 (top): empty, empty, T3, T1
+  { id: 'table-placeholder-1', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
   { id: 'table-placeholder-2', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
-  { id: 'table-7', tableNumber: 'T7', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
-  { id: 'table-8', tableNumber: 'T8', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-3', tableNumber: 'T3', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-1', tableNumber: 'T1', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  // Row 2: T6b, T6a, empty, T2
+  { id: 'table-6b', tableNumber: 'T6b', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-6a', tableNumber: 'T6a', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-placeholder-3', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
+  { id: 'table-2', tableNumber: 'T2', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  // Row 3: T8, T7, T5, T4
+  { id: 'table-8', tableNumber: 'T8', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-7', tableNumber: 'T7', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-5', tableNumber: 'T5', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-4', tableNumber: 'T4', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  // Other floors
   { id: 'table-9', tableNumber: 'P1', capacity: 4, floor: 'Patio', status: 'available', currentOrderIds: [] },
   { id: 'table-10', tableNumber: 'P2', capacity: 4, floor: 'Patio', status: 'available', currentOrderIds: [] },
   { id: 'table-11', tableNumber: 'P3', capacity: 6, floor: 'Patio', status: 'available', currentOrderIds: [] },
