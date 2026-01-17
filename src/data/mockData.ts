@@ -599,18 +599,6 @@ export const mockMenuItems: MenuItem[] = [
     sortOrder: 8,
   },
   {
-    id: 'item-46',
-    categoryId: 'cat-6',
-    name: 'Mutton Curry',
-    description: 'Slow-cooked tender mutton in rich spicy gravy',
-    price: 350,
-    isVeg: false,
-    isAvailable: true,
-    addOns: [],
-    preparationTime: 30,
-    sortOrder: 9,
-  },
-  {
     id: 'item-47',
     categoryId: 'cat-6',
     name: 'Egg Masala',
