@@ -281,6 +281,7 @@ export const mockMenuItems: MenuItem[] = [
 export const mockTables: Table[] = [
   { id: 'table-1', tableNumber: 'T1', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-2', tableNumber: 'T2', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-3', tableNumber: 'T3', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-4', tableNumber: 'T4', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-5', tableNumber: 'T5', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-6', tableNumber: 'T6', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
