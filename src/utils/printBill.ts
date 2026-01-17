@@ -87,30 +87,37 @@ export function printBill(order: Order) {
           border-top: 1px dashed #000;
           font-size: 11px;
         }
-        .paid-stamp {
+        .paid-stamp-container {
           position: relative;
+          height: 0;
+          overflow: visible;
+        }
+        .paid-stamp {
+          position: absolute;
+          top: -120px;
+          left: 50%;
+          transform: translateX(-50%) rotate(-15deg);
           width: 100px;
           height: 100px;
-          margin: 20px auto;
-          border: 3px solid #4a0080;
+          border: 3px solid rgba(74, 0, 128, 0.35);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          transform: rotate(-15deg);
+          opacity: 0.4;
         }
         .paid-stamp::before {
           content: '';
           position: absolute;
           width: 90px;
           height: 90px;
-          border: 1px solid #4a0080;
+          border: 1px solid rgba(74, 0, 128, 0.35);
           border-radius: 50%;
         }
         .paid-stamp-text {
           font-size: 24px;
           font-weight: bold;
-          color: #4a0080;
+          color: rgba(74, 0, 128, 0.6);
           letter-spacing: 2px;
         }
         .stamp-outer-text {
@@ -118,7 +125,7 @@ export function printBill(order: Order) {
           width: 100%;
           height: 100%;
           font-size: 8px;
-          color: #4a0080;
+          color: rgba(74, 0, 128, 0.6);
           font-weight: bold;
         }
         .stamp-top {
@@ -176,12 +183,14 @@ export function printBill(order: Order) {
         <span>₹${order.totalAmount.toFixed(0)}</span>
       </div>
       
-      <div class="paid-stamp">
-        <div class="stamp-outer-text">
-          <span class="stamp-top">★ Nagalaxmi Kaveri Family Dhaba ★</span>
-          <span class="stamp-bottom">★ Chinthapally ★</span>
+      <div class="paid-stamp-container">
+        <div class="paid-stamp">
+          <div class="stamp-outer-text">
+            <span class="stamp-top">★ Nagalaxmi Kaveri Family Dhaba ★</span>
+            <span class="stamp-bottom">★ Chinthapally ★</span>
+          </div>
+          <span class="paid-stamp-text">PAID</span>
         </div>
-        <span class="paid-stamp-text">PAID</span>
       </div>
       
       <div class="footer">
