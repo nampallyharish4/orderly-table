@@ -45,11 +45,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* User Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">
-          {user?.name}
-        </h1>
+      {/* Header */}
+      <div className="flex justify-end gap-4">
         <div className="flex gap-2">
           <Button asChild variant="outline">
             <Link to="/tables">
