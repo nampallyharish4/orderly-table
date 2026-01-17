@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import TablesPage from "./pages/TablesPage";
 import OrdersPage from "./pages/OrdersPage";
+import OrderDetailPage from "./pages/OrderDetailPage";
 import NewOrderPage from "./pages/NewOrderPage";
 import KitchenPage from "./pages/KitchenPage";
 import NotFound from "./pages/NotFound";
@@ -41,6 +42,11 @@ const App = () => (
               <Route path="/orders" element={
                 <ProtectedRoute>
                   <MainLayout><OrdersPage /></MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/orders/:id" element={
+                <ProtectedRoute>
+                  <MainLayout><OrderDetailPage /></MainLayout>
                 </ProtectedRoute>
               } />
               <Route path="/orders/new" element={
