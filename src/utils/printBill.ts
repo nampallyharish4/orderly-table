@@ -87,6 +87,54 @@ export function printBill(order: Order) {
           border-top: 1px dashed #000;
           font-size: 11px;
         }
+        .paid-stamp {
+          position: relative;
+          width: 100px;
+          height: 100px;
+          margin: 20px auto;
+          border: 3px solid #4a0080;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transform: rotate(-15deg);
+        }
+        .paid-stamp::before {
+          content: '';
+          position: absolute;
+          width: 90px;
+          height: 90px;
+          border: 1px solid #4a0080;
+          border-radius: 50%;
+        }
+        .paid-stamp-text {
+          font-size: 24px;
+          font-weight: bold;
+          color: #4a0080;
+          letter-spacing: 2px;
+        }
+        .stamp-outer-text {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          font-size: 8px;
+          color: #4a0080;
+          font-weight: bold;
+        }
+        .stamp-top {
+          position: absolute;
+          top: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+          white-space: nowrap;
+        }
+        .stamp-bottom {
+          position: absolute;
+          bottom: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+          white-space: nowrap;
+        }
         @media print {
           body {
             padding: 0;
@@ -126,6 +174,14 @@ export function printBill(order: Order) {
       <div class="total">
         <span>TOTAL</span>
         <span>₹${order.totalAmount.toFixed(0)}</span>
+      </div>
+      
+      <div class="paid-stamp">
+        <div class="stamp-outer-text">
+          <span class="stamp-top">★ Nagalaxmi Kaveri Family Dhaba ★</span>
+          <span class="stamp-bottom">★ Chinthapally ★</span>
+        </div>
+        <span class="paid-stamp-text">PAID</span>
       </div>
       
       <div class="footer">
