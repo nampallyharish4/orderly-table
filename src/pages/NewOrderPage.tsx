@@ -52,11 +52,7 @@ export default function NewOrderPage() {
 
   // Calculate totals
   const subtotal = currentOrder?.items?.reduce((sum, item) => sum + item.totalPrice, 0) || 0;
-  const taxRate = 0.08;
-  const serviceChargeRate = isTakeaway ? 0 : 0.10;
-  const taxAmount = subtotal * taxRate;
-  const serviceCharge = subtotal * serviceChargeRate;
-  const total = subtotal + taxAmount + serviceCharge;
+  const total = subtotal;
 
   const handleAddItem = (item: MenuItem) => {
     addItemToOrder(item, 1);
@@ -269,21 +265,6 @@ export default function NewOrderPage() {
           {/* Totals */}
           {(currentOrder.items?.length || 0) > 0 && (
             <div className="mt-4 pt-4 border-t border-border space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-mono-price">₹{subtotal.toFixed(0)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Tax (8%)</span>
-                <span className="font-mono-price">₹{taxAmount.toFixed(0)}</span>
-              </div>
-              {!isTakeaway && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Service (10%)</span>
-                  <span className="font-mono-price">₹{serviceCharge.toFixed(0)}</span>
-                </div>
-              )}
-              <Separator className="my-2" />
               <div className="flex justify-between">
                 <span className="font-semibold">Total</span>
                 <span className="font-mono-price text-xl font-bold text-primary">
