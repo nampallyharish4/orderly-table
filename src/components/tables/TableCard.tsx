@@ -4,7 +4,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Users } from 'lucide-react';
 
 interface TableCardProps {
-  table: Table;
+  table: Table & { size?: string };
   onClick?: () => void;
   selected?: boolean;
   showOrder?: boolean;
@@ -16,12 +16,15 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
     occupied: 'table-occupied',
   }[table.status];
 
+  const isSmall = table.size === 'small';
+
   return (
     <button
       onClick={onClick}
       className={cn(
-        'w-full p-4 rounded-xl border-2 text-left transition-all duration-200',
+        'rounded-xl border-2 text-left transition-all duration-200',
         'hover:scale-[1.02] active:scale-[0.98]',
+        isSmall ? 'w-1/2 p-3' : 'w-full p-4',
         statusClass,
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
         !onClick && 'cursor-default'
