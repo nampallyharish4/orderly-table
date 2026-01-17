@@ -279,14 +279,14 @@ export const mockMenuItems: MenuItem[] = [
 
 // Mock Tables
 export const mockTables: Table[] = [
-  { id: 'table-1', tableNumber: 'T1', capacity: 2, floor: 'Main', status: 'available', currentOrderIds: [] },
-  { id: 'table-2', tableNumber: 'T2', capacity: 2, floor: 'Main', status: 'available', currentOrderIds: [] },
-  { id: 'table-3', tableNumber: 'T3', capacity: 4, floor: 'Main', status: 'available', currentOrderIds: [] },
-  { id: 'table-4', tableNumber: 'T4', capacity: 4, floor: 'Main', status: 'available', currentOrderIds: [] },
-  { id: 'table-5', tableNumber: 'T5', capacity: 6, floor: 'Main', status: 'available', currentOrderIds: [] },
-  { id: 'table-6', tableNumber: 'T6', capacity: 6, floor: 'Main', status: 'available', currentOrderIds: [] },
-  { id: 'table-7', tableNumber: 'T7', capacity: 8, floor: 'Main', status: 'available', currentOrderIds: [] },
-  { id: 'table-8', tableNumber: 'T8', capacity: 8, floor: 'Main', status: 'available', currentOrderIds: [] },
+  { id: 'table-1', tableNumber: 'T1', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-2', tableNumber: 'T2', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-3', tableNumber: 'T3', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-4', tableNumber: 'T4', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-5', tableNumber: 'T5', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-6', tableNumber: 'T6', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-7', tableNumber: 'T7', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-8', tableNumber: 'T8', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-9', tableNumber: 'P1', capacity: 4, floor: 'Patio', status: 'available', currentOrderIds: [] },
   { id: 'table-10', tableNumber: 'P2', capacity: 4, floor: 'Patio', status: 'available', currentOrderIds: [] },
   { id: 'table-11', tableNumber: 'P3', capacity: 6, floor: 'Patio', status: 'available', currentOrderIds: [] },
