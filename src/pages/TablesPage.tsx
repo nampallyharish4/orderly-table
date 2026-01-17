@@ -44,7 +44,6 @@ export default function TablesPage() {
   const stats = {
     available: tables.filter(t => t.status === 'available').length,
     occupied: tables.filter(t => t.status === 'occupied').length,
-    reserved: tables.filter(t => t.status === 'reserved').length,
   };
 
   return (
@@ -60,7 +59,7 @@ export default function TablesPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <Card className="table-available">
           <CardContent className="py-4 text-center">
             <p className="text-3xl font-bold text-table-available">{stats.available}</p>
@@ -71,12 +70,6 @@ export default function TablesPage() {
           <CardContent className="py-4 text-center">
             <p className="text-3xl font-bold text-table-occupied">{stats.occupied}</p>
             <p className="text-sm text-muted-foreground">Occupied</p>
-          </CardContent>
-        </Card>
-        <Card className="table-reserved">
-          <CardContent className="py-4 text-center">
-            <p className="text-3xl font-bold text-table-reserved">{stats.reserved}</p>
-            <p className="text-sm text-muted-foreground">Reserved</p>
           </CardContent>
         </Card>
       </div>
@@ -109,7 +102,7 @@ export default function TablesPage() {
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Status:</span>
           <div className="flex gap-1">
-            {(['all', 'available', 'occupied', 'reserved'] as const).map(status => (
+            {(['all', 'available', 'occupied'] as const).map(status => (
               <Button
                 key={status}
                 variant={statusFilter === status ? 'default' : 'outline'}
@@ -173,10 +166,9 @@ export default function TablesPage() {
               className="w-full p-4 rounded-xl border border-border bg-card hover:bg-secondary/50 transition-colors flex items-center justify-between"
             >
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg ${
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg ${
                   table.status === 'available' ? 'bg-table-available/20 text-table-available' :
-                  table.status === 'occupied' ? 'bg-table-occupied/20 text-table-occupied' :
-                  'bg-table-reserved/20 text-table-reserved'
+                  'bg-table-occupied/20 text-table-occupied'
                 }`}>
                   {table.tableNumber}
                 </div>
@@ -187,8 +179,7 @@ export default function TablesPage() {
               </div>
               <Badge variant="outline" className={`capitalize ${
                 table.status === 'available' ? 'border-table-available text-table-available' :
-                table.status === 'occupied' ? 'border-table-occupied text-table-occupied' :
-                'border-table-reserved text-table-reserved'
+                'border-table-occupied text-table-occupied'
               }`}>
                 {table.status}
               </Badge>

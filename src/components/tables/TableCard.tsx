@@ -1,8 +1,7 @@
 import { cn } from '@/lib/utils';
 import { Table } from '@/types';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { Users, Clock } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Users } from 'lucide-react';
 
 interface TableCardProps {
   table: Table;
@@ -15,7 +14,6 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
   const statusClass = {
     available: 'table-available',
     occupied: 'table-occupied',
-    reserved: 'table-reserved',
   }[table.status];
 
   return (
@@ -42,13 +40,6 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
           <Users className="w-4 h-4" />
           <span>{table.capacity}</span>
         </div>
-        
-        {table.status === 'reserved' && table.reservedFor && (
-          <div className="flex items-center gap-1 text-table-reserved">
-            <Clock className="w-4 h-4" />
-            <span className="truncate max-w-[100px]">{table.reservedFor}</span>
-          </div>
-        )}
       </div>
 
       {showOrder && table.currentOrderId && (
