@@ -116,7 +116,7 @@ const OrderDetailPage = () => {
                   <div className="flex-1">
                     <p className="font-medium">{item.menuItemName}</p>
                     <p className="text-sm text-muted-foreground">
-                      Qty: {item.quantity} × ₹{item.unitPrice.toFixed(2)}
+                      Qty: {item.quantity} × ₹{item.unitPrice.toFixed(0)}
                     </p>
                     {item.notes && (
                       <p className="text-sm text-accent italic mt-1">
@@ -125,7 +125,7 @@ const OrderDetailPage = () => {
                     )}
                   </div>
                   <p className="font-semibold">
-                    ₹{item.totalPrice.toFixed(2)}
+                    ₹{item.totalPrice.toFixed(0)}
                   </p>
                 </div>
               ))}
@@ -134,7 +134,7 @@ const OrderDetailPage = () => {
             <div className="mt-4 pt-4 border-t border-border">
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span className="text-primary">₹{order.totalAmount.toFixed(2)}</span>
+                <span className="text-primary">₹{order.totalAmount.toFixed(0)}</span>
               </div>
             </div>
           </CardContent>

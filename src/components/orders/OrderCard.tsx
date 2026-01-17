@@ -49,7 +49,7 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
             </div>
           </div>
           <span className="font-mono-price text-lg font-bold">
-            ${order.totalAmount.toFixed(2)}
+            ₹{order.totalAmount.toFixed(0)}
           </span>
         </div>
       </button>
@@ -127,7 +127,7 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
         <div className="flex items-center justify-between pt-3 border-t border-border">
           <span className="text-sm text-muted-foreground">Total</span>
           <span className="font-mono-price text-xl font-bold text-primary">
-            ${order.totalAmount.toFixed(2)}
+            ₹{order.totalAmount.toFixed(0)}
           </span>
         </div>
       </CardContent>
