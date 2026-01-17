@@ -19,9 +19,7 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
   const isSmall = table.size === 'small';
   const isSmallLeft = table.size === 'small-left';
   const isSmallRight = table.size === 'small-right';
-  const isSmallPairLeft = table.size === 'small-pair-left';
-  const isSmallPairRight = table.size === 'small-pair-right';
-  const isAnySmall = isSmall || isSmallLeft || isSmallRight || isSmallPairLeft || isSmallPairRight;
+  const isAnySmall = isSmall || isSmallLeft || isSmallRight;
 
   return (
     <button
@@ -29,12 +27,10 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
       className={cn(
         'rounded-xl border-2 text-left transition-all duration-200',
         'hover:scale-[1.02] active:scale-[0.98]',
-        isAnySmall ? 'p-3' : 'w-full p-4',
-        isSmall && 'w-1/2 ml-auto',
-        isSmallLeft && 'w-1/2 ml-auto',
-        isSmallRight && 'w-1/2 mr-auto',
-        isSmallPairLeft && 'w-full',
-        isSmallPairRight && 'w-full',
+        isAnySmall ? 'w-1/2 p-3' : 'w-full p-4',
+        isSmall && 'ml-auto',
+        isSmallLeft && 'ml-auto',
+        isSmallRight && 'mr-auto',
         statusClass,
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
         !onClick && 'cursor-default'
