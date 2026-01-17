@@ -296,9 +296,8 @@ export const mockTables: Table[] = [
   { id: 'table-9', tableNumber: 'T9', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small-left' } as Table & { size: string },
   { id: 'table-7', tableNumber: 'T7', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small-right' } as Table & { size: string },
   // Other floors
-  { id: 'table-9', tableNumber: 'P1', capacity: 4, floor: 'Family Section', status: 'available', currentOrderIds: [] },
-  { id: 'table-10', tableNumber: 'P2', capacity: 4, floor: 'Family Section', status: 'available', currentOrderIds: [] },
-  { id: 'table-11', tableNumber: 'P3', capacity: 6, floor: 'Family Section', status: 'available', currentOrderIds: [] },
+  { id: 'table-9', tableNumber: 'F1', capacity: 4, floor: 'Family Section', status: 'available', currentOrderIds: [] },
+  { id: 'table-10', tableNumber: 'F2', capacity: 4, floor: 'Family Section', status: 'available', currentOrderIds: [] },
 ];
 
 // Mock Orders - empty by default
