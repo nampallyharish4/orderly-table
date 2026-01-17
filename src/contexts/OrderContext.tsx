@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 import { Order, OrderItem, Table, MenuItem, OrderType, OrderStatus, OrderItemStatus } from '@/types';
 import { mockOrders, mockTables, mockMenuItems, generateOrderNumber, calculateOrderTotals } from '@/data/mockData';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 interface OrderContextType {
   orders: Order[];
@@ -36,6 +37,17 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [tables, setTables] = useState<Table[]>(mockTables);
   const [menuItems] = useState<MenuItem[]>(mockMenuItems);
   const [currentOrder, setCurrentOrder] = useState<Partial<Order> | null>(null);
+  const { playReadySound } = useNotificationSound();
+  const prevReadyCountRef = useRef<number>(0);
+
+  // Track ready orders and play sound when count increases
+  useEffect(() => {
+    const readyCount = orders.filter(o => o.status === 'ready').length;
+    if (readyCount > prevReadyCountRef.current && prevReadyCountRef.current !== 0) {
+      playReadySound();
+    }
+    prevReadyCountRef.current = readyCount;
+  }, [orders, playReadySound]);
 
   const createOrder = useCallback((orderType: OrderType, tableId?: string) => {
     const table = tableId ? tables.find(t => t.id === tableId) : undefined;
