@@ -283,7 +283,6 @@ export const mockTables: Table[] = [
   { id: 'table-2', tableNumber: 'T2', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-4', tableNumber: 'T3', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-6a', tableNumber: 'T6a', capacity: 3, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
-  { id: 'table-6b', tableNumber: 'T6b', capacity: 3, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-placeholder', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
   { id: 'table-placeholder-2', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
   { id: 'table-7', tableNumber: 'T7', capacity: 6, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
