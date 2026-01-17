@@ -193,12 +193,18 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
     '/tables': ['admin', 'waiter', 'cashier'],
     '/menu': ['admin', 'waiter', 'cashier'],
     '/orders': ['admin', 'waiter', 'cashier'],
+    '/orders/new': ['admin', 'waiter', 'cashier'],
     '/kitchen': ['admin', 'kitchen'],
     '/billing': ['admin', 'cashier'],
     '/reports': ['admin'],
     '/settings': ['admin'],
     '/users': ['admin'],
   };
+
+  // Handle dynamic routes like /orders/:id
+  if (route.startsWith('/orders/') && route !== '/orders/new') {
+    return ['admin', 'waiter', 'cashier'].includes(role);
+  }
 
   return routePermissions[route]?.includes(role) ?? false;
 }
