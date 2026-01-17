@@ -27,7 +27,6 @@ const itemStatusConfig: Record<OrderItemStatus, { label: string; class: string; 
 const tableStatusConfig: Record<TableStatus, { label: string; class: string; icon: React.ElementType }> = {
   available: { label: 'Available', class: 'bg-table-available/15 text-table-available border-table-available/30', icon: CheckCircle2 },
   occupied: { label: 'Occupied', class: 'bg-table-occupied/15 text-table-occupied border-table-occupied/30', icon: Utensils },
-  reserved: { label: 'Reserved', class: 'bg-table-reserved/15 text-table-reserved border-table-reserved/30', icon: Clock },
 };
 
 export function StatusBadge({ status, size = 'md', showIcon = true, className }: StatusBadgeProps) {

@@ -42,7 +42,7 @@ export interface MenuItem {
   sortOrder: number;
 }
 
-export type TableStatus = 'available' | 'occupied' | 'reserved';
+export type TableStatus = 'available' | 'occupied';
 
 export interface Table {
   id: string;
@@ -51,8 +51,6 @@ export interface Table {
   floor: string;
   status: TableStatus;
   currentOrderId?: string;
-  reservedFor?: string;
-  reservedAt?: Date;
 }
 
 export type OrderType = 'dine-in' | 'takeaway';
