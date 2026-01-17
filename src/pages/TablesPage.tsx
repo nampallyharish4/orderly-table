@@ -151,11 +151,15 @@ export default function TablesPage() {
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   {floorTables.map(table => (
-                    <TableCard
-                      key={table.id}
-                      table={table}
-                      onClick={() => handleTableClick(table)}
-                    />
+                    (table as any).hidden ? (
+                      <div key={table.id} className="invisible" />
+                    ) : (
+                      <TableCard
+                        key={table.id}
+                        table={table}
+                        onClick={() => handleTableClick(table)}
+                      />
+                    )
                   ))}
                 </div>
               </div>
