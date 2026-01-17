@@ -288,7 +288,7 @@ export const mockTables: Table[] = [
   { id: 'table-4', tableNumber: 'T4', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small' } as Table & { size: string },
   // Row 3: empty, T5
   { id: 'table-placeholder-1', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
-  { id: 'table-5', tableNumber: 'T5', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
+  { id: 'table-5', tableNumber: 'T5', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small' } as Table & { size: string },
   // Row 5: T7, T6
   { id: 'table-7', tableNumber: 'T7', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
   { id: 'table-6', tableNumber: 'T6', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [] },
