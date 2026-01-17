@@ -33,12 +33,9 @@ export default function TablesPage() {
   }, {} as Record<string, Table[]>);
 
   const handleTableClick = (table: Table) => {
-    if (table.status === 'available') {
-      createOrder('dine-in', table.id);
-      navigate('/orders/new');
-    } else if (table.status === 'occupied' && table.currentOrderId) {
-      navigate(`/orders/${table.currentOrderId}`);
-    }
+    // Always allow creating new orders for any table
+    createOrder('dine-in', table.id);
+    navigate('/orders/new');
   };
 
   const stats = {
