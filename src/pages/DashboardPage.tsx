@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   ChefHat,
   ArrowRight,
-  DollarSign,
+  IndianRupee,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -79,11 +79,11 @@ export default function DashboardPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Today's Revenue</p>
                 <p className="text-2xl font-bold font-mono-price text-primary">
-                  ${todayRevenue.toFixed(2)}
+                  ₹{todayRevenue.toFixed(0)}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-primary" />
+                <IndianRupee className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
