@@ -149,7 +149,7 @@ export default function TablesPage() {
                   {floor} Floor
                   <Badge variant="secondary">{floorTables.length} tables</Badge>
                 </h2>
-                <div className={`grid gap-3 ${floor === 'Large Tables' ? 'grid-cols-4' : 'grid-cols-2'}`}>
+                <div className="grid grid-cols-2 gap-3">
                   {floorTables.map(table => (
                     (table as any).hidden ? (
                       <div key={table.id} className="invisible" />
