@@ -289,15 +289,15 @@ export const mockTables: Table[] = [
   // Row 3: empty, T5
   { id: 'table-placeholder-1', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
   { id: 'table-5', tableNumber: 'T5', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small' } as Table & { size: string },
-  // Row 4: empty, T6
-  { id: 'table-placeholder-2', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
-  { id: 'table-6', tableNumber: 'T6', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small' } as Table & { size: string },
-  // Row 5: empty, T7
-  { id: 'table-placeholder-3', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
-  { id: 'table-7', tableNumber: 'T7', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small' } as Table & { size: string },
-  // Row 6: T8, T9 (both small, adjacent)
+  // Row 4: T8, T6 (both small, adjacent)
   { id: 'table-8', tableNumber: 'T8', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small-left' } as Table & { size: string },
-  { id: 'table-9', tableNumber: 'T9', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small-right' } as Table & { size: string },
+  { id: 'table-6', tableNumber: 'T6', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small-right' } as Table & { size: string },
+  // Row 5: empty, T7
+  { id: 'table-placeholder-2', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
+  { id: 'table-7', tableNumber: 'T7', capacity: 4, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small' } as Table & { size: string },
+  // Row 6: empty, T9
+  { id: 'table-placeholder-3', tableNumber: '', capacity: 0, floor: 'Large Tables', status: 'available', currentOrderIds: [], hidden: true } as Table & { hidden: boolean },
+  { id: 'table-9', tableNumber: 'T9', capacity: 2, floor: 'Large Tables', status: 'available', currentOrderIds: [], size: 'small' } as Table & { size: string },
   // Other floors
   { id: 'table-9', tableNumber: 'P1', capacity: 4, floor: 'Patio', status: 'available', currentOrderIds: [] },
   { id: 'table-10', tableNumber: 'P2', capacity: 4, floor: 'Patio', status: 'available', currentOrderIds: [] },
