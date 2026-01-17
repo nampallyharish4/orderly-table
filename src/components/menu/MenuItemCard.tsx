@@ -16,21 +16,31 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
         onClick={onClick}
         disabled={!item.isAvailable}
         className={cn(
-          'w-full p-3 rounded-lg border border-border text-left transition-all',
+          'w-full p-4 rounded-xl border border-border text-left transition-all',
           'hover:border-primary/50 hover:bg-secondary/50 active:scale-[0.98]',
+          'shadow-sm hover:shadow-md',
           !item.isAvailable && 'opacity-50 cursor-not-allowed'
         )}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 flex-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 flex-1">
             {item.isVeg ? (
-              <Leaf className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
+              <div className="w-5 h-5 rounded border-2 border-success flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-success" />
+              </div>
             ) : (
-              <CircleDot className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+              <div className="w-5 h-5 rounded border-2 border-destructive flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-destructive" />
+              </div>
             )}
-            <span className="font-medium text-sm leading-tight">{item.name}</span>
+            <div className="flex-1 min-w-0">
+              <span className="font-semibold text-base leading-tight block">{item.name}</span>
+              {item.description && (
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+              )}
+            </div>
           </div>
-          <span className="font-mono-price font-semibold text-primary flex-shrink-0">
+          <span className="font-mono-price text-lg font-bold text-primary flex-shrink-0">
             ₹{item.price.toFixed(0)}
           </span>
         </div>
