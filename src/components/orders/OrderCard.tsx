@@ -2,8 +2,10 @@ import { cn } from '@/lib/utils';
 import { Order } from '@/types';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Clock, User, MapPin, Package } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Clock, User, MapPin, Package, Printer } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { printBill } from '@/utils/printBill';
 
 interface OrderCardProps {
   order: Order;
@@ -17,18 +19,27 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
   const isReady = order.status === 'ready';
   const isTakeaway = order.orderType === 'takeaway';
 
+  const isCompleted = ['served', 'collected'].includes(order.status);
+
+  const handlePrint = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    printBill(order);
+  };
+
   if (compact) {
     return (
-      <button
-        onClick={onClick}
+      <div
         className={cn(
           'w-full p-4 rounded-xl border border-border bg-card text-left transition-all',
-          'hover:border-primary/50 hover:shadow-md active:scale-[0.99]',
+          'hover:border-primary/50 hover:shadow-md',
           isReady && 'order-card-ready border-success/50'
         )}
       >
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={onClick}
+            className="flex items-center gap-3 flex-1 text-left"
+          >
             <div className={cn(
               'w-12 h-12 rounded-xl flex items-center justify-center font-bold',
               isTakeaway ? 'bg-accent/20 text-accent' : 'bg-primary/20 text-primary'
@@ -47,12 +58,25 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
                 <span>{order.items.length} items</span>
               </div>
             </div>
+          </button>
+          <div className="flex items-center gap-3">
+            <span className="font-mono-price text-lg font-bold">
+              ₹{order.totalAmount.toFixed(0)}
+            </span>
+            {isCompleted && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrint}
+                className="gap-1"
+              >
+                <Printer className="w-4 h-4" />
+                Print
+              </Button>
+            )}
           </div>
-          <span className="font-mono-price text-lg font-bold">
-            ₹{order.totalAmount.toFixed(0)}
-          </span>
         </div>
-      </button>
+      </div>
     );
   }
 
