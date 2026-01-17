@@ -3,9 +3,10 @@ import { Order } from '@/types';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, User, MapPin, Package, Printer } from 'lucide-react';
+import { Clock, User, MapPin, Package, Printer, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { printBill } from '@/utils/printBill';
+import { useOrders } from '@/contexts/OrderContext';
 
 interface OrderCardProps {
   order: Order;
@@ -15,6 +16,7 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order, onClick, showItems = false, compact = false }: OrderCardProps) {
+  const { updateOrderStatus } = useOrders();
   const timeAgo = formatDistanceToNow(order.createdAt, { addSuffix: true });
   const isReady = order.status === 'ready';
   const isTakeaway = order.orderType === 'takeaway';
@@ -24,6 +26,11 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
   const handlePrint = (e: React.MouseEvent) => {
     e.stopPropagation();
     printBill(order);
+  };
+
+  const handleMarkServed = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    updateOrderStatus(order.id, isTakeaway ? 'collected' : 'served');
   };
 
   if (compact) {
@@ -154,6 +161,17 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
             ₹{order.totalAmount.toFixed(0)}
           </span>
         </div>
+
+        {/* Mark Served button for ready orders */}
+        {isReady && (
+          <Button 
+            className="w-full bg-success hover:bg-success/90"
+            onClick={handleMarkServed}
+          >
+            <CheckCircle2 className="w-4 h-4 mr-2" />
+            {isTakeaway ? 'Mark Collected' : 'Mark Served'}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

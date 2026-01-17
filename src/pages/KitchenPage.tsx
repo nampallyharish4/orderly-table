@@ -54,9 +54,6 @@ export default function KitchenPage() {
     updateItemStatus(orderId, itemId, 'ready');
   };
 
-  const handleMarkServed = (orderId: string, isTakeaway: boolean) => {
-    updateOrderStatus(orderId, isTakeaway ? 'collected' : 'served');
-  };
 
   const KitchenOrderCard = ({ order }: { order: Order }) => {
     const priority = getOrderPriority(order);
@@ -170,15 +167,6 @@ export default function KitchenPage() {
               >
                 <ChefHat className="w-4 h-4 mr-2" />
                 Start Preparing
-              </Button>
-            )}
-            {order.status === 'ready' && (
-              <Button 
-                className="flex-1 bg-success hover:bg-success/90"
-                onClick={() => handleMarkServed(order.id, isTakeaway)}
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                {isTakeaway ? 'Mark Collected' : 'Mark Served'}
               </Button>
             )}
           </div>
