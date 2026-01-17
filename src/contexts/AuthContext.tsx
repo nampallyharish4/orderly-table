@@ -8,7 +8,7 @@ interface AuthContextType extends AuthState {
   switchRole: (role: UserRole) => void; // For demo purposes
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Demo credentials
 const DEMO_CREDENTIALS: Record<string, { password: string; userId: string }> = {
