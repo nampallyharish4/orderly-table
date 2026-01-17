@@ -150,7 +150,7 @@ export default function NewOrderPage() {
 
         {/* Menu Items */}
         <ScrollArea className="flex-1">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pr-4">
+          <div className="grid grid-cols-2 gap-3 pr-4">
             {filteredItems.map(item => (
               <MenuItemCard
                 key={item.id}
@@ -224,7 +224,7 @@ export default function NewOrderPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{item.menuItemName}</p>
                       <p className="text-sm text-muted-foreground">
-                        ${item.unitPrice.toFixed(2)} each
+                        ₹{item.unitPrice.toFixed(0)} each
                       </p>
                       {item.addOns.length > 0 && (
                         <p className="text-xs text-muted-foreground mt-1">
@@ -257,8 +257,8 @@ export default function NewOrderPage() {
                         <Plus className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="font-mono-price font-semibold w-16 text-right">
-                      ${item.totalPrice.toFixed(2)}
+                    <p className="font-mono-price font-semibold w-20 text-right">
+                      ₹{item.totalPrice.toFixed(0)}
                     </p>
                   </div>
                 ))}
@@ -271,23 +271,23 @@ export default function NewOrderPage() {
             <div className="mt-4 pt-4 border-t border-border space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-mono-price">${subtotal.toFixed(2)}</span>
+                <span className="font-mono-price">₹{subtotal.toFixed(0)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tax (8%)</span>
-                <span className="font-mono-price">${taxAmount.toFixed(2)}</span>
+                <span className="font-mono-price">₹{taxAmount.toFixed(0)}</span>
               </div>
               {!isTakeaway && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Service (10%)</span>
-                  <span className="font-mono-price">${serviceCharge.toFixed(2)}</span>
+                  <span className="font-mono-price">₹{serviceCharge.toFixed(0)}</span>
                 </div>
               )}
               <Separator className="my-2" />
               <div className="flex justify-between">
                 <span className="font-semibold">Total</span>
                 <span className="font-mono-price text-xl font-bold text-primary">
-                  ${total.toFixed(2)}
+                  ₹{total.toFixed(0)}
                 </span>
               </div>
             </div>

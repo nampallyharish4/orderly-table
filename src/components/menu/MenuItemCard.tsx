@@ -21,17 +21,17 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
           !item.isAvailable && 'opacity-50 cursor-not-allowed'
         )}
       >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 flex-1">
             {item.isVeg ? (
-              <Leaf className="w-4 h-4 text-success flex-shrink-0" />
+              <Leaf className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
             ) : (
-              <CircleDot className="w-4 h-4 text-destructive flex-shrink-0" />
+              <CircleDot className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
             )}
-            <span className="font-medium truncate">{item.name}</span>
+            <span className="font-medium text-sm leading-tight">{item.name}</span>
           </div>
           <span className="font-mono-price font-semibold text-primary flex-shrink-0">
-            ${item.price.toFixed(2)}
+            ₹{item.price.toFixed(0)}
           </span>
         </div>
       </button>
@@ -88,7 +88,7 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
 
       <div className="flex items-center justify-between">
         <span className="font-mono-price text-xl font-bold text-primary">
-          ${item.price.toFixed(2)}
+          ₹{item.price.toFixed(0)}
         </span>
         {item.preparationTime && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
