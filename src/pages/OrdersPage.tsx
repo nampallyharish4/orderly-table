@@ -1,0 +1,226 @@
+import { useState } from 'react';
+import { useOrders } from '@/contexts/OrderContext';
+import { useNavigate } from 'react-router-dom';
+import { OrderCard } from '@/components/orders/OrderCard';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { OrderStatus } from '@/types';
+import { Plus, Search, Package, Utensils, Filter } from 'lucide-react';
+
+export default function OrdersPage() {
+  const { orders, createOrder, updateOrderStatus } = useOrders();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'dine-in' | 'takeaway'>('all');
+
+  // Filter orders
+  const filteredOrders = orders.filter(order => {
+    if (statusFilter !== 'all' && order.status !== statusFilter) return false;
+    if (typeFilter !== 'all' && order.orderType !== typeFilter) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        order.orderNumber.toLowerCase().includes(query) ||
+        order.tableNumber?.toLowerCase().includes(query) ||
+        order.customerName?.toLowerCase().includes(query)
+      );
+    }
+    return true;
+  });
+
+  const activeOrders = filteredOrders.filter(o => 
+    ['new', 'preparing', 'ready'].includes(o.status)
+  );
+  const completedOrders = filteredOrders.filter(o => 
+    ['served', 'collected'].includes(o.status)
+  );
+  const cancelledOrders = filteredOrders.filter(o => o.status === 'cancelled');
+
+  const handleNewTakeaway = () => {
+    createOrder('takeaway');
+    navigate('/orders/new');
+  };
+
+  const statusCounts = {
+    new: orders.filter(o => o.status === 'new').length,
+    preparing: orders.filter(o => o.status === 'preparing').length,
+    ready: orders.filter(o => o.status === 'ready').length,
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Orders</h1>
+          <p className="text-muted-foreground">
+            Manage dine-in and takeaway orders
+          </p>
+        </div>
+        <Button onClick={handleNewTakeaway} className="bg-gradient-primary hover:opacity-90">
+          <Plus className="w-4 h-4 mr-2" />
+          New Takeaway Order
+        </Button>
+      </div>
+
+      {/* Quick Status Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="cursor-pointer hover:border-status-new/50 transition-colors" onClick={() => setStatusFilter('new')}>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-3xl font-bold text-status-new">{statusCounts.new}</p>
+                <p className="text-sm text-muted-foreground">New</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-status-new/10 flex items-center justify-center">
+                <Package className="w-5 h-5 text-status-new" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:border-status-preparing/50 transition-colors" onClick={() => setStatusFilter('preparing')}>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-3xl font-bold text-status-preparing">{statusCounts.preparing}</p>
+                <p className="text-sm text-muted-foreground">Preparing</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-status-preparing/10 flex items-center justify-center">
+                <Package className="w-5 h-5 text-status-preparing" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:border-status-ready/50 transition-colors" onClick={() => setStatusFilter('ready')}>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-3xl font-bold text-status-ready">{statusCounts.ready}</p>
+                <p className="text-sm text-muted-foreground">Ready</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-status-ready/10 flex items-center justify-center">
+                <Package className="w-5 h-5 text-status-ready" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search orders..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Type:</span>
+          <div className="flex gap-1">
+            {(['all', 'dine-in', 'takeaway'] as const).map(type => (
+              <Button
+                key={type}
+                variant={typeFilter === type ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTypeFilter(type)}
+                className="capitalize"
+              >
+                {type === 'all' ? 'All' : type === 'dine-in' ? (
+                  <><Utensils className="w-3 h-3 mr-1" /> Dine-In</>
+                ) : (
+                  <><Package className="w-3 h-3 mr-1" /> Takeaway</>
+                )}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {statusFilter !== 'all' && (
+          <Button variant="ghost" size="sm" onClick={() => setStatusFilter('all')}>
+            Clear filter
+          </Button>
+        )}
+      </div>
+
+      {/* Orders Tabs */}
+      <Tabs defaultValue="active" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="active" className="gap-2">
+            Active
+            <Badge variant="secondary">{activeOrders.length}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="gap-2">
+            Completed
+            <Badge variant="secondary">{completedOrders.length}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="cancelled" className="gap-2">
+            Cancelled
+            <Badge variant="secondary">{cancelledOrders.length}</Badge>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="active" className="space-y-4">
+          {activeOrders.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No active orders</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeOrders.map(order => (
+                <OrderCard 
+                  key={order.id} 
+                  order={order} 
+                  showItems 
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="completed" className="space-y-4">
+          {completedOrders.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <p>No completed orders</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {completedOrders.map(order => (
+                <OrderCard key={order.id} order={order} compact />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="cancelled" className="space-y-4">
+          {cancelledOrders.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <p>No cancelled orders</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {cancelledOrders.map(order => (
+                <OrderCard key={order.id} order={order} compact />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
