@@ -125,8 +125,8 @@ export default function NewOrderPage() {
         </div>
 
         {/* Categories */}
-        <ScrollArea className="mb-4">
-          <div className="flex gap-2 pb-2">
+        <div className="mb-4 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 pb-2 min-w-max">
             <Button
               variant={selectedCategory === 'all' ? 'default' : 'outline'}
               size="sm"
@@ -146,7 +146,7 @@ export default function NewOrderPage() {
               </Button>
             ))}
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Menu Items */}
         <ScrollArea className="flex-1">
