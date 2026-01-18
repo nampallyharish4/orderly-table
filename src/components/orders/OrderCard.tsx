@@ -1,12 +1,13 @@
 import { cn } from '@/lib/utils';
-import { Order } from '@/types';
+import { Order, hasPermission } from '@/types';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, User, MapPin, Package, Printer, CheckCircle2 } from 'lucide-react';
+import { Clock, User, Package, Printer, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { printBill } from '@/utils/printBill';
 import { useOrders } from '@/contexts/OrderContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface OrderCardProps {
   order: Order;
@@ -17,11 +18,13 @@ interface OrderCardProps {
 
 export function OrderCard({ order, onClick, showItems = false, compact = false }: OrderCardProps) {
   const { updateOrderStatus } = useOrders();
+  const { user } = useAuth();
   const timeAgo = formatDistanceToNow(order.createdAt, { addSuffix: true });
   const isReady = order.status === 'ready';
   const isTakeaway = order.orderType === 'takeaway';
 
   const isCompleted = ['served', 'collected'].includes(order.status);
+  const canPrint = user?.role && hasPermission(user.role, 'print_bill');
 
   const handlePrint = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -70,7 +73,7 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
             <span className="font-mono-price text-lg font-bold">
               ₹{order.totalAmount.toFixed(0)}
             </span>
-            {isCompleted && (
+            {isCompleted && canPrint && (
               <Button
                 variant="outline"
                 size="sm"
