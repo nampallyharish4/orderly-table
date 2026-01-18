@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useOrders } from '@/contexts/OrderContext';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,7 @@ import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 export default function KitchenPage() {
   const { orders, updateItemStatus, updateOrderStatus } = useOrders();
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const { playReadySound } = useNotificationSound();
 
   // Get active kitchen orders
   const kitchenOrders = orders
@@ -52,6 +54,9 @@ export default function KitchenPage() {
 
   const handleItemReady = (orderId: string, itemId: string) => {
     updateItemStatus(orderId, itemId, 'ready');
+    if (soundEnabled) {
+      playReadySound();
+    }
   };
 
 
