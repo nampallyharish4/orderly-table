@@ -161,6 +161,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'manage_orders',
     'process_payments',
     'view_kitchen',
+    'print_bill',
   ],
   waiter: [
     'create_orders',
@@ -174,6 +175,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'process_payments',
     'view_menu',
     'view_tables',
+    'print_bill',
   ],
   kitchen: [
     'view_kitchen',
