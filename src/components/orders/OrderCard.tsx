@@ -40,37 +40,37 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
     return (
       <div
         className={cn(
-          'w-full p-4 rounded-xl border border-border bg-card text-left transition-all',
+          'w-full p-3 sm:p-4 rounded-xl border border-border bg-card text-left transition-all',
           'hover:border-primary/50 hover:shadow-md',
           isReady && 'order-card-ready border-success/50'
         )}
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
           <button 
             onClick={onClick}
-            className="flex items-center gap-3 flex-1 text-left"
+            className="flex items-center gap-2 sm:gap-3 flex-1 text-left min-w-0"
           >
             <div className={cn(
-              'w-12 h-12 rounded-xl flex items-center justify-center font-bold',
+              'w-10 sm:w-12 h-10 sm:h-12 rounded-xl flex items-center justify-center font-bold shrink-0 text-sm sm:text-base',
               isTakeaway ? 'bg-accent/20 text-accent' : 'bg-primary/20 text-primary'
             )}>
-              {isTakeaway ? <Package className="w-6 h-6" /> : order.tableNumber}
+              {isTakeaway ? <Package className="w-5 sm:w-6 h-5 sm:h-6" /> : order.tableNumber}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">{order.orderNumber}</span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                <span className="font-semibold text-sm sm:text-base truncate">{order.orderNumber}</span>
                 <StatusBadge status={order.status} size="sm" />
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                {timeAgo}
-                <span>•</span>
-                <span>{order.items.length} items</span>
+              <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                <Clock className="w-3 h-3 shrink-0" />
+                <span className="truncate">{timeAgo}</span>
+                <span className="hidden xs:inline">•</span>
+                <span className="hidden xs:inline">{order.items.length} items</span>
               </div>
             </div>
           </button>
-          <div className="flex items-center gap-3">
-            <span className="font-mono-price text-lg font-bold">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <span className="font-mono-price text-base sm:text-lg font-bold">
               ₹{order.totalAmount.toFixed(0)}
             </span>
             {isCompleted && canPrint && (
@@ -78,10 +78,10 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
                 variant="outline"
                 size="sm"
                 onClick={handlePrint}
-                className="gap-1"
+                className="gap-1 hidden sm:flex"
               >
                 <Printer className="w-4 h-4" />
-                Print
+                <span className="hidden md:inline">Print</span>
               </Button>
             )}
           </div>
@@ -98,18 +98,18 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
         isReady && 'order-card-ready border-success/50'
       )}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+      <CardHeader className="pb-2 sm:pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className={cn(
-              'w-14 h-14 rounded-xl flex items-center justify-center font-bold text-xl',
+              'w-12 sm:w-14 h-12 sm:h-14 rounded-xl flex items-center justify-center font-bold text-lg sm:text-xl shrink-0',
               isTakeaway ? 'bg-accent/20 text-accent' : 'bg-primary/20 text-primary'
             )}>
-              {isTakeaway ? <Package className="w-7 h-7" /> : order.tableNumber}
+              {isTakeaway ? <Package className="w-6 sm:w-7 h-6 sm:h-7" /> : order.tableNumber}
             </div>
-            <div>
-              <h3 className="font-bold text-lg">{order.orderNumber}</h3>
-              <p className="text-sm text-muted-foreground capitalize">
+            <div className="min-w-0">
+              <h3 className="font-bold text-base sm:text-lg truncate">{order.orderNumber}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground capitalize">
                 {order.orderType}
               </p>
             </div>

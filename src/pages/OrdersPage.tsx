@@ -68,42 +68,42 @@ export default function OrdersPage() {
       </div>
 
       {/* Quick Status Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card className="cursor-pointer hover:border-status-new/50 transition-colors" onClick={() => setStatusFilter('new')}>
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
+          <CardContent className="py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <p className="text-3xl font-bold text-status-new">{statusCounts.new}</p>
-                <p className="text-sm text-muted-foreground">New</p>
+                <p className="text-2xl sm:text-3xl font-bold text-status-new">{statusCounts.new}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">New</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-status-new/10 flex items-center justify-center">
-                <Package className="w-5 h-5 text-status-new" />
+              <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-status-new/10 hidden sm:flex items-center justify-center">
+                <Package className="w-4 sm:w-5 h-4 sm:h-5 text-status-new" />
               </div>
             </div>
           </CardContent>
         </Card>
         <Card className="cursor-pointer hover:border-status-preparing/50 transition-colors" onClick={() => setStatusFilter('preparing')}>
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
+          <CardContent className="py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <p className="text-3xl font-bold text-status-preparing">{statusCounts.preparing}</p>
-                <p className="text-sm text-muted-foreground">Preparing</p>
+                <p className="text-2xl sm:text-3xl font-bold text-status-preparing">{statusCounts.preparing}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Preparing</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-status-preparing/10 flex items-center justify-center">
-                <Package className="w-5 h-5 text-status-preparing" />
+              <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-status-preparing/10 hidden sm:flex items-center justify-center">
+                <Package className="w-4 sm:w-5 h-4 sm:h-5 text-status-preparing" />
               </div>
             </div>
           </CardContent>
         </Card>
         <Card className="cursor-pointer hover:border-status-ready/50 transition-colors" onClick={() => setStatusFilter('ready')}>
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
+          <CardContent className="py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <p className="text-3xl font-bold text-status-ready">{statusCounts.ready}</p>
-                <p className="text-sm text-muted-foreground">Ready</p>
+                <p className="text-2xl sm:text-3xl font-bold text-status-ready">{statusCounts.ready}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Ready</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-status-ready/10 flex items-center justify-center">
-                <Package className="w-5 h-5 text-status-ready" />
+              <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg bg-status-ready/10 hidden sm:flex items-center justify-center">
+                <Package className="w-4 sm:w-5 h-4 sm:h-5 text-status-ready" />
               </div>
             </div>
           </CardContent>
@@ -111,8 +111,8 @@ export default function OrdersPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="relative flex-1 min-w-0 sm:min-w-[200px] sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search orders..."
@@ -122,8 +122,8 @@ export default function OrdersPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Type:</span>
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <span className="text-xs sm:text-sm text-muted-foreground shrink-0">Type:</span>
           <div className="flex gap-1">
             {(['all', 'dine-in', 'takeaway'] as const).map(type => (
               <Button
@@ -131,12 +131,12 @@ export default function OrdersPage() {
                 variant={typeFilter === type ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setTypeFilter(type)}
-                className="capitalize"
+                className="capitalize text-xs sm:text-sm whitespace-nowrap"
               >
                 {type === 'all' ? 'All' : type === 'dine-in' ? (
-                  <><Utensils className="w-3 h-3 mr-1" /> Dine-In</>
+                  <><Utensils className="w-3 h-3 mr-1" /> <span className="hidden xs:inline">Dine-In</span><span className="xs:hidden">Dine</span></>
                 ) : (
-                  <><Package className="w-3 h-3 mr-1" /> Takeaway</>
+                  <><Package className="w-3 h-3 mr-1" /> <span className="hidden xs:inline">Takeaway</span><span className="xs:hidden">Take</span></>
                 )}
               </Button>
             ))}
@@ -144,7 +144,7 @@ export default function OrdersPage() {
         </div>
 
         {statusFilter !== 'all' && (
-          <Button variant="ghost" size="sm" onClick={() => setStatusFilter('all')}>
+          <Button variant="ghost" size="sm" onClick={() => setStatusFilter('all')} className="self-start sm:self-auto">
             Clear filter
           </Button>
         )}
@@ -152,18 +152,20 @@ export default function OrdersPage() {
 
       {/* Orders Tabs */}
       <Tabs defaultValue="active" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="active" className="gap-2">
+        <TabsList className="w-full sm:w-auto flex">
+          <TabsTrigger value="active" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm">
             Active
-            <Badge variant="secondary">{activeOrders.length}</Badge>
+            <Badge variant="secondary" className="text-xs">{activeOrders.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="completed" className="gap-2">
-            Completed
-            <Badge variant="secondary">{completedOrders.length}</Badge>
+          <TabsTrigger value="completed" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm">
+            <span className="hidden sm:inline">Completed</span>
+            <span className="sm:hidden">Done</span>
+            <Badge variant="secondary" className="text-xs">{completedOrders.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="cancelled" className="gap-2">
-            Cancelled
-            <Badge variant="secondary">{cancelledOrders.length}</Badge>
+          <TabsTrigger value="cancelled" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm">
+            <span className="hidden sm:inline">Cancelled</span>
+            <span className="sm:hidden">Cancel</span>
+            <Badge variant="secondary" className="text-xs">{cancelledOrders.length}</Badge>
           </TabsTrigger>
         </TabsList>
 
@@ -176,7 +178,7 @@ export default function OrdersPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {activeOrders.map(order => (
                 <OrderCard 
                   key={order.id} 

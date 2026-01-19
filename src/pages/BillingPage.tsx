@@ -59,14 +59,14 @@ const BillingPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Billing</h1>
-        <p className="text-muted-foreground">Process payments and generate bills</p>
+        <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Process payments and generate bills</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Orders List */}
         <Card>
           <CardHeader>
@@ -196,32 +196,32 @@ const BillingPage = () => {
                 <Separator />
 
                 {/* Payment Methods */}
-                <div className="space-y-3">
-                  <p className="text-sm font-medium">Payment Method</p>
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2 sm:space-y-3">
+                  <p className="text-xs sm:text-sm font-medium">Payment Method</p>
+                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                     <Button
                       variant={paymentMethod === 'cash' ? 'default' : 'outline'}
-                      className="flex flex-col gap-1 h-auto py-3"
+                      className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('cash')}
                     >
-                      <Banknote className="w-5 h-5" />
-                      <span className="text-xs">Cash</span>
+                      <Banknote className="w-4 sm:w-5 h-4 sm:h-5" />
+                      <span className="text-[10px] sm:text-xs">Cash</span>
                     </Button>
                     <Button
                       variant={paymentMethod === 'card' ? 'default' : 'outline'}
-                      className="flex flex-col gap-1 h-auto py-3"
+                      className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('card')}
                     >
-                      <CreditCard className="w-5 h-5" />
-                      <span className="text-xs">Card</span>
+                      <CreditCard className="w-4 sm:w-5 h-4 sm:h-5" />
+                      <span className="text-[10px] sm:text-xs">Card</span>
                     </Button>
                     <Button
                       variant={paymentMethod === 'upi' ? 'default' : 'outline'}
-                      className="flex flex-col gap-1 h-auto py-3"
+                      className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('upi')}
                     >
-                      <Smartphone className="w-5 h-5" />
-                      <span className="text-xs">UPI</span>
+                      <Smartphone className="w-4 sm:w-5 h-4 sm:h-5" />
+                      <span className="text-[10px] sm:text-xs">UPI</span>
                     </Button>
                   </div>
                 </div>

@@ -64,30 +64,31 @@ export default function TablesPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <Card className="table-available">
-          <CardContent className="py-4 text-center">
-            <p className="text-3xl font-bold text-table-available">{stats.available}</p>
-            <p className="text-sm text-muted-foreground">Available</p>
+          <CardContent className="py-3 sm:py-4 text-center">
+            <p className="text-2xl sm:text-3xl font-bold text-table-available">{stats.available}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Available</p>
           </CardContent>
         </Card>
         <Card className="table-occupied">
-          <CardContent className="py-4 text-center">
-            <p className="text-3xl font-bold text-table-occupied">{stats.occupied}</p>
-            <p className="text-sm text-muted-foreground">Occupied</p>
+          <CardContent className="py-3 sm:py-4 text-center">
+            <p className="text-2xl sm:text-3xl font-bold text-table-occupied">{stats.occupied}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Occupied</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Floor:</span>
+      <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide">
+          <span className="text-xs sm:text-sm text-muted-foreground shrink-0">Floor:</span>
           <div className="flex gap-1">
             <Button
               variant={floorFilter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFloorFilter('all')}
+              className="text-xs sm:text-sm"
             >
               All
             </Button>
@@ -97,6 +98,7 @@ export default function TablesPage() {
                 variant={floorFilter === floor ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFloorFilter(floor)}
+                className="text-xs sm:text-sm whitespace-nowrap"
               >
                 {floor}
               </Button>
@@ -104,8 +106,8 @@ export default function TablesPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Status:</span>
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide">
+          <span className="text-xs sm:text-sm text-muted-foreground shrink-0">Status:</span>
           <div className="flex gap-1">
             {(['all', 'available', 'occupied'] as const).map(status => (
               <Button
@@ -113,7 +115,7 @@ export default function TablesPage() {
                 variant={statusFilter === status ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setStatusFilter(status)}
-                className="capitalize"
+                className="capitalize text-xs sm:text-sm"
               >
                 {status}
               </Button>
@@ -126,6 +128,7 @@ export default function TablesPage() {
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="icon"
             onClick={() => setViewMode('grid')}
+            className="h-9 w-9"
           >
             <LayoutGrid className="w-4 h-4" />
           </Button>
@@ -133,6 +136,7 @@ export default function TablesPage() {
             variant={viewMode === 'list' ? 'secondary' : 'ghost'}
             size="icon"
             onClick={() => setViewMode('list')}
+            className="h-9 w-9"
           >
             <List className="w-4 h-4" />
           </Button>
@@ -149,7 +153,7 @@ export default function TablesPage() {
                   {floor} Floor
                   <Badge variant="secondary">{floorTables.length} tables</Badge>
                 </h2>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
                   {floorTables.map(table => (
                     (table as any).hidden ? (
                       <div key={table.id} className="invisible" />

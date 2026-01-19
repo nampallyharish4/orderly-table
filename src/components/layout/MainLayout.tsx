@@ -95,36 +95,36 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
+      <aside className="hidden lg:flex flex-col w-60 xl:w-64 bg-sidebar border-r border-sidebar-border shrink-0">
         {/* Logo */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
-          <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-            <Utensils className="w-5 h-5 text-primary-foreground" />
+        <div className="flex items-center gap-2 xl:gap-3 px-4 xl:px-6 py-4 xl:py-5 border-b border-sidebar-border">
+          <div className="w-9 xl:w-10 h-9 xl:h-10 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0">
+            <Utensils className="w-4 xl:w-5 h-4 xl:h-5 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="font-bold text-lg">RestaurantPOS</h1>
-            <p className="text-xs text-muted-foreground">Order Management</p>
+          <div className="min-w-0">
+            <h1 className="font-bold text-base xl:text-lg truncate">RestaurantPOS</h1>
+            <p className="text-[10px] xl:text-xs text-muted-foreground truncate">Order Management</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 xl:p-4 space-y-1 overflow-y-auto touch-scroll">
           {navItems.map(item => (
             <NavLink key={item.path} item={item} />
           ))}
         </nav>
 
         {/* User section */}
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-3 xl:p-4 border-t border-sidebar-border">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors">
-                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                  <User className="w-5 h-5 text-muted-foreground" />
+              <button className="w-full flex items-center gap-2 xl:gap-3 p-2 xl:p-3 rounded-xl hover:bg-secondary transition-colors">
+                <div className="w-9 xl:w-10 h-9 xl:h-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                  <User className="w-4 xl:w-5 h-4 xl:h-5 text-muted-foreground" />
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium truncate">{user.name}</p>
-                  <span className={cn('text-xs px-2 py-0.5 rounded-full capitalize', getRoleBadgeColor(user.role))}>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-xs xl:text-sm font-medium truncate">{user.name}</p>
+                  <span className={cn('text-[10px] xl:text-xs px-1.5 xl:px-2 py-0.5 rounded-full capitalize', getRoleBadgeColor(user.role))}>
                     {user.role}
                   </span>
                 </div>
@@ -181,8 +181,8 @@ export function MainLayout({ children }: MainLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-0 mt-14 lg:mt-0 overflow-auto">
-        <div className="p-4 lg:p-6 max-w-[1600px] mx-auto">
+      <main className="flex-1 lg:ml-0 mt-14 lg:mt-0 overflow-auto min-w-0">
+        <div className="p-3 sm:p-4 lg:p-6 max-w-[1600px] mx-auto">
           {children}
         </div>
       </main>
