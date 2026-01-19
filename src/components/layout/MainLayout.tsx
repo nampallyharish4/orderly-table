@@ -24,6 +24,7 @@ import {
   User,
   Menu,
   X,
+  BookOpen,
 } from 'lucide-react';
 import { useState } from 'react';
 import { canAccessRoute, UserRole } from '@/types';
@@ -40,6 +41,7 @@ const allNavItems: NavItem[] = [
   { path: '/orders', label: 'Orders', icon: ClipboardList },
   { path: '/kitchen', label: 'Kitchen', icon: ChefHat },
   { path: '/billing', label: 'Billing', icon: Receipt },
+  { path: '/menu', label: 'Menu', icon: BookOpen },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
   { path: '/users', label: 'Users', icon: Users },
   { path: '/settings', label: 'Settings', icon: Settings },
