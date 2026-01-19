@@ -1,31 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, UserRole } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Utensils, Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Utensils, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { login, signup, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  // Login form
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  
-  // Signup form
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
-  const [signupName, setSignupName] = useState('');
-  const [signupRole, setSignupRole] = useState<UserRole>('waiter');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -36,13 +27,13 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!loginEmail || !loginPassword) {
+    if (!email || !password) {
       toast.error('Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
-    const result = await login(loginEmail, loginPassword);
+    const result = await login(email, password);
     setIsLoading(false);
 
     if (result.success) {
@@ -50,31 +41,6 @@ export default function AuthPage() {
       navigate('/', { replace: true });
     } else {
       toast.error(result.error || 'Login failed');
-    }
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!signupEmail || !signupPassword || !signupName) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-
-    if (signupPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-
-    setIsLoading(true);
-    const result = await signup(signupEmail, signupPassword, signupName, signupRole);
-    setIsLoading(false);
-
-    if (result.success) {
-      toast.success('Account created successfully!');
-      navigate('/', { replace: true });
-    } else {
-      toast.error(result.error || 'Signup failed');
     }
   };
 
@@ -98,176 +64,75 @@ export default function AuthPage() {
           <p className="text-muted-foreground">Order Management System</p>
         </div>
 
-        {/* Auth Card */}
+        {/* Login Card */}
         <Card>
-          <Tabs defaultValue="login" className="w-full">
-            <CardHeader className="pb-2">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-            </CardHeader>
+          <CardHeader>
+            <CardTitle>Login</CardTitle>
+            <CardDescription>Enter your credentials to access the system</CardDescription>
+          </CardHeader>
 
-            <CardContent className="pt-4">
-              {/* Login Tab */}
-              <TabsContent value="login" className="mt-0">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        className="pl-10"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="login-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        className="pl-10 pr-10"
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-primary hover:opacity-90"
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
                     disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Logging in...
-                      </>
-                    ) : (
-                      'Login'
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
+                  />
+                </div>
+              </div>
 
-              {/* Signup Tab */}
-              <TabsContent value="signup" className="mt-0">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="John Doe"
-                        value={signupName}
-                        onChange={(e) => setSignupName(e.target.value)}
-                        className="pl-10"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={signupEmail}
-                        onChange={(e) => setSignupEmail(e.target.value)}
-                        className="pl-10"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Min. 6 characters"
-                        value={signupPassword}
-                        onChange={(e) => setSignupPassword(e.target.value)}
-                        className="pl-10 pr-10"
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-role">Role</Label>
-                    <Select 
-                      value={signupRole} 
-                      onValueChange={(value) => setSignupRole(value as UserRole)}
-                      disabled={isLoading}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="waiter">Waiter</SelectItem>
-                        <SelectItem value="cashier">Cashier</SelectItem>
-                        <SelectItem value="kitchen">Kitchen Staff</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-primary hover:opacity-90"
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10"
                     disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Creating account...
-                      </>
-                    ) : (
-                      'Create Account'
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
-            </CardContent>
-          </Tabs>
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-primary hover:opacity-90"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  'Login'
+                )}
+              </Button>
+            </form>
+          </CardContent>
         </Card>
 
         {/* Footer */}
         <p className="text-center text-sm text-muted-foreground">
-          Restaurant Order Management System
+          Contact your administrator if you need an account
         </p>
       </div>
     </div>
