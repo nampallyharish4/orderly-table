@@ -78,10 +78,10 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
                 variant="outline"
                 size="sm"
                 onClick={handlePrint}
-                className="gap-1 hidden sm:flex"
+                className="gap-1"
               >
                 <Printer className="w-4 h-4" />
-                <span className="hidden md:inline">Print</span>
+                <span className="hidden sm:inline">Print</span>
               </Button>
             )}
           </div>
