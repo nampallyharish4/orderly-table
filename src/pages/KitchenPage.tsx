@@ -181,15 +181,15 @@ export default function KitchenPage() {
   };
 
   return (
-    <div className="space-y-6 kitchen-mode">
+    <div className="space-y-4 sm:space-y-6 kitchen-mode">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ChefHat className="w-7 h-7 text-primary" />
-            Kitchen Display
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <ChefHat className="w-6 sm:w-7 h-6 sm:h-7 text-primary shrink-0" />
+            <span className="truncate">Kitchen Display</span>
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             {kitchenOrders.length} active order{kitchenOrders.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -197,38 +197,39 @@ export default function KitchenPage() {
           variant="outline"
           size="icon"
           onClick={() => setSoundEnabled(!soundEnabled)}
+          className="shrink-0"
         >
           {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
         </Button>
       </div>
 
       {/* Stats Bar */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card className="border-status-new/50 bg-status-new/5">
-          <CardContent className="py-4 flex items-center justify-between">
+          <CardContent className="py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
-              <p className="text-sm text-muted-foreground">New Orders</p>
-              <p className="text-3xl font-bold text-status-new">{newOrders.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">New</p>
+              <p className="text-2xl sm:text-3xl font-bold text-status-new">{newOrders.length}</p>
             </div>
-            <Clock className="w-8 h-8 text-status-new opacity-50" />
+            <Clock className="w-6 sm:w-8 h-6 sm:h-8 text-status-new opacity-50 hidden sm:block" />
           </CardContent>
         </Card>
         <Card className="border-status-preparing/50 bg-status-preparing/5">
-          <CardContent className="py-4 flex items-center justify-between">
+          <CardContent className="py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
-              <p className="text-sm text-muted-foreground">Preparing</p>
-              <p className="text-3xl font-bold text-status-preparing">{preparingOrders.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Preparing</p>
+              <p className="text-2xl sm:text-3xl font-bold text-status-preparing">{preparingOrders.length}</p>
             </div>
-            <ChefHat className="w-8 h-8 text-status-preparing opacity-50" />
+            <ChefHat className="w-6 sm:w-8 h-6 sm:h-8 text-status-preparing opacity-50 hidden sm:block" />
           </CardContent>
         </Card>
         <Card className="border-status-ready/50 bg-status-ready/5">
-          <CardContent className="py-4 flex items-center justify-between">
+          <CardContent className="py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
-              <p className="text-sm text-muted-foreground">Ready to Serve</p>
-              <p className="text-3xl font-bold text-status-ready">{readyOrders.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Ready</p>
+              <p className="text-2xl sm:text-3xl font-bold text-status-ready">{readyOrders.length}</p>
             </div>
-            <CheckCircle2 className="w-8 h-8 text-status-ready opacity-50" />
+            <CheckCircle2 className="w-6 sm:w-8 h-6 sm:h-8 text-status-ready opacity-50 hidden sm:block" />
           </CardContent>
         </Card>
       </div>
@@ -244,15 +245,15 @@ export default function KitchenPage() {
         </Card>
       ) : (
         <Tabs defaultValue="all">
-          <TabsList className="mb-4">
-            <TabsTrigger value="all">All ({kitchenOrders.length})</TabsTrigger>
-            <TabsTrigger value="new">New ({newOrders.length})</TabsTrigger>
-            <TabsTrigger value="preparing">Preparing ({preparingOrders.length})</TabsTrigger>
-            <TabsTrigger value="ready">Ready ({readyOrders.length})</TabsTrigger>
+          <TabsList className="mb-4 w-full sm:w-auto flex overflow-x-auto scrollbar-hide">
+            <TabsTrigger value="all" className="text-xs sm:text-sm flex-1 sm:flex-none">All ({kitchenOrders.length})</TabsTrigger>
+            <TabsTrigger value="new" className="text-xs sm:text-sm flex-1 sm:flex-none">New ({newOrders.length})</TabsTrigger>
+            <TabsTrigger value="preparing" className="text-xs sm:text-sm flex-1 sm:flex-none">Prep ({preparingOrders.length})</TabsTrigger>
+            <TabsTrigger value="ready" className="text-xs sm:text-sm flex-1 sm:flex-none">Ready ({readyOrders.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
               {kitchenOrders.map(order => (
                 <KitchenOrderCard key={order.id} order={order} />
               ))}
@@ -260,7 +261,7 @@ export default function KitchenPage() {
           </TabsContent>
 
           <TabsContent value="new">
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
               {newOrders.map(order => (
                 <KitchenOrderCard key={order.id} order={order} />
               ))}
@@ -268,7 +269,7 @@ export default function KitchenPage() {
           </TabsContent>
 
           <TabsContent value="preparing">
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
               {preparingOrders.map(order => (
                 <KitchenOrderCard key={order.id} order={order} />
               ))}
@@ -276,7 +277,7 @@ export default function KitchenPage() {
           </TabsContent>
 
           <TabsContent value="ready">
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
               {readyOrders.map(order => (
                 <KitchenOrderCard key={order.id} order={order} />
               ))}

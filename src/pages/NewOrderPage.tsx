@@ -93,40 +93,41 @@ export default function NewOrderPage() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-120px)]">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-[calc(100vh-120px)] lg:h-[calc(100vh-120px)]">
       {/* Menu Section */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-4">
-          <Button variant="ghost" size="icon" onClick={handleCancel}>
+        <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+          <Button variant="ghost" size="icon" onClick={handleCancel} className="shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
-            <h1 className="text-xl font-bold">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold truncate">
               {isTakeaway ? 'New Takeaway Order' : `Table ${currentOrder.tableNumber}`}
             </h1>
-            <p className="text-sm text-muted-foreground">Select items to add to the order</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Select items to add</p>
           </div>
         </div>
 
         {/* Search */}
-        <div className="relative mb-4">
+        <div className="relative mb-3 sm:mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search menu items..."
+            placeholder="Search menu..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 text-sm"
           />
         </div>
 
         {/* Categories */}
-        <div className="mb-4 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 pb-2 min-w-max">
+        <div className="mb-3 sm:mb-4 overflow-x-auto scrollbar-hide -mx-1 px-1">
+          <div className="flex gap-1.5 sm:gap-2 pb-2 min-w-max">
             <Button
               variant={selectedCategory === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setSelectedCategory('all')}
+              className="text-xs sm:text-sm"
             >
               All
             </Button>
@@ -136,7 +137,7 @@ export default function NewOrderPage() {
                 variant={selectedCategory === cat.id ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSelectedCategory(cat.id)}
-                className="whitespace-nowrap"
+                className="whitespace-nowrap text-xs sm:text-sm"
               >
                 {cat.name}
               </Button>
@@ -145,8 +146,8 @@ export default function NewOrderPage() {
         </div>
 
         {/* Menu Items */}
-        <ScrollArea className="flex-1">
-          <div className="grid grid-cols-2 gap-3 pr-4">
+        <ScrollArea className="flex-1 -mx-1 px-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 pr-2 sm:pr-4">
             {filteredItems.map(item => (
               <MenuItemCard
                 key={item.id}
@@ -157,7 +158,7 @@ export default function NewOrderPage() {
             ))}
           </div>
           {filteredItems.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
+            <div className="text-center py-8 sm:py-12 text-muted-foreground text-sm">
               No items found
             </div>
           )}
@@ -165,13 +166,13 @@ export default function NewOrderPage() {
       </div>
 
       {/* Order Summary */}
-      <Card className="w-full lg:w-96 flex flex-col">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5" />
-            Order Summary
+      <Card className="w-full lg:w-80 xl:w-96 flex flex-col max-h-[50vh] lg:max-h-none">
+        <CardHeader className="pb-2 sm:pb-3">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <ShoppingCart className="w-4 sm:w-5 h-4 sm:h-5" />
+            <span className="truncate">Order Summary</span>
             {(currentOrder.items?.length || 0) > 0 && (
-              <Badge variant="secondary">{currentOrder.items?.length} items</Badge>
+              <Badge variant="secondary" className="text-xs">{currentOrder.items?.length}</Badge>
             )}
           </CardTitle>
         </CardHeader>
