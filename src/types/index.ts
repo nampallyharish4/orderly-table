@@ -39,7 +39,7 @@ export interface MenuItem {
   isAvailable: boolean;
   addOns: MenuAddOn[];
   preparationTime?: number; // in minutes
-  sortOrder: number;
+  sortOrder?: number;
 }
 
 export type TableStatus = 'available' | 'occupied';
@@ -98,10 +98,10 @@ export interface Order {
   customerName?: string;
   customerPhone?: string;
   items: OrderItem[];
-  subtotal: number;
-  taxAmount: number;
-  serviceCharge: number;
-  discountAmount: number;
+  subtotal?: number;
+  taxAmount?: number;
+  serviceCharge?: number;
+  discountAmount?: number;
   totalAmount: number;
   status: OrderStatus;
   payment?: Payment;
@@ -110,7 +110,7 @@ export interface Order {
   createdAt: Date;
   updatedAt: Date;
   servedAt?: Date;
-  createdBy: string;
+  createdBy?: string;
 }
 
 // Kitchen Display specific
