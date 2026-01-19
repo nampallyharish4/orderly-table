@@ -8,7 +8,7 @@ import { OrderProvider } from "@/contexts/OrderContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MainLayout } from "@/components/layout/MainLayout";
 
-import AuthPage from "./pages/AuthPage";
+import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import TablesPage from "./pages/TablesPage";
 import OrdersPage from "./pages/OrdersPage";
@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Main App component with AuthProvider wrapping all routes
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -29,8 +30,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/login" element={<Navigate to="/auth" replace />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route path="/" element={
                 <ProtectedRoute>
                   <MainLayout><DashboardPage /></MainLayout>

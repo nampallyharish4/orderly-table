@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { mockCategories } from '@/data/mockData';
 import { MenuItem, OrderItem } from '@/types';
 import { 
   Search, 
@@ -27,7 +28,7 @@ import {
 import { toast } from 'sonner';
 
 export default function NewOrderPage() {
-  const { menuItems, categories, currentOrder, addItemToOrder, removeItemFromOrder, updateItemQuantity, submitOrder, cancelCurrentOrder } = useOrders();
+  const { menuItems, currentOrder, addItemToOrder, removeItemFromOrder, updateItemQuantity, submitOrder, cancelCurrentOrder } = useOrders();
   const navigate = useNavigate();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,9 +59,9 @@ export default function NewOrderPage() {
     toast.success(`Added ${item.name}`);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     try {
-      const order = await submitOrder(
+      const order = submitOrder(
         isTakeaway ? customerName : undefined,
         isTakeaway ? customerPhone : undefined
       );
@@ -130,7 +131,7 @@ export default function NewOrderPage() {
             >
               All
             </Button>
-            {categories.filter(c => c.isActive).map(cat => (
+            {mockCategories.filter(c => c.isActive).map(cat => (
               <Button
                 key={cat.id}
                 variant={selectedCategory === cat.id ? 'default' : 'outline'}
