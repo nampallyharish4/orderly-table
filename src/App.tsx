@@ -16,6 +16,7 @@ import OrderDetailPage from "./pages/OrderDetailPage";
 import NewOrderPage from "./pages/NewOrderPage";
 import KitchenPage from "./pages/KitchenPage";
 import BillingPage from "./pages/BillingPage";
+import UsersPage from "./pages/UsersPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,11 @@ const App = () => (
               <Route path="/billing" element={
                 <ProtectedRoute>
                   <MainLayout><BillingPage /></MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/users" element={
+                <ProtectedRoute>
+                  <MainLayout><UsersPage /></MainLayout>
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />
