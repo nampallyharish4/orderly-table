@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   Users, 
   UserPlus, 
@@ -12,7 +13,8 @@ import {
   Shield,
   MoreVertical,
   Edit,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -20,14 +22,40 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { mockUsers } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
+import { User, UserRole } from '@/types';
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'waiter' as UserRole,
+  });
   const { toast } = useToast();
 
-  const filteredUsers = mockUsers.filter(user =>
+  const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -48,10 +76,67 @@ export default function UsersPage() {
   };
 
   const handleAddUser = () => {
+    if (!newUser.name || !newUser.email) {
+      toast({
+        title: 'Error',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const user: User = {
+      id: `user-${Date.now()}`,
+      name: newUser.name,
+      email: newUser.email,
+      phone: newUser.phone,
+      role: newUser.role,
+      isActive: true,
+      createdAt: new Date(),
+    };
+
+    setUsers([...users, user]);
+    setNewUser({ name: '', email: '', phone: '', role: 'waiter' });
+    setIsAddDialogOpen(false);
     toast({
-      title: 'Coming Soon',
-      description: 'User management feature will be available soon.',
+      title: 'User Added',
+      description: `${user.name} has been added successfully.`,
     });
+  };
+
+  const handleEditUser = () => {
+    if (!editingUser) return;
+
+    setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+    setIsEditDialogOpen(false);
+    setEditingUser(null);
+    toast({
+      title: 'User Updated',
+      description: 'User details have been updated successfully.',
+    });
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (user?.role === 'admin') {
+      toast({
+        title: 'Cannot Delete',
+        description: 'Admin user cannot be deleted.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUsers(users.filter(u => u.id !== userId));
+    toast({
+      title: 'User Deleted',
+      description: 'User has been removed successfully.',
+    });
+  };
+
+  const openEditDialog = (user: User) => {
+    setEditingUser({ ...user });
+    setIsEditDialogOpen(true);
   };
 
   return (
@@ -61,7 +146,7 @@ export default function UsersPage() {
           <h1 className="text-xl sm:text-2xl font-bold">Users</h1>
           <p className="text-sm text-muted-foreground">Manage staff accounts and permissions</p>
         </div>
-        <Button onClick={handleAddUser} data-testid="button-add-user">
+        <Button onClick={() => setIsAddDialogOpen(true)} data-testid="button-add-user">
           <UserPlus className="w-4 h-4 mr-2" />
           Add User
         </Button>
@@ -134,15 +219,15 @@ export default function UsersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleAddUser}>
+                      <DropdownMenuItem onClick={() => openEditDialog(user)}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleAddUser}>
-                        <Shield className="w-4 h-4 mr-2" />
-                        Change Role
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={handleAddUser}>
+                      <DropdownMenuItem 
+                        className="text-destructive" 
+                        onClick={() => handleDeleteUser(user.id)}
+                        disabled={user.role === 'admin'}
+                      >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete
                       </DropdownMenuItem>
@@ -192,6 +277,140 @@ export default function UsersPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>Create a new staff account</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name *</Label>
+              <Input
+                id="name"
+                value={newUser.name}
+                onChange={e => setNewUser({ ...newUser, name: e.target.value })}
+                placeholder="Enter full name"
+                data-testid="input-new-user-name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newUser.email}
+                onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                placeholder="Enter email address"
+                data-testid="input-new-user-email"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={newUser.phone}
+                onChange={e => setNewUser({ ...newUser, phone: e.target.value })}
+                placeholder="Enter phone number"
+                data-testid="input-new-user-phone"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select
+                value={newUser.role}
+                onValueChange={(value: UserRole) => setNewUser({ ...newUser, role: value })}
+              >
+                <SelectTrigger data-testid="select-new-user-role">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="waiter">Waiter</SelectItem>
+                  <SelectItem value="cashier">Cashier</SelectItem>
+                  <SelectItem value="kitchen">Kitchen</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddUser} data-testid="button-confirm-add-user">
+              Add User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Update user details</DialogDescription>
+          </DialogHeader>
+          {editingUser && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Name</Label>
+                <Input
+                  id="edit-name"
+                  value={editingUser.name}
+                  onChange={e => setEditingUser({ ...editingUser, name: e.target.value })}
+                  data-testid="input-edit-user-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editingUser.email}
+                  onChange={e => setEditingUser({ ...editingUser, email: e.target.value })}
+                  data-testid="input-edit-user-email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Phone</Label>
+                <Input
+                  id="edit-phone"
+                  value={editingUser.phone}
+                  onChange={e => setEditingUser({ ...editingUser, phone: e.target.value })}
+                  data-testid="input-edit-user-phone"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-role">Role</Label>
+                <Select
+                  value={editingUser.role}
+                  onValueChange={(value: UserRole) => setEditingUser({ ...editingUser, role: value })}
+                  disabled={editingUser.role === 'admin'}
+                >
+                  <SelectTrigger data-testid="select-edit-user-role">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="waiter">Waiter</SelectItem>
+                    <SelectItem value="cashier">Cashier</SelectItem>
+                    <SelectItem value="kitchen">Kitchen</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditUser} data-testid="button-confirm-edit-user">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

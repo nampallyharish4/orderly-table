@@ -11,7 +11,6 @@ import {
   Bell, 
   Printer, 
   CreditCard,
-  Percent,
   Save,
   MapPin,
   Phone,
@@ -26,9 +25,6 @@ export default function SettingsPage() {
     address: '123 Main Street, City',
     phone: '+91 9876543210',
     email: 'contact@kaveri.com',
-    gstNumber: 'GST123456789',
-    taxRate: '5',
-    serviceCharge: '10',
     enableNotifications: true,
     enableSounds: true,
     autoPrintBills: false,
@@ -117,47 +113,6 @@ export default function SettingsPage() {
                   data-testid="input-email"
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="gstNumber">GST Number</Label>
-              <Input
-                id="gstNumber"
-                value={settings.gstNumber}
-                onChange={e => handleChange('gstNumber', e.target.value)}
-                data-testid="input-gst"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Percent className="w-5 h-5 text-primary" />
-              <CardTitle className="text-base sm:text-lg">Tax & Charges</CardTitle>
-            </div>
-            <CardDescription>Configure tax rates and service charges</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="taxRate">GST Rate (%)</Label>
-              <Input
-                id="taxRate"
-                type="number"
-                value={settings.taxRate}
-                onChange={e => handleChange('taxRate', e.target.value)}
-                data-testid="input-tax-rate"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="serviceCharge">Service Charge (%)</Label>
-              <Input
-                id="serviceCharge"
-                type="number"
-                value={settings.serviceCharge}
-                onChange={e => handleChange('serviceCharge', e.target.value)}
-                data-testid="input-service-charge"
-              />
             </div>
           </CardContent>
         </Card>

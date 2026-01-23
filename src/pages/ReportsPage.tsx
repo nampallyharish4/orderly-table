@@ -59,13 +59,25 @@ export default function ReportsPage() {
     },
   ];
 
-  const topItems = [
-    { name: 'Chicken Biryani', orders: 45, revenue: 13500 },
-    { name: 'Butter Chicken', orders: 38, revenue: 11400 },
-    { name: 'Paneer Butter Masala', orders: 32, revenue: 8000 },
-    { name: 'Garlic Naan', orders: 28, revenue: 1680 },
-    { name: 'Tandoori Chicken', orders: 25, revenue: 8750 },
-  ];
+  const getTopItems = () => {
+    const itemCounts: Record<string, { name: string; orders: number; revenue: number }> = {};
+    
+    orders.forEach(order => {
+      order.items?.forEach(item => {
+        if (!itemCounts[item.menuItemId]) {
+          itemCounts[item.menuItemId] = { name: item.menuItemName, orders: 0, revenue: 0 };
+        }
+        itemCounts[item.menuItemId].orders += item.quantity;
+        itemCounts[item.menuItemId].revenue += item.totalPrice;
+      });
+    });
+    
+    return Object.values(itemCounts)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+  };
+
+  const topItems = getTopItems();
 
   return (
     <div className="space-y-4 sm:space-y-6" data-testid="page-reports">
