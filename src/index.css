@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,8 +7,6 @@
 /* Restaurant POS Design System - Dark Professional Theme
    Optimized for long shifts, kitchen visibility, and tablet touch targets
 */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
 
 @layer base {
   :root {
