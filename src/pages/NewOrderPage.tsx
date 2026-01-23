@@ -22,12 +22,13 @@ import {
   Phone,
   Clock,
   Send,
-  ArrowLeft
+  ArrowLeft,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function NewOrderPage() {
-  const { menuItems, categories, currentOrder, addItemToOrder, removeItemFromOrder, updateItemQuantity, submitOrder, cancelCurrentOrder } = useOrders();
+  const { menuItems, categories, currentOrder, addItemToOrder, removeItemFromOrder, updateItemQuantity, submitOrder, cancelCurrentOrder, isLoading } = useOrders();
   const navigate = useNavigate();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +76,15 @@ export default function NewOrderPage() {
     cancelCurrentOrder();
     navigate(-1);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading menu...</span>
+      </div>
+    );
+  }
 
   if (!currentOrder) {
     return (
