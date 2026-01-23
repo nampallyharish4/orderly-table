@@ -67,14 +67,14 @@ const OrderDetailPage = () => {
               </div>
             </div>
 
-            {order.tableId && (
+            {order.tableNumber && (
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="h-4 sm:h-5 w-4 sm:w-5 flex items-center justify-center text-muted-foreground font-bold text-sm shrink-0">
                   T
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs sm:text-sm text-muted-foreground">Table</p>
-                  <p className="text-sm sm:text-base font-medium">Table {order.tableId.split("-")[1]}</p>
+                  <p className="text-sm sm:text-base font-medium">Table {order.tableNumber}</p>
                 </div>
               </div>
             )}
