@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Receipt, 
   Banknote, 
@@ -11,7 +13,8 @@ import {
   Printer,
   Share2,
   Check,
-  IndianRupee
+  IndianRupee,
+  Split
 } from "lucide-react";
 import { Order } from "@/types";
 import { toast } from "sonner";
@@ -19,7 +22,9 @@ import { toast } from "sonner";
 const BillingPage = () => {
   const { orders, updateOrderStatus } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi' | 'split' | null>(null);
+  const [showSplitInput, setShowSplitInput] = useState(false);
+  const [cashAmount, setCashAmount] = useState<string>('');
 
   // Get orders that are ready for billing (only served orders)
   const billableOrders = orders.filter(order => order.status === 'served');
@@ -40,7 +45,43 @@ const BillingPage = () => {
     setTimeout(() => {
       setSelectedOrder(null);
       setPaymentMethod(null);
+      setShowSplitInput(false);
+      setCashAmount('');
     }, 2000);
+  };
+
+  const handleSplitPayment = () => {
+    if (!selectedOrder) return;
+    
+    const cashValue = parseFloat(cashAmount) || 0;
+    const upiValue = selectedOrder.totalAmount - cashValue;
+    
+    if (cashValue <= 0) {
+      toast.error('Please enter a valid cash amount');
+      return;
+    }
+    
+    if (cashValue >= selectedOrder.totalAmount) {
+      toast.error('Cash amount must be less than total. Use full Cash payment instead.');
+      return;
+    }
+    
+    setPaymentMethod('split');
+    updateOrderStatus(selectedOrder.id, 'collected', 'split', cashValue, upiValue);
+    toast.success(`Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`);
+    
+    setTimeout(() => {
+      setSelectedOrder(null);
+      setPaymentMethod(null);
+      setShowSplitInput(false);
+      setCashAmount('');
+    }, 2000);
+  };
+
+  const getUpiAmount = () => {
+    if (!selectedOrder) return 0;
+    const cashValue = parseFloat(cashAmount) || 0;
+    return Math.max(0, selectedOrder.totalAmount - cashValue);
   };
 
   const printBill = (order: Order) => {
@@ -218,7 +259,12 @@ const BillingPage = () => {
               billableOrders.map((order) => (
                 <button
                   key={order.id}
-                  onClick={() => setSelectedOrder(order)}
+                  onClick={() => {
+                    setSelectedOrder(order);
+                    setShowSplitInput(false);
+                    setCashAmount('');
+                    setPaymentMethod(null);
+                  }}
                   className={`w-full p-4 rounded-lg border text-left transition-colors ${
                     selectedOrder?.id === order.id
                       ? 'border-primary bg-primary/5'
@@ -368,8 +414,51 @@ const BillingPage = () => {
                       <Smartphone className="w-4 sm:w-5 h-4 sm:h-5" />
                       <span className="text-[10px] sm:text-xs">UPI</span>
                     </Button>
+                    <Button
+                      variant={showSplitInput ? 'default' : 'outline'}
+                      className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
+                      onClick={() => setShowSplitInput(!showSplitInput)}
+                      data-testid="button-pay-split"
+                    >
+                      <Split className="w-4 sm:w-5 h-4 sm:h-5" />
+                      <span className="text-[10px] sm:text-xs">Split</span>
+                    </Button>
                   </div>
                 </div>
+
+                {/* Split Payment Input */}
+                {showSplitInput && (
+                  <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="cashAmount" className="text-sm">Cash Amount</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                        <Input
+                          id="cashAmount"
+                          type="number"
+                          placeholder="Enter cash amount"
+                          value={cashAmount}
+                          onChange={(e) => setCashAmount(e.target.value)}
+                          className="pl-7"
+                          data-testid="input-cash-amount"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">UPI Balance</span>
+                      <span className="font-medium text-primary">₹{getUpiAmount().toFixed(0)}</span>
+                    </div>
+                    <Button 
+                      className="w-full" 
+                      onClick={handleSplitPayment}
+                      disabled={!cashAmount || parseFloat(cashAmount) <= 0 || parseFloat(cashAmount) >= selectedOrder.totalAmount}
+                      data-testid="button-confirm-split"
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Confirm Split Payment
+                    </Button>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">

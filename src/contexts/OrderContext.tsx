@@ -18,7 +18,7 @@ interface OrderContextType {
   submitOrder: (customerName?: string, customerPhone?: string, pickupTime?: Date) => Promise<Order>;
   cancelCurrentOrder: () => void;
   
-  updateOrderStatus: (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi') => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi' | 'split', cashAmount?: number, upiAmount?: number) => void;
   updateItemStatus: (orderId: string, itemId: string, status: OrderItemStatus) => void;
   cancelOrder: (orderId: string) => void;
   editExistingOrder: (orderId: string) => void;
@@ -313,7 +313,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     setCurrentOrder(null);
   }, []);
 
-  const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi') => {
+  const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi' | 'split', cashAmount?: number, upiAmount?: number) => {
     const updates: any = { status };
     
     if (status === 'served' || status === 'collected') {
@@ -324,6 +324,10 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       updates.paymentMethod = paymentMethod;
       updates.paymentStatus = 'completed';
       updates.paidAt = new Date().toISOString();
+      if (paymentMethod === 'split' && cashAmount !== undefined && upiAmount !== undefined) {
+        updates.cashAmount = cashAmount;
+        updates.upiAmount = upiAmount;
+      }
     }
 
     try {

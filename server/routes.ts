@@ -135,6 +135,8 @@ export function registerRoutes(app: Express) {
           orderId: order.visibleId,
           method: order.paymentMethod,
           amount: order.totalAmount,
+          cashAmount: order.cashAmount,
+          upiAmount: order.upiAmount,
           status: order.paymentStatus || 'completed',
           paidAt: order.paidAt,
         } : null,
@@ -198,6 +200,8 @@ export function registerRoutes(app: Express) {
       if (updates.items !== undefined) updateData.items = updates.items;
       if (updates.paymentMethod !== undefined) updateData.paymentMethod = updates.paymentMethod;
       if (updates.paymentStatus !== undefined) updateData.paymentStatus = updates.paymentStatus;
+      if (updates.cashAmount !== undefined) updateData.cashAmount = updates.cashAmount;
+      if (updates.upiAmount !== undefined) updateData.upiAmount = updates.upiAmount;
       if (updates.paidAt !== undefined) updateData.paidAt = new Date(updates.paidAt);
       if (updates.servedAt !== undefined) updateData.servedAt = new Date(updates.servedAt);
       if (updates.subtotal !== undefined) updateData.subtotal = updates.subtotal;

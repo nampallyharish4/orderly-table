@@ -79,7 +79,7 @@ export type OrderType = typeof orderTypeEnum[number];
 export const orderStatusEnum = ["new", "preparing", "ready", "served", "collected", "cancelled"] as const;
 export type OrderStatus = typeof orderStatusEnum[number];
 
-export const paymentMethodEnum = ["cash", "upi"] as const;
+export const paymentMethodEnum = ["cash", "upi", "split"] as const;
 export type PaymentMethod = typeof paymentMethodEnum[number];
 
 export const paymentStatusEnum = ["pending", "completed", "refunded"] as const;
@@ -104,6 +104,8 @@ export const orders = pgTable("orders", {
   paymentMethod: text("payment_method").$type<PaymentMethod>(),
   paymentStatus: text("payment_status").$type<PaymentStatus>(),
   paymentTransactionId: text("payment_transaction_id"),
+  cashAmount: real("cash_amount"),
+  upiAmount: real("upi_amount"),
   paidAt: timestamp("paid_at"),
   pickupTime: timestamp("pickup_time"),
   notes: text("notes"),

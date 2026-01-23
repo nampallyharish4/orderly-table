@@ -76,7 +76,7 @@ export interface OrderItem {
   isVeg: boolean;
 }
 
-export type PaymentMethod = 'cash' | 'card' | 'upi';
+export type PaymentMethod = 'cash' | 'upi' | 'split';
 export type PaymentStatus = 'pending' | 'completed' | 'refunded';
 
 export interface Payment {
@@ -84,6 +84,8 @@ export interface Payment {
   orderId: string;
   method: PaymentMethod;
   amount: number;
+  cashAmount?: number;
+  upiAmount?: number;
   status: PaymentStatus;
   transactionId?: string;
   paidAt: Date;
