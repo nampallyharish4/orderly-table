@@ -23,6 +23,7 @@ interface OrderContextType {
   deleteOrder: (orderId: string) => void;
   
   updateTableStatus: (tableId: string, status: Table['status'], orderIds?: string[]) => void;
+  refreshData: () => void;
   
   getOrdersByStatus: (statuses: OrderStatus[]) => Order[];
   getOrdersByType: (type: OrderType) => Order[];
@@ -41,8 +42,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const { playReadySound } = useNotificationSound();
   const prevReadyCountRef = useRef<number>(0);
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(async () => {
       try {
         console.log('Fetching data from API...');
         const [ordersRes, tablesRes, menuRes, categoriesRes] = await Promise.all([
@@ -106,10 +106,11 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       } finally {
         setIsLoading(false);
       }
-    };
-
-    fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     const readyCount = orders.filter(o => o.status === 'ready').length;
@@ -479,6 +480,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         updateItemStatus,
         deleteOrder,
         updateTableStatus,
+        refreshData: fetchData,
         getOrdersByStatus,
         getOrdersByType,
         getActiveKitchenOrders,

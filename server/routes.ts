@@ -302,6 +302,38 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.post('/api/menu-items', async (req: Request, res: Response) => {
+    try {
+      const itemData = req.body;
+      const visibleId = `item-${Date.now()}`;
+      
+      const allCategories = await db.select().from(menuCategories);
+      const category = allCategories.find(c => c.visibleId === itemData.categoryId);
+      
+      if (!category) {
+        return res.status(400).json({ error: 'Invalid category' });
+      }
+
+      const [newItem] = await db.insert(menuItems).values({
+        visibleId,
+        categoryId: category.id,
+        name: itemData.name,
+        description: itemData.description || '',
+        price: itemData.price,
+        isVeg: itemData.isVeg || false,
+        isAvailable: true,
+        addOns: [],
+        preparationTime: itemData.preparationTime || 15,
+        sortOrder: 0,
+      }).returning();
+
+      res.json({ ...newItem, id: newItem.visibleId, categoryId: category.visibleId, category: category.name });
+    } catch (error) {
+      console.error('Error creating menu item:', error);
+      res.status(500).json({ error: 'Failed to create menu item' });
+    }
+  });
+
   app.post('/api/seed', async (req: Request, res: Response) => {
     try {
       console.log('Starting database seed via API...');
