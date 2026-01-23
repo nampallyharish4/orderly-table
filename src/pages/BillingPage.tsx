@@ -27,14 +27,10 @@ const BillingPage = () => {
     order => order.status === 'ready' || order.status === 'preparing'
   );
 
-  const calculateSubtotal = (order: Order) => {
-    return order.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-  };
-
-  const calculateTax = (subtotal: number) => {
-    const cgst = subtotal * 0.025; // 2.5% CGST
-    const sgst = subtotal * 0.025; // 2.5% SGST
-    return { cgst, sgst, total: cgst + sgst };
+  const getTaxBreakdown = (order: Order) => {
+    const cgst = order.taxAmount / 2;
+    const sgst = order.taxAmount / 2;
+    return { cgst, sgst, total: order.taxAmount };
   };
 
   const handlePayment = (method: 'cash' | 'card' | 'upi') => {
@@ -56,9 +52,7 @@ const BillingPage = () => {
   };
 
   const printBill = (order: Order) => {
-    const subtotal = calculateSubtotal(order);
-    const tax = calculateTax(subtotal);
-    const total = subtotal + tax.total;
+    const tax = getTaxBreakdown(order);
     
     const printContent = `
       <html>
@@ -71,6 +65,7 @@ const BillingPage = () => {
             .header p { margin: 5px 0; font-size: 12px; }
             .divider { border-top: 1px dashed #000; margin: 10px 0; }
             .item { display: flex; justify-content: space-between; font-size: 12px; margin: 5px 0; }
+            .item-addons { font-size: 10px; color: #666; margin-left: 10px; }
             .total { font-weight: bold; font-size: 14px; }
             .footer { text-align: center; margin-top: 20px; font-size: 11px; }
           </style>
@@ -85,14 +80,23 @@ const BillingPage = () => {
           ${order.items.map(item => `
             <div class="item">
               <span>${item.menuItemName} x${item.quantity}</span>
-              <span>₹${(item.unitPrice * item.quantity).toFixed(0)}</span>
+              <span>₹${item.totalPrice.toFixed(0)}</span>
             </div>
+            ${item.addOns && item.addOns.length > 0 ? `
+              <div class="item-addons">+ ${item.addOns.map(a => a.name).join(', ')}</div>
+            ` : ''}
           `).join('')}
           <div class="divider"></div>
           <div class="item">
             <span>Subtotal</span>
-            <span>₹${subtotal.toFixed(0)}</span>
+            <span>₹${order.subtotal.toFixed(0)}</span>
           </div>
+          ${order.serviceCharge > 0 ? `
+          <div class="item">
+            <span>Service Charge</span>
+            <span>₹${order.serviceCharge.toFixed(0)}</span>
+          </div>
+          ` : ''}
           <div class="item">
             <span>CGST (2.5%)</span>
             <span>₹${tax.cgst.toFixed(0)}</span>
@@ -101,10 +105,16 @@ const BillingPage = () => {
             <span>SGST (2.5%)</span>
             <span>₹${tax.sgst.toFixed(0)}</span>
           </div>
+          ${order.discountAmount > 0 ? `
+          <div class="item">
+            <span>Discount</span>
+            <span>-₹${order.discountAmount.toFixed(0)}</span>
+          </div>
+          ` : ''}
           <div class="divider"></div>
           <div class="item total">
             <span>TOTAL</span>
-            <span>₹${total.toFixed(0)}</span>
+            <span>₹${order.totalAmount.toFixed(0)}</span>
           </div>
           <div class="footer">
             <p>Thank you for dining with us!</p>
@@ -229,11 +239,18 @@ const BillingPage = () => {
                 {/* Items */}
                 <div className="space-y-2">
                   {selectedOrder.items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span>
-                        {item.menuItemName} × {item.quantity}
-                      </span>
-                      <span>₹{(item.unitPrice * item.quantity).toFixed(0)}</span>
+                    <div key={item.id} className="space-y-0.5">
+                      <div className="flex justify-between text-sm">
+                        <span>
+                          {item.menuItemName} × {item.quantity}
+                        </span>
+                        <span>₹{item.totalPrice.toFixed(0)}</span>
+                      </div>
+                      {item.addOns && item.addOns.length > 0 && (
+                        <div className="text-xs text-muted-foreground pl-2">
+                          + {item.addOns.map(a => a.name).join(', ')}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -242,17 +259,21 @@ const BillingPage = () => {
 
                 {/* Tax Breakdown */}
                 {(() => {
-                  const subtotal = calculateSubtotal(selectedOrder);
-                  const tax = calculateTax(subtotal);
-                  const total = subtotal + tax.total;
+                  const tax = getTaxBreakdown(selectedOrder);
 
                   return (
                     <>
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Subtotal</span>
-                          <span>₹{subtotal.toFixed(0)}</span>
+                          <span>₹{selectedOrder.subtotal.toFixed(0)}</span>
                         </div>
+                        {selectedOrder.serviceCharge > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Service Charge</span>
+                            <span>₹{selectedOrder.serviceCharge.toFixed(0)}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">CGST (2.5%)</span>
                           <span>₹{tax.cgst.toFixed(2)}</span>
@@ -261,13 +282,19 @@ const BillingPage = () => {
                           <span className="text-muted-foreground">SGST (2.5%)</span>
                           <span>₹{tax.sgst.toFixed(2)}</span>
                         </div>
+                        {selectedOrder.discountAmount > 0 && (
+                          <div className="flex justify-between text-sm text-green-600">
+                            <span>Discount</span>
+                            <span>-₹{selectedOrder.discountAmount.toFixed(0)}</span>
+                          </div>
+                        )}
                       </div>
 
                       <Separator />
 
                       <div className="flex justify-between text-lg font-bold">
                         <span>Total</span>
-                        <span className="text-primary">₹{total.toFixed(0)}</span>
+                        <span className="text-primary">₹{selectedOrder.totalAmount.toFixed(0)}</span>
                       </div>
                     </>
                   );
