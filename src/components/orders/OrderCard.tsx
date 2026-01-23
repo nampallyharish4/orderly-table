@@ -58,10 +58,7 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
               {isTakeaway ? <Package className="w-5 sm:w-6 h-5 sm:h-6" /> : order.tableNumber}
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                <span className="font-semibold text-sm sm:text-base truncate">{order.orderNumber}</span>
-                <StatusBadge status={order.status} size="sm" />
-              </div>
+              <span className="font-semibold text-sm sm:text-base truncate block">{order.orderNumber}</span>
               <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                 <Clock className="w-3 h-3 shrink-0" />
                 <span className="truncate">{timeAgo}</span>
@@ -71,6 +68,7 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
             </div>
           </button>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <StatusBadge status={order.status} size="sm" />
             <span className="font-mono-price text-base sm:text-lg font-bold">
               ₹{order.totalAmount.toFixed(0)}
             </span>
@@ -116,6 +114,8 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
               </p>
             </div>
           </div>
+        </div>
+        <div className="pt-2">
           <StatusBadge status={order.status} />
         </div>
       </CardHeader>
