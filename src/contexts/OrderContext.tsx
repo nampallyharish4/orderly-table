@@ -308,15 +308,15 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
           if (status === 'served' || status === 'collected') {
             orderUpdates.servedAt = new Date();
-            if (order.tableId) {
-              const table = tables.find(t => t.id === order.tableId);
+            if (order.tableNumber) {
+              const table = tables.find(t => t.tableNumber === order.tableNumber);
               if (table) {
                 const newOrderIds = table.currentOrderIds.filter(id => id !== orderId);
                 const newStatus = newOrderIds.length > 0 ? 'occupied' : 'available';
                 
                 setTables(prevTables =>
                   prevTables.map(t => {
-                    if (t.id !== order.tableId) return t;
+                    if (t.tableNumber !== order.tableNumber) return t;
                     return { 
                       ...t, 
                       status: newStatus as 'available' | 'occupied' | 'reserved', 
@@ -325,7 +325,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
                   })
                 );
                 
-                fetch(`/api/tables/${order.tableId}`, {
+                fetch(`/api/tables/${table.id}`, {
                   method: 'PATCH',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
