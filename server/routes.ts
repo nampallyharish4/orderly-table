@@ -321,16 +321,56 @@ export function registerRoutes(app: Express) {
         description: itemData.description || '',
         price: itemData.price,
         isVeg: itemData.isVeg || false,
-        isAvailable: true,
+        isAvailable: itemData.isAvailable !== false,
         addOns: [],
         preparationTime: itemData.preparationTime || 15,
         sortOrder: 0,
+        imageUrl: itemData.imageUrl || null,
       }).returning();
 
       res.json({ ...newItem, id: newItem.visibleId, categoryId: category.visibleId, category: category.name });
     } catch (error) {
       console.error('Error creating menu item:', error);
       res.status(500).json({ error: 'Failed to create menu item' });
+    }
+  });
+
+  app.patch('/api/menu-items/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const updateData: any = {};
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.price !== undefined) updateData.price = updates.price;
+      if (updates.isVeg !== undefined) updateData.isVeg = updates.isVeg;
+      if (updates.isAvailable !== undefined) updateData.isAvailable = updates.isAvailable;
+      if (updates.preparationTime !== undefined) updateData.preparationTime = updates.preparationTime;
+      if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl;
+      
+      if (updates.categoryId !== undefined) {
+        const allCategories = await db.select().from(menuCategories);
+        const category = allCategories.find(c => c.visibleId === updates.categoryId);
+        if (category) {
+          updateData.categoryId = category.id;
+        }
+      }
+
+      const [updatedItem] = await db
+        .update(menuItems)
+        .set(updateData)
+        .where(eq(menuItems.visibleId, id))
+        .returning();
+
+      if (!updatedItem) {
+        return res.status(404).json({ error: 'Menu item not found' });
+      }
+
+      res.json({ ...updatedItem, id: updatedItem.visibleId });
+    } catch (error) {
+      console.error('Error updating menu item:', error);
+      res.status(500).json({ error: 'Failed to update menu item' });
     }
   });
 

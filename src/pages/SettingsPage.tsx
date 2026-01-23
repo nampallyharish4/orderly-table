@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  Settings, 
   Store, 
   Bell, 
   Printer, 
@@ -16,54 +14,11 @@ import {
   MapPin,
   Phone,
   Mail,
-  UtensilsCrossed,
-  Plus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useOrders } from '@/contexts/OrderContext';
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { categories, refreshData } = useOrders();
-  const [isAddingItem, setIsAddingItem] = useState(false);
-  const [newItem, setNewItem] = useState({
-    name: '',
-    description: '',
-    price: '',
-    categoryId: '',
-    isVeg: false,
-    preparationTime: '15',
-  });
-
-  const handleAddMenuItem = async () => {
-    if (!newItem.name || !newItem.price || !newItem.categoryId) {
-      toast({ title: 'Error', description: 'Please fill in all required fields', variant: 'destructive' });
-      return;
-    }
-
-    setIsAddingItem(true);
-    try {
-      const response = await fetch('/api/menu-items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newItem,
-          price: parseFloat(newItem.price),
-          preparationTime: parseInt(newItem.preparationTime),
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to add item');
-
-      toast({ title: 'Success', description: 'Menu item added successfully' });
-      setNewItem({ name: '', description: '', price: '', categoryId: '', isVeg: false, preparationTime: '15' });
-      refreshData();
-    } catch (error) {
-      toast({ title: 'Error', description: 'Failed to add menu item', variant: 'destructive' });
-    } finally {
-      setIsAddingItem(false);
-    }
-  };
 
   const [settings, setSettings] = useState({
     restaurantName: 'Kaveri Family Restaurant',
@@ -263,92 +218,6 @@ export default function SettingsPage() {
                 onCheckedChange={checked => handleChange('autoPrintBills', checked)}
                 data-testid="switch-auto-print"
               />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <UtensilsCrossed className="w-5 h-5 text-primary" />
-              <CardTitle className="text-base sm:text-lg">Add Menu Item</CardTitle>
-            </div>
-            <CardDescription>Add new items to your menu</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="itemName">Item Name *</Label>
-                <Input
-                  id="itemName"
-                  placeholder="e.g., Butter Chicken"
-                  value={newItem.name}
-                  onChange={e => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                  data-testid="input-item-name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="itemPrice">Price (₹) *</Label>
-                <Input
-                  id="itemPrice"
-                  type="number"
-                  placeholder="e.g., 250"
-                  value={newItem.price}
-                  onChange={e => setNewItem(prev => ({ ...prev, price: e.target.value }))}
-                  data-testid="input-item-price"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="itemCategory">Category *</Label>
-                <Select
-                  value={newItem.categoryId}
-                  onValueChange={value => setNewItem(prev => ({ ...prev, categoryId: value }))}
-                >
-                  <SelectTrigger data-testid="select-item-category">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="itemPrepTime">Prep Time (mins)</Label>
-                <Input
-                  id="itemPrepTime"
-                  type="number"
-                  placeholder="15"
-                  value={newItem.preparationTime}
-                  onChange={e => setNewItem(prev => ({ ...prev, preparationTime: e.target.value }))}
-                  data-testid="input-prep-time"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="itemDescription">Description</Label>
-                <Input
-                  id="itemDescription"
-                  placeholder="Brief description of the item"
-                  value={newItem.description}
-                  onChange={e => setNewItem(prev => ({ ...prev, description: e.target.value }))}
-                  data-testid="input-item-description"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={newItem.isVeg}
-                  onCheckedChange={checked => setNewItem(prev => ({ ...prev, isVeg: checked }))}
-                  data-testid="switch-is-veg"
-                />
-                <Label>Vegetarian</Label>
-              </div>
-              <Button onClick={handleAddMenuItem} disabled={isAddingItem} data-testid="button-add-menu-item">
-                <Plus className="w-4 h-4 mr-2" />
-                {isAddingItem ? 'Adding...' : 'Add Item'}
-              </Button>
             </div>
           </CardContent>
         </Card>

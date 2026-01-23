@@ -24,6 +24,7 @@ import {
   User,
   Menu,
   X,
+  UtensilsCrossed,
 } from 'lucide-react';
 import { useState } from 'react';
 import { canAccessRoute, UserRole } from '@/types';
@@ -41,6 +42,7 @@ const allNavItems: NavItem[] = [
   { path: '/kitchen', label: 'Kitchen', icon: ChefHat },
   { path: '/billing', label: 'Billing', icon: Receipt },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
+  { path: '/menu', label: 'Menu', icon: UtensilsCrossed },
   { path: '/users', label: 'Users', icon: Users },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];

@@ -19,6 +19,7 @@ import BillingPage from "./pages/BillingPage";
 import ReportsPage from "./pages/ReportsPage";
 import UsersPage from "./pages/UsersPage";
 import SettingsPage from "./pages/SettingsPage";
+import MenuManagementPage from "./pages/MenuManagementPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -77,6 +78,11 @@ const App = () => (
               <Route path="/users" element={
                 <ProtectedRoute>
                   <MainLayout><UsersPage /></MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/menu" element={
+                <ProtectedRoute>
+                  <MainLayout><MenuManagementPage /></MainLayout>
                 </ProtectedRoute>
               } />
               <Route path="/settings" element={
