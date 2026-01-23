@@ -130,6 +130,14 @@ export function registerRoutes(app: Express) {
         ...order,
         id: order.visibleId,
         items: order.items as any[],
+        payment: order.paymentMethod ? {
+          id: `pay-${order.id}`,
+          orderId: order.visibleId,
+          method: order.paymentMethod,
+          amount: order.totalAmount,
+          status: order.paymentStatus || 'completed',
+          paidAt: order.paidAt,
+        } : null,
       }));
       res.json(formattedOrders);
     } catch (error) {

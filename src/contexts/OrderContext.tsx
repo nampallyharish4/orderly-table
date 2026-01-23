@@ -322,6 +322,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     
     if (status === 'collected' && paymentMethod) {
       updates.paymentMethod = paymentMethod;
+      updates.paymentStatus = 'completed';
       updates.paidAt = new Date().toISOString();
     }
 
