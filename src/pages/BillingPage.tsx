@@ -37,7 +37,7 @@ const BillingPage = () => {
     if (!selectedOrder) return;
     
     setPaymentMethod(method);
-    updateOrderStatus(selectedOrder.id, 'served');
+    updateOrderStatus(selectedOrder.id, 'collected');
     toast.success(`Payment received via ${method.toUpperCase()}`);
     
     // Auto-print bill after payment
