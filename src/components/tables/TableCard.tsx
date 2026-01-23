@@ -21,6 +21,7 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
   return (
     <button
       onClick={onClick}
+      data-testid={`table-${table.tableNumber}`}
       className={cn(
         'rounded-xl border-2 text-left transition-all duration-200 w-full',
         'hover:scale-[1.02] active:scale-[0.98]',

@@ -61,7 +61,7 @@ export default function OrdersPage() {
             Manage dine-in and takeaway orders
           </p>
         </div>
-        <Button onClick={handleNewTakeaway} className="bg-gradient-primary hover:opacity-90">
+        <Button onClick={handleNewTakeaway} className="bg-gradient-primary hover:opacity-90" data-testid="button-new-takeaway">
           <Plus className="w-4 h-4 mr-2" />
           New Takeaway Order
         </Button>

@@ -91,6 +91,7 @@ export default function LoginPage() {
                     onChange={e => setEmail(e.target.value)}
                     className="pl-10"
                     autoComplete="email"
+                    data-testid="input-email"
                   />
                 </div>
               </div>
@@ -107,6 +108,7 @@ export default function LoginPage() {
                     onChange={e => setPassword(e.target.value)}
                     className="pl-10 pr-10"
                     autoComplete="current-password"
+                    data-testid="input-password"
                   />
                   <button
                     type="button"
@@ -122,6 +124,7 @@ export default function LoginPage() {
                 type="submit"
                 className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold"
                 disabled={isLoading}
+                data-testid="button-signin"
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
@@ -145,6 +148,7 @@ export default function LoginPage() {
                 onClick={() => handleDemoLogin(account)}
                 disabled={isLoading}
                 className="justify-start"
+                data-testid={`button-demo-${account.role}`}
               >
                 <span className={`w-2 h-2 rounded-full mr-2 ${
                   account.role === 'admin' ? 'bg-primary' :

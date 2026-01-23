@@ -49,13 +49,13 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
         <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none">
+          <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none" data-testid="button-new-dinein">
             <Link to="/tables">
               <Utensils className="w-4 h-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">New </span>Dine-In
             </Link>
           </Button>
-          <Button asChild className="bg-gradient-primary hover:opacity-90 flex-1 sm:flex-none" size="sm">
+          <Button asChild className="bg-gradient-primary hover:opacity-90 flex-1 sm:flex-none" size="sm" data-testid="button-new-takeaway">
             <Link to="/orders">
               <Package className="w-4 h-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">New </span>Takeaway

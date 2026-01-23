@@ -39,6 +39,7 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
   if (compact) {
     return (
       <div
+        data-testid={`order-${order.orderNumber}`}
         className={cn(
           'w-full p-3 sm:p-4 rounded-xl border border-border bg-card text-left transition-all',
           'hover:border-primary/50 hover:shadow-md',
@@ -93,6 +94,7 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
   return (
     <Card
       onClick={onClick}
+      data-testid={`order-${order.orderNumber}`}
       className={cn(
         'cursor-pointer transition-all hover:shadow-lg',
         isReady && 'order-card-ready border-success/50'
