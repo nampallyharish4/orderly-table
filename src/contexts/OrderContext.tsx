@@ -112,6 +112,13 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchData();
+    
+    // Auto-refresh data every 5 seconds for real-time updates
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000);
+    
+    return () => clearInterval(intervalId);
   }, [fetchData]);
 
   useEffect(() => {
