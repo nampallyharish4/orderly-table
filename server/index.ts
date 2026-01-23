@@ -2,10 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { registerRoutes } from './routes.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const currentDir = typeof __dirname !== 'undefined' ? __dirname : path.resolve();
 
 async function startServer() {
   const app = express();
@@ -17,7 +16,7 @@ async function startServer() {
   registerRoutes(app);
 
   if (process.env.NODE_ENV === 'production') {
-    const distPath = path.resolve(__dirname, '../dist');
+    const distPath = path.resolve(currentDir, '.');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       if (!req.path.startsWith('/api')) {
