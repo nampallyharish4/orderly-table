@@ -117,6 +117,7 @@ export default function NewOrderPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-10 text-sm"
+            data-testid="input-search-menu"
           />
         </div>
 
@@ -245,15 +246,17 @@ export default function NewOrderPage() {
                             updateItemQuantity(index, item.quantity - 1);
                           }
                         }}
+                        data-testid={`button-decrease-${item.menuItemId}`}
                       >
                         {item.quantity === 1 ? <Trash2 className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
                       </Button>
-                      <span className="w-8 text-center font-medium">{item.quantity}</span>
+                      <span className="w-8 text-center font-medium" data-testid={`text-quantity-${item.menuItemId}`}>{item.quantity}</span>
                       <Button
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => updateItemQuantity(index, item.quantity + 1)}
+                        data-testid={`button-increase-${item.menuItemId}`}
                       >
                         <Plus className="w-3 h-3" />
                       </Button>
@@ -286,6 +289,7 @@ export default function NewOrderPage() {
               size="lg"
               disabled={!currentOrder.items?.length}
               onClick={handleSubmit}
+              data-testid="button-send-to-kitchen"
             >
               <Send className="w-4 h-4 mr-2" />
               Send to Kitchen
@@ -294,6 +298,7 @@ export default function NewOrderPage() {
               variant="outline"
               className="w-full"
               onClick={handleCancel}
+              data-testid="button-cancel-order"
             >
               Cancel Order
             </Button>

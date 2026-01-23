@@ -119,6 +119,7 @@ export default function OrdersPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-10"
+            data-testid="input-search-orders"
           />
         </div>
 
@@ -153,16 +154,16 @@ export default function OrdersPage() {
       {/* Orders Tabs */}
       <Tabs defaultValue="active" className="space-y-4">
         <TabsList className="w-full sm:w-auto flex">
-          <TabsTrigger value="active" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm">
+          <TabsTrigger value="active" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm" data-testid="tab-active">
             Active
             <Badge variant="secondary" className="text-xs">{activeOrders.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="completed" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm">
+          <TabsTrigger value="completed" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm" data-testid="tab-completed">
             <span className="hidden sm:inline">Completed</span>
             <span className="sm:hidden">Done</span>
             <Badge variant="secondary" className="text-xs">{completedOrders.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="cancelled" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm">
+          <TabsTrigger value="cancelled" className="gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm" data-testid="tab-cancelled">
             <span className="hidden sm:inline">Cancelled</span>
             <span className="sm:hidden">Cancel</span>
             <Badge variant="secondary" className="text-xs">{cancelledOrders.length}</Badge>

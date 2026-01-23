@@ -203,6 +203,7 @@ const BillingPage = () => {
                       variant={paymentMethod === 'cash' ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('cash')}
+                      data-testid="button-pay-cash"
                     >
                       <Banknote className="w-4 sm:w-5 h-4 sm:h-5" />
                       <span className="text-[10px] sm:text-xs">Cash</span>
@@ -211,6 +212,7 @@ const BillingPage = () => {
                       variant={paymentMethod === 'card' ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('card')}
+                      data-testid="button-pay-card"
                     >
                       <CreditCard className="w-4 sm:w-5 h-4 sm:h-5" />
                       <span className="text-[10px] sm:text-xs">Card</span>
@@ -219,6 +221,7 @@ const BillingPage = () => {
                       variant={paymentMethod === 'upi' ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('upi')}
+                      data-testid="button-pay-upi"
                     >
                       <Smartphone className="w-4 sm:w-5 h-4 sm:h-5" />
                       <span className="text-[10px] sm:text-xs">UPI</span>
@@ -228,11 +231,11 @@ const BillingPage = () => {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" className="flex-1" onClick={handlePrint}>
+                  <Button variant="outline" className="flex-1" onClick={handlePrint} data-testid="button-print-bill">
                     <Printer className="w-4 h-4 mr-2" />
                     Print
                   </Button>
-                  <Button variant="outline" className="flex-1" onClick={handleShare}>
+                  <Button variant="outline" className="flex-1" onClick={handleShare} data-testid="button-share-bill">
                     <Share2 className="w-4 h-4 mr-2" />
                     Share
                   </Button>
