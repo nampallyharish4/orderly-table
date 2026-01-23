@@ -146,29 +146,41 @@ export default function TablesPage() {
       {/* Tables Grid */}
       {viewMode === 'grid' ? (
         <div className="space-y-8">
-          {Object.entries(tablesByFloor).map(([floor, floorTables]) => (
-            floorTables.length > 0 && (
+          {Object.entries(tablesByFloor).map(([floor, floorTables]) => {
+            const regularTables = floorTables.filter(t => !(t as any).size && !(t as any).hidden);
+            const smallTables = floorTables.filter(t => (t as any).size && !(t as any).hidden);
+            
+            return floorTables.length > 0 && (
               <div key={floor}>
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  {floor} Floor
-                  <Badge variant="secondary">{floorTables.length} tables</Badge>
+                  {floor}
+                  <Badge variant="secondary">{floorTables.filter(t => !(t as any).hidden).length} tables</Badge>
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
-                  {floorTables.map(table => (
-                    (table as any).hidden ? (
-                      <div key={table.id} className="invisible" />
-                    ) : (
+                {regularTables.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 mb-4">
+                    {regularTables.map(table => (
                       <TableCard
                         key={table.id}
                         table={table}
                         onClick={() => handleTableClick(table)}
                       />
-                    )
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
+                {smallTables.length > 0 && (
+                  <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
+                    {smallTables.map(table => (
+                      <TableCard
+                        key={table.id}
+                        table={table}
+                        onClick={() => handleTableClick(table)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="space-y-2">
