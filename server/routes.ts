@@ -143,29 +143,40 @@ export function registerRoutes(app: Express) {
       const orderData = req.body;
       const visibleId = orderData.id || `order-${Date.now()}`;
       
+      let tableIdNum: number | null = null;
+      if (orderData.tableId) {
+        const tableIdStr = String(orderData.tableId);
+        if (tableIdStr.startsWith('table-')) {
+          tableIdNum = parseInt(tableIdStr.replace('table-', ''), 10);
+        } else {
+          tableIdNum = parseInt(tableIdStr, 10);
+        }
+        if (isNaN(tableIdNum)) tableIdNum = null;
+      }
+      
       const [newOrder] = await db.insert(orders).values({
         visibleId,
         orderNumber: orderData.orderNumber,
         orderType: orderData.orderType,
-        tableId: orderData.tableId ? parseInt(orderData.tableId.replace('table-', '')) : null,
+        tableId: tableIdNum,
         tableNumber: orderData.tableNumber,
         customerName: orderData.customerName,
         customerPhone: orderData.customerPhone,
         items: orderData.items || [],
-        subtotal: orderData.subtotal || 0,
-        taxAmount: orderData.taxAmount || 0,
-        serviceCharge: orderData.serviceCharge || 0,
-        discountAmount: orderData.discountAmount || 0,
-        totalAmount: orderData.totalAmount || 0,
+        subtotal: parseFloat(orderData.subtotal) || 0,
+        taxAmount: parseFloat(orderData.taxAmount) || 0,
+        serviceCharge: parseFloat(orderData.serviceCharge) || 0,
+        discountAmount: parseFloat(orderData.discountAmount) || 0,
+        totalAmount: parseFloat(orderData.totalAmount) || 0,
         status: orderData.status || 'new',
         notes: orderData.notes,
         createdBy: orderData.createdBy || 'system',
       }).returning();
 
       res.json({ ...newOrder, id: newOrder.visibleId });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating order:', error);
-      res.status(500).json({ error: 'Failed to create order' });
+      res.status(500).json({ error: 'Failed to create order', details: error?.message });
     }
   });
 
