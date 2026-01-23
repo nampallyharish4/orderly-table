@@ -319,7 +319,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
                     if (t.id !== order.tableId) return t;
                     return { 
                       ...t, 
-                      status: newStatus as const, 
+                      status: newStatus as 'available' | 'occupied' | 'reserved', 
                       currentOrderIds: newOrderIds 
                     };
                   })
@@ -401,7 +401,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
               if (t.id !== order.tableId) return t;
               return {
                 ...t,
-                status: newStatus as const,
+                status: newStatus as 'available' | 'occupied' | 'reserved',
                 currentOrderIds: newOrderIds,
               };
             })
