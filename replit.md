@@ -35,9 +35,15 @@ Preferred communication style: Simple, everyday language.
 - Route access controlled by `canAccessRoute` utility function
 
 ### Data Layer
-- Currently uses mock data in `src/data/mockData.ts`
-- Data structures defined in `src/types/index.ts`
-- Ready for backend integration - contexts can be updated to use API calls
+- **PostgreSQL** database with Drizzle ORM for data persistence
+- Database schema defined in `shared/schema.ts`
+- Database connection in `server/db.ts`
+- Configuration in `drizzle.config.ts`
+- Frontend currently uses mock data in `src/data/mockData.ts` (ready for API integration)
+- Database scripts:
+  - `npm run db:push` - Push schema changes to database
+  - `npm run db:seed` - Seed initial data (users, menu items, tables)
+  - `npm run db:studio` - Open Drizzle Studio for database management
 
 ### Key Features
 - **Dashboard**: Overview stats, active orders, revenue tracking
