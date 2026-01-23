@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { OrderStatus, OrderItemStatus, TableStatus } from '@/types';
-import { Clock, CheckCircle2, XCircle, ChefHat, Timer, Utensils } from 'lucide-react';
+import { Sparkles, CheckCircle2, XCircle, ChefHat, Timer, Utensils } from 'lucide-react';
 
 interface StatusBadgeProps {
   status: OrderStatus | OrderItemStatus | TableStatus;
@@ -10,7 +10,7 @@ interface StatusBadgeProps {
 }
 
 const orderStatusConfig: Record<OrderStatus, { label: string; class: string; icon: React.ElementType }> = {
-  new: { label: 'New', class: 'status-new', icon: Clock },
+  new: { label: 'New', class: 'status-new', icon: Sparkles },
   preparing: { label: 'Preparing', class: 'status-preparing', icon: ChefHat },
   ready: { label: 'Ready', class: 'status-ready', icon: CheckCircle2 },
   served: { label: 'Served', class: 'status-served', icon: Utensils },
