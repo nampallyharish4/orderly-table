@@ -7,7 +7,7 @@ integrations = ["github:1.0.0", "javascript_database:1.0.0"]
 channel = "stable-25_05"
 
 [deployment]
-deploymentTarget = "static"
+deploymentTarget = "autoscale"
 run = ["node", "./dist/index.cjs"]
 build = ["npm", "run", "build"]
 publicDir = "dist"
