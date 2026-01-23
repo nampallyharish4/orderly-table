@@ -1,14 +1,12 @@
 import { pgTable, text, integer, boolean, timestamp, real, jsonb, serial } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 export const userRoleEnum = ["admin", "waiter", "cashier", "kitchen"] as const;
 export type UserRole = typeof userRoleEnum[number];
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-visibleId: text("visible_id").notNull().unique(),
+  visibleId: text("visible_id").notNull().unique(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   phone: text("phone").notNull(),
@@ -18,9 +16,8 @@ visibleId: text("visible_id").notNull().unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
 
 export const menuCategories = pgTable("menu_categories", {
   id: serial("id").primaryKey(),
@@ -32,9 +29,8 @@ export const menuCategories = pgTable("menu_categories", {
   isActive: boolean("is_active").notNull().default(true),
 });
 
-export const insertMenuCategorySchema = createInsertSchema(menuCategories).omit({ id: true });
-export type InsertMenuCategory = z.infer<typeof insertMenuCategorySchema>;
 export type MenuCategory = typeof menuCategories.$inferSelect;
+export type InsertMenuCategory = typeof menuCategories.$inferInsert;
 
 export const menuItems = pgTable("menu_items", {
   id: serial("id").primaryKey(),
@@ -58,9 +54,8 @@ export const menuItemsRelations = relations(menuItems, ({ one }) => ({
   }),
 }));
 
-export const insertMenuItemSchema = createInsertSchema(menuItems).omit({ id: true });
-export type InsertMenuItem = z.infer<typeof insertMenuItemSchema>;
 export type MenuItem = typeof menuItems.$inferSelect;
+export type InsertMenuItem = typeof menuItems.$inferInsert;
 
 export const tableStatusEnum = ["available", "occupied"] as const;
 export type TableStatus = typeof tableStatusEnum[number];
@@ -74,9 +69,8 @@ export const tables = pgTable("tables", {
   status: text("status").notNull().$type<TableStatus>().default("available"),
 });
 
-export const insertTableSchema = createInsertSchema(tables).omit({ id: true });
-export type InsertTable = z.infer<typeof insertTableSchema>;
 export type Table = typeof tables.$inferSelect;
+export type InsertTable = typeof tables.$inferInsert;
 
 export const orderTypeEnum = ["dine-in", "takeaway"] as const;
 export type OrderType = typeof orderTypeEnum[number];
@@ -125,6 +119,5 @@ export const ordersRelations = relations(orders, ({ one }) => ({
   }),
 }));
 
-export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true, updatedAt: true });
-export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;
