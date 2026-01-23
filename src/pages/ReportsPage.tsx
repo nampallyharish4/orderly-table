@@ -11,7 +11,8 @@ import {
   Calendar,
   ChevronDown,
   Banknote,
-  Smartphone
+  Smartphone,
+  Users
 } from 'lucide-react';
 import {
   DropdownMenu,
