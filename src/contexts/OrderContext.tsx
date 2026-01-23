@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 import { Order, OrderItem, Table, MenuItem, OrderType, OrderStatus, OrderItemStatus } from '@/types';
-import { mockOrders, mockTables, mockMenuItems, generateOrderNumber, calculateOrderTotals } from '@/data/mockData';
+import { generateOrderNumber, calculateOrderTotals } from '@/data/mockData';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 interface OrderContextType {
@@ -8,24 +8,21 @@ interface OrderContextType {
   tables: Table[];
   menuItems: MenuItem[];
   currentOrder: Partial<Order> | null;
+  isLoading: boolean;
   
-  // Order operations
   createOrder: (orderType: OrderType, tableId?: string) => void;
   addItemToOrder: (menuItem: MenuItem, quantity: number, notes?: string, addOnIds?: string[]) => void;
   removeItemFromOrder: (itemIndex: number) => void;
   updateItemQuantity: (itemIndex: number, quantity: number) => void;
-  submitOrder: (customerName?: string, customerPhone?: string, pickupTime?: Date) => Order;
+  submitOrder: (customerName?: string, customerPhone?: string, pickupTime?: Date) => Promise<Order>;
   cancelCurrentOrder: () => void;
   
-  // Order status updates
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   updateItemStatus: (orderId: string, itemId: string, status: OrderItemStatus) => void;
   deleteOrder: (orderId: string) => void;
   
-  // Table operations
   updateTableStatus: (tableId: string, status: Table['status'], orderIds?: string[]) => void;
   
-  // Filters
   getOrdersByStatus: (statuses: OrderStatus[]) => Order[];
   getOrdersByType: (type: OrderType) => Order[];
   getActiveKitchenOrders: () => Order[];
@@ -34,14 +31,58 @@ interface OrderContextType {
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export function OrderProvider({ children }: { children: ReactNode }) {
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
-  const [tables, setTables] = useState<Table[]>(mockTables);
-  const [menuItems] = useState<MenuItem[]>(mockMenuItems);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Partial<Order> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { playReadySound } = useNotificationSound();
   const prevReadyCountRef = useRef<number>(0);
 
-  // Track ready orders and play sound when count increases
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ordersRes, tablesRes, menuRes] = await Promise.all([
+          fetch('/api/orders'),
+          fetch('/api/tables'),
+          fetch('/api/menu-items'),
+        ]);
+
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          const parsedOrders = ordersData.map((o: any) => ({
+            ...o,
+            createdAt: new Date(o.createdAt),
+            updatedAt: new Date(o.updatedAt),
+            servedAt: o.servedAt ? new Date(o.servedAt) : undefined,
+            paidAt: o.paidAt ? new Date(o.paidAt) : undefined,
+            pickupTime: o.pickupTime ? new Date(o.pickupTime) : undefined,
+          }));
+          setOrders(parsedOrders);
+        }
+
+        if (tablesRes.ok) {
+          const tablesData = await tablesRes.json();
+          setTables(tablesData.map((t: any) => ({
+            ...t,
+            currentOrderIds: t.currentOrderIds || [],
+          })));
+        }
+
+        if (menuRes.ok) {
+          const menuData = await menuRes.json();
+          setMenuItems(menuData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   useEffect(() => {
     const readyCount = orders.filter(o => o.status === 'ready').length;
     if (readyCount > prevReadyCountRef.current && prevReadyCountRef.current !== 0) {
@@ -123,11 +164,11 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }));
   }, [currentOrder]);
 
-  const submitOrder = useCallback((
+  const submitOrder = useCallback(async (
     customerName?: string,
     customerPhone?: string,
     pickupTime?: Date
-  ): Order => {
+  ): Promise<Order> => {
     if (!currentOrder?.items?.length) {
       throw new Error('No items in order');
     }
@@ -151,131 +192,231 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       pickupTime,
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: 'current-user', // Would come from auth context
+      createdBy: 'current-user',
     };
 
-    setOrders(prev => [newOrder, ...prev]);
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newOrder),
+      });
 
-    // Update table status if dine-in - add order to table's order list
-    if (currentOrder.tableId) {
-      setTables(prev =>
-        prev.map(t =>
-          t.id === currentOrder.tableId
-            ? { 
-                ...t, 
-                status: 'occupied' as const, 
-                currentOrderIds: [...t.currentOrderIds, newOrder.id] 
-              }
-            : t
-        )
-      );
+      if (!response.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const savedOrder = await response.json();
+      const parsedOrder = {
+        ...savedOrder,
+        createdAt: new Date(savedOrder.createdAt),
+        updatedAt: new Date(savedOrder.updatedAt),
+      };
+
+      setOrders(prev => [parsedOrder, ...prev]);
+
+      if (currentOrder.tableId) {
+        const table = tables.find(t => t.id === currentOrder.tableId);
+        const newOrderIds = [...(table?.currentOrderIds || []), parsedOrder.id];
+        
+        setTables(prev =>
+          prev.map(t =>
+            t.id === currentOrder.tableId
+              ? { 
+                  ...t, 
+                  status: 'occupied' as const, 
+                  currentOrderIds: newOrderIds 
+                }
+              : t
+          )
+        );
+        
+        await fetch(`/api/tables/${currentOrder.tableId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'occupied', currentOrderIds: newOrderIds }),
+        });
+      }
+
+      setCurrentOrder(null);
+      return parsedOrder;
+    } catch (error) {
+      console.error('Failed to submit order:', error);
+      throw error;
     }
-
-    setCurrentOrder(null);
-    return newOrder;
-  }, [currentOrder]);
+  }, [currentOrder, tables]);
 
   const cancelCurrentOrder = useCallback(() => {
     setCurrentOrder(null);
   }, []);
 
-  const updateOrderStatus = useCallback((orderId: string, status: OrderStatus) => {
-    setOrders(prev =>
-      prev.map(order => {
-        if (order.id !== orderId) return order;
-        
-        const updates: Partial<Order> = {
-          status,
-          updatedAt: new Date(),
-        };
+  const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus) => {
+    const updates: any = { status };
+    
+    if (status === 'served' || status === 'collected') {
+      updates.servedAt = new Date().toISOString();
+    }
 
-        if (status === 'served' || status === 'collected') {
-          updates.servedAt = new Date();
-          // Remove order from table's list
-          if (order.tableId) {
-            setTables(tables =>
-              tables.map(t => {
-                if (t.id !== order.tableId) return t;
-                const newOrderIds = t.currentOrderIds.filter(id => id !== orderId);
-                return { 
-                  ...t, 
-                  status: newOrderIds.length > 0 ? 'occupied' as const : 'available' as const, 
-                  currentOrderIds: newOrderIds 
-                };
-              })
-            );
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to update order status');
+        return;
+      }
+
+      setOrders(prev =>
+        prev.map(order => {
+          if (order.id !== orderId) return order;
+          
+          const orderUpdates: Partial<Order> = {
+            status,
+            updatedAt: new Date(),
+          };
+
+          if (status === 'served' || status === 'collected') {
+            orderUpdates.servedAt = new Date();
+            if (order.tableId) {
+              const table = tables.find(t => t.id === order.tableId);
+              if (table) {
+                const newOrderIds = table.currentOrderIds.filter(id => id !== orderId);
+                const newStatus = newOrderIds.length > 0 ? 'occupied' : 'available';
+                
+                setTables(prevTables =>
+                  prevTables.map(t => {
+                    if (t.id !== order.tableId) return t;
+                    return { 
+                      ...t, 
+                      status: newStatus as const, 
+                      currentOrderIds: newOrderIds 
+                    };
+                  })
+                );
+                
+                fetch(`/api/tables/${order.tableId}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
+                }).catch(console.error);
+              }
+            }
           }
-        }
 
-        return { ...order, ...updates };
-      })
-    );
-  }, []);
+          return { ...order, ...orderUpdates };
+        })
+      );
+    } catch (error) {
+      console.error('Failed to update order:', error);
+    }
+  }, [tables]);
 
-  const updateItemStatus = useCallback((orderId: string, itemId: string, status: OrderItemStatus) => {
-    setOrders(prev =>
-      prev.map(order => {
-        if (order.id !== orderId) return order;
-
-        const updatedItems = order.items.map(item =>
-          item.id === itemId ? { ...item, status } : item
-        );
-
-        // Check if all items are ready -> update order status
-        const allReady = updatedItems.every(item => item.status === 'ready');
-        const anyPreparing = updatedItems.some(item => item.status === 'preparing');
-
-        let newOrderStatus = order.status;
-        if (allReady && order.status !== 'served' && order.status !== 'collected') {
-          newOrderStatus = 'ready';
-        } else if (anyPreparing && order.status === 'new') {
-          newOrderStatus = 'preparing';
-        }
-
-        return {
-          ...order,
-          items: updatedItems,
-          status: newOrderStatus,
-          updatedAt: new Date(),
-        };
-      })
-    );
-  }, []);
-
-  const deleteOrder = useCallback((orderId: string) => {
+  const updateItemStatus = useCallback(async (orderId: string, itemId: string, status: OrderItemStatus) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
 
-    // If order has a table, release the table
-    if (order.tableId) {
-      setTables(prev =>
-        prev.map(t => {
-          if (t.id !== order.tableId) return t;
-          const newOrderIds = t.currentOrderIds.filter(id => id !== orderId);
+    const updatedItems = order.items.map(item =>
+      item.id === itemId ? { ...item, status } : item
+    );
+
+    const allReady = updatedItems.every(item => item.status === 'ready');
+    const anyPreparing = updatedItems.some(item => item.status === 'preparing');
+
+    let newOrderStatus = order.status;
+    if (allReady && order.status !== 'served' && order.status !== 'collected') {
+      newOrderStatus = 'ready';
+    } else if (anyPreparing && order.status === 'new') {
+      newOrderStatus = 'preparing';
+    }
+
+    try {
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: updatedItems, status: newOrderStatus }),
+      });
+
+      setOrders(prev =>
+        prev.map(o => {
+          if (o.id !== orderId) return o;
           return {
-            ...t,
-            status: newOrderIds.length > 0 ? 'occupied' as const : 'available' as const,
-            currentOrderIds: newOrderIds,
+            ...o,
+            items: updatedItems,
+            status: newOrderStatus,
+            updatedAt: new Date(),
           };
         })
       );
+    } catch (error) {
+      console.error('Failed to update item status:', error);
     }
-
-    // Remove the order from the list
-    setOrders(prev => prev.filter(o => o.id !== orderId));
   }, [orders]);
 
-  const updateTableStatus = useCallback((
+  const deleteOrder = useCallback(async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    try {
+      await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+
+      if (order.tableId) {
+        const table = tables.find(t => t.id === order.tableId);
+        if (table) {
+          const newOrderIds = table.currentOrderIds.filter(id => id !== orderId);
+          const newStatus = newOrderIds.length > 0 ? 'occupied' : 'available';
+          
+          setTables(prev =>
+            prev.map(t => {
+              if (t.id !== order.tableId) return t;
+              return {
+                ...t,
+                status: newStatus as const,
+                currentOrderIds: newOrderIds,
+              };
+            })
+          );
+          
+          await fetch(`/api/tables/${order.tableId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
+          });
+        }
+      }
+
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+    } catch (error) {
+      console.error('Failed to delete order:', error);
+    }
+  }, [orders, tables]);
+
+  const updateTableStatus = useCallback(async (
     tableId: string,
     status: Table['status'],
     orderIds?: string[]
   ) => {
-    setTables(prev =>
-      prev.map(t =>
-        t.id === tableId ? { ...t, status, currentOrderIds: orderIds ?? t.currentOrderIds } : t
-      )
-    );
-  }, []);
+    try {
+      const table = tables.find(t => t.id === tableId);
+      const newOrderIds = orderIds ?? table?.currentOrderIds ?? [];
+      
+      await fetch(`/api/tables/${tableId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, currentOrderIds: newOrderIds }),
+      });
+
+      setTables(prev =>
+        prev.map(t =>
+          t.id === tableId ? { ...t, status, currentOrderIds: newOrderIds } : t
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update table status:', error);
+    }
+  }, [tables]);
 
   const getOrdersByStatus = useCallback((statuses: OrderStatus[]) => {
     return orders.filter(o => statuses.includes(o.status));
@@ -298,6 +439,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         tables,
         menuItems,
         currentOrder,
+        isLoading,
         createOrder,
         addItemToOrder,
         removeItemFromOrder,

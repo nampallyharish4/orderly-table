@@ -34,16 +34,31 @@ Preferred communication style: Simple, everyday language.
 - Protected routes that redirect based on user role permissions
 - Route access controlled by `canAccessRoute` utility function
 
-### Data Layer
+### Backend & Data Layer
+- **Express.js** server with Vite middleware for development
 - **PostgreSQL** database with Drizzle ORM for data persistence
 - Database schema defined in `shared/schema.ts`
 - Database connection in `server/db.ts`
 - Configuration in `drizzle.config.ts`
-- Frontend currently uses mock data in `src/data/mockData.ts` (ready for API integration)
-- Database scripts:
-  - `npm run db:push` - Push schema changes to database
-  - `npm run db:seed` - Seed initial data (users, menu items, tables)
-  - `npm run db:studio` - Open Drizzle Studio for database management
+
+#### API Endpoints
+- `GET /api/orders` - Fetch all orders
+- `POST /api/orders` - Create new order
+- `PATCH /api/orders/:id` - Update order status, items, payment info
+- `DELETE /api/orders/:id` - Delete an order
+- `GET /api/tables` - Fetch all tables
+- `PATCH /api/tables/:id` - Update table status and current orders
+- `GET /api/menu-items` - Fetch all menu items
+- `GET /api/categories` - Fetch all menu categories
+
+#### Database Scripts
+- `npm run db:push` - Push schema changes to database
+- `npm run db:seed` - Seed initial data (users, menu items, tables)
+- `npm run db:studio` - Open Drizzle Studio for database management
+
+#### ID System
+- Tables use `visibleId` (string like "table-1", "order-123") for client-facing IDs
+- Internal serial `id` for database references
 
 ### Key Features
 - **Dashboard**: Overview stats, active orders, revenue tracking
@@ -54,6 +69,12 @@ Preferred communication style: Simple, everyday language.
 
 ### Project Structure
 ```
+server/
+├── index.ts         # Express server with Vite middleware
+├── routes.ts        # API route handlers
+├── db.ts           # Database connection
+└── seed.ts         # Database seeding script
+
 src/
 ├── components/       # Reusable UI components
 │   ├── ui/          # Shadcn/UI base components
@@ -68,6 +89,9 @@ src/
 ├── pages/          # Route page components
 ├── types/          # TypeScript type definitions
 └── utils/          # Utility functions
+
+shared/
+└── schema.ts       # Drizzle ORM schema definitions
 ```
 
 ## External Dependencies

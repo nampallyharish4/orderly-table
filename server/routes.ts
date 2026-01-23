@@ -64,6 +64,11 @@ export function registerRoutes(app: Express) {
       if (updates.paymentStatus !== undefined) updateData.paymentStatus = updates.paymentStatus;
       if (updates.paidAt !== undefined) updateData.paidAt = new Date(updates.paidAt);
       if (updates.servedAt !== undefined) updateData.servedAt = new Date(updates.servedAt);
+      if (updates.subtotal !== undefined) updateData.subtotal = updates.subtotal;
+      if (updates.taxAmount !== undefined) updateData.taxAmount = updates.taxAmount;
+      if (updates.serviceCharge !== undefined) updateData.serviceCharge = updates.serviceCharge;
+      if (updates.discountAmount !== undefined) updateData.discountAmount = updates.discountAmount;
+      if (updates.totalAmount !== undefined) updateData.totalAmount = updates.totalAmount;
       updateData.updatedAt = new Date();
 
       const [updatedOrder] = await db
@@ -111,11 +116,15 @@ export function registerRoutes(app: Express) {
   app.patch('/api/tables/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { status } = req.body;
+      const { status, currentOrderIds } = req.body;
+      
+      const updateData: any = {};
+      if (status !== undefined) updateData.status = status;
+      if (currentOrderIds !== undefined) updateData.currentOrderIds = currentOrderIds;
       
       const [updatedTable] = await db
         .update(tables)
-        .set({ status })
+        .set(updateData)
         .where(eq(tables.visibleId, id))
         .returning();
 
