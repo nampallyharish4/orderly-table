@@ -1,5 +1,31 @@
 import { User, MenuCategory, MenuItem, Table, Order, OrderItem } from '@/types';
 
+import chickenBiryani from '@/assets/images/chicken-biryani.jpg';
+import vegBiryani from '@/assets/images/veg-biryani.jpg';
+import fishBiryani from '@/assets/images/fish-biryani.jpg';
+import paneerBiryani from '@/assets/images/paneer-biryani.jpg';
+import eggBiryani from '@/assets/images/egg-biryani.jpg';
+import butterChicken from '@/assets/images/butter-chicken.jpg';
+import chicken65 from '@/assets/images/chicken-65.jpg';
+import paneerButterMasala from '@/assets/images/paneer-butter-masala.jpg';
+import chickenManchurian from '@/assets/images/chicken-manchurian.jpg';
+import gobiManchurian from '@/assets/images/gobi-manchurian.jpg';
+import paneer65 from '@/assets/images/paneer-65.jpg';
+import dalFry from '@/assets/images/dal-fry.jpg';
+import garlicNaan from '@/assets/images/garlic-naan.jpg';
+import tandooriRoti from '@/assets/images/tandoori-roti.jpg';
+import palakPaneer from '@/assets/images/palak-paneer.jpg';
+import tandooriChicken from '@/assets/images/tandoori-chicken.jpg';
+import muttonCurry from '@/assets/images/mutton-curry.jpg';
+import mangoLassi from '@/assets/images/mango-lassi.jpg';
+import gulabJamun from '@/assets/images/gulab-jamun.jpg';
+import chickenTikka from '@/assets/images/chicken-tikka.jpg';
+import raita from '@/assets/images/raita.jpg';
+import butterRoti from '@/assets/images/butter-roti.jpg';
+import masalaChai from '@/assets/images/masala-chai.jpg';
+import crispyPrawns from '@/assets/images/crispy-prawns.jpg';
+import mushroomMasala from '@/assets/images/mushroom-masala.jpg';
+
 // Mock Users
 export const mockUsers: User[] = [
   {
@@ -69,6 +95,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 1,
+    imageUrl: chickenBiryani,
   },
   {
     id: 'item-2',
@@ -81,6 +108,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 2,
+    imageUrl: chickenBiryani,
   },
   {
     id: 'item-3',
@@ -93,6 +121,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 3,
+    imageUrl: chickenBiryani,
   },
   {
     id: 'item-4',
@@ -105,6 +134,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 4,
+    imageUrl: chickenBiryani,
   },
   {
     id: 'item-5',
@@ -117,6 +147,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 5,
+    imageUrl: eggBiryani,
   },
   {
     id: 'item-6',
@@ -129,6 +160,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 6,
+    imageUrl: fishBiryani,
   },
   {
     id: 'item-7',
@@ -141,6 +173,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 7,
+    imageUrl: fishBiryani,
   },
   {
     id: 'item-8',
@@ -153,6 +186,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 8,
+    imageUrl: chickenBiryani,
   },
   {
     id: 'item-9',
@@ -165,6 +199,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 9,
+    imageUrl: chickenBiryani,
   },
   // Family Packs
   {
@@ -178,6 +213,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 35,
     sortOrder: 1,
+    imageUrl: chickenBiryani,
   },
   {
     id: 'item-11',
@@ -190,6 +226,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 45,
     sortOrder: 2,
+    imageUrl: chickenBiryani,
   },
   {
     id: 'item-12',
@@ -202,6 +239,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 35,
     sortOrder: 3,
+    imageUrl: chickenBiryani,
   },
   {
     id: 'item-13',
@@ -214,6 +252,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 45,
     sortOrder: 4,
+    imageUrl: chickenBiryani,
   },
   // Biryani (Veg)
   {
@@ -227,6 +266,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 1,
+    imageUrl: vegBiryani,
   },
   {
     id: 'item-15',
@@ -239,6 +279,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 2,
+    imageUrl: vegBiryani,
   },
   {
     id: 'item-16',
@@ -251,6 +292,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 3,
+    imageUrl: paneerBiryani,
   },
   {
     id: 'item-17',
@@ -263,6 +305,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 4,
+    imageUrl: paneerBiryani,
   },
   {
     id: 'item-18',
@@ -275,6 +318,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 5,
+    imageUrl: vegBiryani,
   },
   // Veg Starters
   {
@@ -288,6 +332,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 1,
+    imageUrl: gobiManchurian,
   },
   {
     id: 'item-20',
@@ -300,6 +345,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 2,
+    imageUrl: gobiManchurian,
   },
   {
     id: 'item-21',
@@ -312,6 +358,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 3,
+    imageUrl: paneer65,
   },
   // Non Veg Starters
   {
@@ -325,6 +372,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 1,
+    imageUrl: chickenManchurian,
   },
   {
     id: 'item-23',
@@ -337,6 +385,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 2,
+    imageUrl: chickenManchurian,
   },
   {
     id: 'item-24',
@@ -349,6 +398,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 3,
+    imageUrl: chicken65,
   },
   {
     id: 'item-25',
@@ -361,6 +411,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 4,
+    imageUrl: chicken65,
   },
   {
     id: 'item-26',
@@ -373,6 +424,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 5,
+    imageUrl: chicken65,
   },
   {
     id: 'item-27',
@@ -385,6 +437,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 6,
+    imageUrl: chicken65,
   },
   {
     id: 'item-28',
@@ -397,6 +450,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 7,
+    imageUrl: chicken65,
   },
   {
     id: 'item-29',
@@ -409,6 +463,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 8,
+    imageUrl: chicken65,
   },
   {
     id: 'item-30',
@@ -421,6 +476,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 9,
+    imageUrl: chickenManchurian,
   },
   {
     id: 'item-31',
@@ -433,6 +489,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 10,
+    imageUrl: chickenManchurian,
   },
   {
     id: 'item-32',
@@ -445,6 +502,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 11,
+    imageUrl: butterChicken,
   },
   {
     id: 'item-33',
@@ -457,6 +515,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 12,
+    imageUrl: butterChicken,
   },
   {
     id: 'item-34',
@@ -469,6 +528,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 13,
+    imageUrl: chicken65,
   },
   {
     id: 'item-35',
@@ -481,6 +541,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 14,
+    imageUrl: chicken65,
   },
   {
     id: 'item-36',
@@ -493,6 +554,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 15,
+    imageUrl: chickenManchurian,
   },
   {
     id: 'item-37',
@@ -505,6 +567,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 16,
+    imageUrl: chickenManchurian,
   },
   // Indian Non Veg Curries
   {
@@ -518,6 +581,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 1,
+    imageUrl: butterChicken,
   },
   {
     id: 'item-39',
@@ -530,6 +594,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 2,
+    imageUrl: butterChicken,
   },
   {
     id: 'item-40',
@@ -542,6 +607,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 3,
+    imageUrl: muttonCurry,
   },
   {
     id: 'item-41',
@@ -554,6 +620,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 4,
+    imageUrl: muttonCurry,
   },
   {
     id: 'item-42',
@@ -566,6 +633,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 5,
+    imageUrl: chickenTikka,
   },
   {
     id: 'item-43',
@@ -578,6 +646,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 6,
+    imageUrl: chickenTikka,
   },
   {
     id: 'item-44',
@@ -590,6 +659,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 7,
+    imageUrl: butterChicken,
   },
   {
     id: 'item-45',
@@ -602,6 +672,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 8,
+    imageUrl: butterChicken,
   },
   {
     id: 'item-47',
@@ -614,6 +685,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 10,
+    imageUrl: eggBiryani,
   },
   {
     id: 'item-48',
@@ -626,6 +698,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 10,
     sortOrder: 11,
+    imageUrl: eggBiryani,
   },
   // Veg Curries
   {
@@ -639,6 +712,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 1,
+    imageUrl: paneerButterMasala,
   },
   {
     id: 'item-50',
@@ -651,6 +725,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 2,
+    imageUrl: dalFry,
   },
   {
     id: 'item-51',
@@ -663,6 +738,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 3,
+    imageUrl: mushroomMasala,
   },
   {
     id: 'item-52',
@@ -675,6 +751,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 4,
+    imageUrl: mushroomMasala,
   },
   {
     id: 'item-53',
@@ -687,6 +764,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 5,
+    imageUrl: palakPaneer,
   },
   {
     id: 'item-54',
@@ -699,6 +777,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 6,
+    imageUrl: palakPaneer,
   },
   {
     id: 'item-55',
@@ -711,6 +790,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 7,
+    imageUrl: paneerButterMasala,
   },
   {
     id: 'item-56',
@@ -723,6 +803,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 8,
+    imageUrl: paneerButterMasala,
   },
   {
     id: 'item-57',
@@ -735,6 +816,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 9,
+    imageUrl: paneerButterMasala,
   },
   {
     id: 'item-58',
@@ -747,6 +829,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 10,
+    imageUrl: paneerButterMasala,
   },
   {
     id: 'item-59',
@@ -759,6 +842,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 11,
+    imageUrl: paneerButterMasala,
   },
   {
     id: 'item-60',
@@ -771,6 +855,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 12,
+    imageUrl: paneerButterMasala,
   },
   {
     id: 'item-61',
@@ -783,6 +868,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 13,
+    imageUrl: mushroomMasala,
   },
   {
     id: 'item-62',
@@ -795,6 +881,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 14,
+    imageUrl: mushroomMasala,
   },
   {
     id: 'item-63',
@@ -807,6 +894,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 15,
+    imageUrl: paneerButterMasala,
   },
   // Tandoori Rotis
   {
@@ -820,6 +908,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 5,
     sortOrder: 1,
+    imageUrl: tandooriRoti,
   },
   {
     id: 'item-65',
@@ -832,6 +921,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 5,
     sortOrder: 2,
+    imageUrl: butterRoti,
   },
   {
     id: 'item-66',
@@ -844,6 +934,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 5,
     sortOrder: 3,
+    imageUrl: garlicNaan,
   },
   {
     id: 'item-67',
@@ -856,6 +947,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 5,
     sortOrder: 4,
+    imageUrl: garlicNaan,
   },
   {
     id: 'item-68',
@@ -868,6 +960,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 5,
     sortOrder: 5,
+    imageUrl: garlicNaan,
   },
   {
     id: 'item-69',
@@ -880,6 +973,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 5,
     sortOrder: 6,
+    imageUrl: garlicNaan,
   },
   // Tandoori Non Veg
   {
@@ -893,6 +987,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 25,
     sortOrder: 1,
+    imageUrl: tandooriChicken,
   },
   {
     id: 'item-71',
@@ -903,6 +998,7 @@ export const mockMenuItems: MenuItem[] = [
     isVeg: false,
     isAvailable: true,
     addOns: [],
+    imageUrl: tandooriChicken,
     preparationTime: 25,
     sortOrder: 2,
   },
@@ -917,6 +1013,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 3,
+    imageUrl: tandooriChicken,
   },
   {
     id: 'item-73',
@@ -929,6 +1026,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 4,
+    imageUrl: tandooriChicken,
   },
   {
     id: 'item-74',
@@ -941,6 +1039,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 20,
     sortOrder: 5,
+    imageUrl: chickenTikka,
   },
   // Veg Rice
   {
@@ -954,6 +1053,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 1,
+    imageUrl: vegBiryani,
   },
   {
     id: 'item-76',
@@ -966,6 +1066,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 2,
+    imageUrl: vegBiryani,
   },
   {
     id: 'item-77',
@@ -978,6 +1079,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 3,
+    imageUrl: vegBiryani,
   },
   {
     id: 'item-78',
@@ -990,6 +1092,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 4,
+    imageUrl: vegBiryani,
   },
   {
     id: 'item-79',
@@ -1002,6 +1105,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 5,
+    imageUrl: paneerBiryani,
   },
   {
     id: 'item-80',
@@ -1014,6 +1118,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 6,
+    imageUrl: vegBiryani,
   },
   {
     id: 'item-81',
@@ -1026,6 +1131,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 7,
+    imageUrl: paneerBiryani,
   },
   {
     id: 'item-82',
@@ -1038,6 +1144,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 8,
+    imageUrl: gobiManchurian,
   },
   // Non Veg Rice
   {
@@ -1051,6 +1158,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 1,
+    imageUrl: eggBiryani,
   },
   {
     id: 'item-84',
@@ -1063,6 +1171,7 @@ export const mockMenuItems: MenuItem[] = [
     addOns: [],
     preparationTime: 15,
     sortOrder: 2,
+    imageUrl: chickenBiryani,
   },
 ];
 
