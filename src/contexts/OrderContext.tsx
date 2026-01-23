@@ -44,6 +44,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Fetching data from API...');
         const [ordersRes, tablesRes, menuRes, categoriesRes] = await Promise.all([
           fetch('/api/orders'),
           fetch('/api/tables'),
@@ -51,8 +52,16 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           fetch('/api/categories'),
         ]);
 
+        console.log('API responses:', {
+          orders: ordersRes.status,
+          tables: tablesRes.status,
+          menu: menuRes.status,
+          categories: categoriesRes.status
+        });
+
         if (ordersRes.ok) {
           const ordersData = await ordersRes.json();
+          console.log('Orders loaded:', ordersData.length);
           const parsedOrders = ordersData.map((o: any) => ({
             ...o,
             createdAt: new Date(o.createdAt),
@@ -62,24 +71,35 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             pickupTime: o.pickupTime ? new Date(o.pickupTime) : undefined,
           }));
           setOrders(parsedOrders);
+        } else {
+          console.error('Orders fetch failed:', ordersRes.status);
         }
 
         if (tablesRes.ok) {
           const tablesData = await tablesRes.json();
+          console.log('Tables loaded:', tablesData.length, tablesData);
           setTables(tablesData.map((t: any) => ({
             ...t,
             currentOrderIds: t.currentOrderIds || [],
           })));
+        } else {
+          console.error('Tables fetch failed:', tablesRes.status);
         }
 
         if (menuRes.ok) {
           const menuData = await menuRes.json();
+          console.log('Menu items loaded:', menuData.length);
           setMenuItems(menuData);
+        } else {
+          console.error('Menu fetch failed:', menuRes.status);
         }
 
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json();
+          console.log('Categories loaded:', categoriesData.length);
           setCategories(categoriesData);
+        } else {
+          console.error('Categories fetch failed:', categoriesRes.status);
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
