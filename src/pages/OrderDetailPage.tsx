@@ -21,8 +21,8 @@ import {
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { orders, deleteOrder } = useOrders();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { orders, cancelOrder } = useOrders();
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   const order = orders.find((o) => o.id === id);
 
@@ -160,35 +160,35 @@ const OrderDetailPage = () => {
           Back to Orders
         </Button>
         
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
           <AlertDialogTrigger asChild>
             <Button 
               variant="destructive" 
               className="flex-1 sm:flex-none"
-              data-testid="button-delete-order"
+              data-testid="button-cancel-order"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Delete Order
+              Cancel Order
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Order</AlertDialogTitle>
+              <AlertDialogTitle>Cancel Order</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete order {order.orderNumber}? This action cannot be undone.
+                Are you sure you want to cancel order {order.orderNumber}? The order will be moved to cancelled orders.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+              <AlertDialogCancel data-testid="button-keep-order">Keep Order</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
-                  deleteOrder(order.id);
+                  cancelOrder(order.id);
                   navigate("/orders");
                 }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                data-testid="button-confirm-delete"
+                data-testid="button-confirm-cancel"
               >
-                Delete
+                Cancel Order
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

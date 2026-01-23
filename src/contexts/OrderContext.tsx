@@ -20,7 +20,7 @@ interface OrderContextType {
   
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   updateItemStatus: (orderId: string, itemId: string, status: OrderItemStatus) => void;
-  deleteOrder: (orderId: string) => void;
+  cancelOrder: (orderId: string) => void;
   
   updateTableStatus: (tableId: string, status: Table['status'], orderIds?: string[]) => void;
   refreshData: () => void;
@@ -384,22 +384,26 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }
   }, [orders]);
 
-  const deleteOrder = useCallback(async (orderId: string) => {
+  const cancelOrder = useCallback(async (orderId: string) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
 
     try {
-      await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
 
-      if (order.tableId) {
-        const table = tables.find(t => t.id === order.tableId);
+      if (order.tableNumber) {
+        const table = tables.find(t => t.tableNumber === order.tableNumber);
         if (table) {
           const newOrderIds = table.currentOrderIds.filter(id => id !== orderId);
           const newStatus = newOrderIds.length > 0 ? 'occupied' : 'available';
           
           setTables(prev =>
             prev.map(t => {
-              if (t.id !== order.tableId) return t;
+              if (t.tableNumber !== order.tableNumber) return t;
               return {
                 ...t,
                 status: newStatus as 'available' | 'occupied' | 'reserved',
@@ -408,7 +412,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             })
           );
           
-          await fetch(`/api/tables/${order.tableId}`, {
+          await fetch(`/api/tables/${table.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
@@ -416,9 +420,9 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      setOrders(prev => prev.filter(o => o.id !== orderId));
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' as OrderStatus } : o));
     } catch (error) {
-      console.error('Failed to delete order:', error);
+      console.error('Failed to cancel order:', error);
     }
   }, [orders, tables]);
 
@@ -478,7 +482,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         cancelCurrentOrder,
         updateOrderStatus,
         updateItemStatus,
-        deleteOrder,
+        cancelOrder,
         updateTableStatus,
         refreshData: fetchData,
         getOrdersByStatus,
