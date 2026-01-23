@@ -119,7 +119,7 @@ const seedTables = [
 ];
 
 const seedUsers = [
-  { visibleId: 'user-1', name: 'Harish Nampally', email: 'nampallyharish5544@gmail.com', phone: '+919876543210', role: 'admin' as const, isActive: true },
+  { visibleId: 'user-1', name: 'Harish Nampally', email: 'nampallyharish5544@gmail.com', password: 'Harish81870Nampally', phone: '+919876543210', role: 'admin' as const, isActive: true },
 ];
 
 export function registerRoutes(app: Express) {
@@ -492,6 +492,115 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error('Error updating settings:', error);
       res.status(500).json({ error: 'Failed to update settings' });
+    }
+  });
+
+  // Authentication routes
+  app.post('/api/auth/login', async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      
+      const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
+      
+      if (!user || user.password !== password) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+      
+      if (!user.isActive) {
+        return res.status(401).json({ error: 'Account is deactivated' });
+      }
+      
+      // Return user without password
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ ...userWithoutPassword, id: user.visibleId });
+    } catch (error) {
+      console.error('Error logging in:', error);
+      res.status(500).json({ error: 'Failed to login' });
+    }
+  });
+
+  // User management routes
+  app.get('/api/users', async (req: Request, res: Response) => {
+    try {
+      const allUsers = await db.select().from(users);
+      // Return users without passwords
+      const usersWithoutPasswords = allUsers.map(({ password, ...user }) => ({
+        ...user,
+        id: user.visibleId,
+      }));
+      res.json(usersWithoutPasswords);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
+  app.post('/api/users', async (req: Request, res: Response) => {
+    try {
+      const { name, email, password, phone, role } = req.body;
+      
+      const visibleId = `user-${Date.now()}`;
+      
+      const [newUser] = await db.insert(users).values({
+        visibleId,
+        name,
+        email: email.toLowerCase(),
+        password,
+        phone,
+        role,
+        isActive: true,
+      }).returning();
+      
+      const { password: _, ...userWithoutPassword } = newUser;
+      res.json({ ...userWithoutPassword, id: newUser.visibleId });
+    } catch (error: any) {
+      console.error('Error creating user:', error);
+      if (error.code === '23505') {
+        res.status(400).json({ error: 'Email already exists' });
+      } else {
+        res.status(500).json({ error: 'Failed to create user' });
+      }
+    }
+  });
+
+  app.patch('/api/users/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const updateData: any = {};
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.email !== undefined) updateData.email = updates.email.toLowerCase();
+      if (updates.password !== undefined) updateData.password = updates.password;
+      if (updates.phone !== undefined) updateData.phone = updates.phone;
+      if (updates.role !== undefined) updateData.role = updates.role;
+      if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
+      
+      const [updatedUser] = await db.update(users)
+        .set(updateData)
+        .where(eq(users.visibleId, id))
+        .returning();
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json({ ...userWithoutPassword, id: updatedUser.visibleId });
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ error: 'Failed to update user' });
+    }
+  });
+
+  app.delete('/api/users/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await db.delete(users).where(eq(users.visibleId, id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ error: 'Failed to delete user' });
     }
   });
 }

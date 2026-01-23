@@ -6,10 +6,7 @@ async function seed() {
 
   // Seed Users
   const usersData = [
-    { visibleId: "user-1", name: "Admin User", email: "admin@kaveri.com", phone: "9876543210", role: "admin" as const, isActive: true },
-    { visibleId: "user-2", name: "John Waiter", email: "waiter@kaveri.com", phone: "9876543211", role: "waiter" as const, isActive: true },
-    { visibleId: "user-3", name: "Jane Cashier", email: "cashier@kaveri.com", phone: "9876543212", role: "cashier" as const, isActive: true },
-    { visibleId: "user-4", name: "Kitchen Staff", email: "kitchen@kaveri.com", phone: "9876543213", role: "kitchen" as const, isActive: true },
+    { visibleId: "user-1", name: "Harish Nampally", email: "nampallyharish5544@gmail.com", password: "Harish81870Nampally", phone: "+919876543210", role: "admin" as const, isActive: true },
   ];
 
   console.log("Seeding users...");

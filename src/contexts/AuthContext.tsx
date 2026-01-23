@@ -1,19 +1,13 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { User, UserRole, AuthState } from '@/types';
-import { mockUsers } from '@/data/mockData';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  switchRole: (role: UserRole) => void; // For demo purposes
+  switchRole: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Admin credentials
-const DEMO_CREDENTIALS: Record<string, { password: string; userId: string }> = {
-  'nampallyharish5544@gmail.com': { password: 'Harish81870Nampally', userId: 'user-1' },
-};
 
 const AUTH_STORAGE_KEY = 'pos_auth_user';
 
@@ -24,7 +18,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
 
-  // Load user from storage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
     if (storedUser) {
@@ -47,13 +40,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     setState(prev => ({ ...prev, isLoading: true }));
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const credentials = DEMO_CREDENTIALS[email.toLowerCase()];
-    if (credentials && credentials.password === password) {
-      const user = mockUsers.find(u => u.id === credentials.userId);
-      if (user) {
+      if (response.ok) {
+        const user = await response.json();
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
         setState({
           user,
@@ -62,6 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return true;
       }
+    } catch (error) {
+      console.error('Login error:', error);
     }
 
     setState(prev => ({ ...prev, isLoading: false }));
@@ -77,21 +74,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Demo function to quickly switch roles
   const switchRole = useCallback((role: UserRole) => {
-    const user = mockUsers.find(u => u.role === role);
-    if (user) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-      setState({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
+    if (state.user) {
+      const updatedUser = { ...state.user, role };
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
+      setState(prev => ({
+        ...prev,
+        user: updatedUser,
+      }));
     }
-  }, []);
+  }, [state.user]);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout, switchRole }}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        login,
+        logout,
+        switchRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -100,24 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    // Defensive fallback to avoid blank-screen crashes during hot reloads
-    console.warn('useAuth was called outside AuthProvider; returning a safe fallback.');
-    return {
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-      login: async () => false,
-      logout: () => {},
-      switchRole: () => {},
-    } as AuthContextType;
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
-
-export function useRequireAuth() {
-  const auth = useAuth();
-  if (!auth.isAuthenticated && !auth.isLoading) {
-    throw new Error('User must be authenticated');
-  }
-  return auth;
 }
