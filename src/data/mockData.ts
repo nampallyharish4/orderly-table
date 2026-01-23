@@ -1182,11 +1182,13 @@ export const mockTables: Table[] = [
 // Mock Orders - empty by default
 export const mockOrders: Order[] = [];
 
-// Helper function to generate order number
-let orderCounter = 0;
+// Helper function to generate unique order number
 export function generateOrderNumber(): string {
-  orderCounter++;
-  return `ORD-${String(orderCounter).padStart(3, '0')}`;
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `ORD-${dateStr}-${timeStr}-${random}`;
 }
 
 // Helper function to calculate order totals
