@@ -102,7 +102,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <Utensils className="w-4 xl:w-5 h-4 xl:h-5 text-primary-foreground" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-bold text-base xl:text-lg truncate">RestaurantPOS</h1>
+            <h1 className="font-bold text-base xl:text-lg truncate">Kaveri Family Restaurant</h1>
             <p className="text-[10px] xl:text-xs text-muted-foreground truncate">Order Management</p>
           </div>
         </div>
@@ -149,7 +149,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
               <Utensils className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-bold">RestaurantPOS</span>
+            <span className="font-bold">Kaveri</span>
           </div>
           <Button
             variant="ghost"

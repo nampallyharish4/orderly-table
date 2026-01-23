@@ -60,7 +60,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
             <Utensils className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">RestaurantPOS</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Kaveri Family Restaurant</h1>
           <p className="text-muted-foreground mt-2">Sign in to manage your restaurant</p>
         </div>
 
