@@ -22,9 +22,9 @@ const BillingPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | null>(null);
 
-  // Get orders that are ready for billing (status: ready or served)
+  // Get orders that are ready for billing (status: preparing, ready, or served)
   const billableOrders = orders.filter(
-    order => order.status === 'ready' || order.status === 'preparing'
+    order => order.status === 'preparing' || order.status === 'ready' || order.status === 'served'
   );
 
   const getTaxBreakdown = (order: Order) => {
