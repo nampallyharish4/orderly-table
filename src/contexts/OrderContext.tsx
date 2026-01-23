@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
-import { Order, OrderItem, Table, MenuItem, OrderType, OrderStatus, OrderItemStatus } from '@/types';
+import { Order, OrderItem, Table, MenuItem, MenuCategory, OrderType, OrderStatus, OrderItemStatus } from '@/types';
 import { generateOrderNumber, calculateOrderTotals } from '@/data/mockData';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 
@@ -7,6 +7,7 @@ interface OrderContextType {
   orders: Order[];
   tables: Table[];
   menuItems: MenuItem[];
+  categories: MenuCategory[];
   currentOrder: Partial<Order> | null;
   isLoading: boolean;
   
@@ -34,6 +35,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Partial<Order> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { playReadySound } = useNotificationSound();
@@ -42,10 +44,11 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ordersRes, tablesRes, menuRes] = await Promise.all([
+        const [ordersRes, tablesRes, menuRes, categoriesRes] = await Promise.all([
           fetch('/api/orders'),
           fetch('/api/tables'),
           fetch('/api/menu-items'),
+          fetch('/api/categories'),
         ]);
 
         if (ordersRes.ok) {
@@ -72,6 +75,11 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         if (menuRes.ok) {
           const menuData = await menuRes.json();
           setMenuItems(menuData);
+        }
+
+        if (categoriesRes.ok) {
+          const categoriesData = await categoriesRes.json();
+          setCategories(categoriesData);
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -438,6 +446,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         orders,
         tables,
         menuItems,
+        categories,
         currentOrder,
         isLoading,
         createOrder,
