@@ -67,6 +67,7 @@ export const tables = pgTable("tables", {
   capacity: integer("capacity").notNull(),
   floor: text("floor").notNull(),
   status: text("status").notNull().$type<TableStatus>().default("available"),
+  currentOrderIds: jsonb("current_order_ids").notNull().default([]),
 });
 
 export type Table = typeof tables.$inferSelect;
