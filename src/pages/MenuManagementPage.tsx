@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { MenuItem } from '@/types';
-import { Plus, Pencil, Search } from 'lucide-react';
+import { Plus, Pencil, Search, Trash2 } from 'lucide-react';
 
 export default function MenuManagementPage() {
   const { menuItems, categories, refreshData } = useOrders();
@@ -20,6 +20,7 @@ export default function MenuManagementPage() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -71,6 +72,22 @@ export default function MenuManagementPage() {
   const closeDialog = () => {
     setEditingItem(null);
     setIsAddingNew(false);
+  };
+
+  const handleDelete = async (item: MenuItem) => {
+    if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
+    
+    setDeletingId(item.id);
+    try {
+      const response = await fetch(`/api/menu-items/${item.id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete');
+      toast({ title: 'Success', description: 'Menu item deleted' });
+      refreshData();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete menu item', variant: 'destructive' });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleSave = async () => {
@@ -188,6 +205,16 @@ export default function MenuManagementPage() {
                   />
                   <Button variant="outline" size="icon" onClick={() => openEditDialog(item)} data-testid={`button-edit-${item.id}`}>
                     <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => handleDelete(item)} 
+                    disabled={deletingId === item.id}
+                    className="text-destructive hover:text-destructive"
+                    data-testid={`button-delete-${item.id}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>

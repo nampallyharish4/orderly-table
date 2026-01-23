@@ -374,6 +374,26 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.delete('/api/menu-items/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const [deleted] = await db
+        .delete(menuItems)
+        .where(eq(menuItems.visibleId, id))
+        .returning();
+
+      if (!deleted) {
+        return res.status(404).json({ error: 'Menu item not found' });
+      }
+
+      res.json({ success: true, id });
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      res.status(500).json({ error: 'Failed to delete menu item' });
+    }
+  });
+
   app.post('/api/seed', async (req: Request, res: Response) => {
     try {
       console.log('Starting database seed via API...');
