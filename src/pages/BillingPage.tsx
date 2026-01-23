@@ -44,14 +44,94 @@ const BillingPage = () => {
     updateOrderStatus(selectedOrder.id, 'served');
     toast.success(`Payment received via ${method.toUpperCase()}`);
     
+    // Auto-print bill after payment
+    setTimeout(() => {
+      printBill(selectedOrder);
+    }, 500);
+    
     setTimeout(() => {
       setSelectedOrder(null);
       setPaymentMethod(null);
-    }, 1500);
+    }, 2000);
+  };
+
+  const printBill = (order: Order) => {
+    const subtotal = calculateSubtotal(order);
+    const tax = calculateTax(subtotal);
+    const total = subtotal + tax.total;
+    
+    const printContent = `
+      <html>
+        <head>
+          <title>Bill - ${order.orderNumber}</title>
+          <style>
+            body { font-family: 'Courier New', monospace; padding: 20px; max-width: 300px; margin: 0 auto; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header h1 { margin: 0; font-size: 18px; }
+            .header p { margin: 5px 0; font-size: 12px; }
+            .divider { border-top: 1px dashed #000; margin: 10px 0; }
+            .item { display: flex; justify-content: space-between; font-size: 12px; margin: 5px 0; }
+            .total { font-weight: bold; font-size: 14px; }
+            .footer { text-align: center; margin-top: 20px; font-size: 11px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Kaveri Family Restaurant</h1>
+            <p>Order #${order.orderNumber}</p>
+            <p>${new Date().toLocaleString()}</p>
+          </div>
+          <div class="divider"></div>
+          ${order.items.map(item => `
+            <div class="item">
+              <span>${item.menuItemName} x${item.quantity}</span>
+              <span>₹${(item.unitPrice * item.quantity).toFixed(0)}</span>
+            </div>
+          `).join('')}
+          <div class="divider"></div>
+          <div class="item">
+            <span>Subtotal</span>
+            <span>₹${subtotal.toFixed(0)}</span>
+          </div>
+          <div class="item">
+            <span>CGST (2.5%)</span>
+            <span>₹${tax.cgst.toFixed(0)}</span>
+          </div>
+          <div class="item">
+            <span>SGST (2.5%)</span>
+            <span>₹${tax.sgst.toFixed(0)}</span>
+          </div>
+          <div class="divider"></div>
+          <div class="item total">
+            <span>TOTAL</span>
+            <span>₹${total.toFixed(0)}</span>
+          </div>
+          <div class="footer">
+            <p>Thank you for dining with us!</p>
+            <p>Visit again</p>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+    
+    toast.success("Bill printed successfully");
   };
 
   const handlePrint = () => {
-    toast.success("Bill sent to printer");
+    if (selectedOrder) {
+      printBill(selectedOrder);
+    } else {
+      toast.error("Please select an order first");
+    }
   };
 
   const handleShare = () => {
