@@ -6,11 +6,12 @@ import {
   BarChart3, 
   DollarSign, 
   ShoppingCart, 
-  Users, 
   Clock,
   Download,
   Calendar,
-  ChevronDown
+  ChevronDown,
+  Banknote,
+  Smartphone
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -65,6 +66,11 @@ export default function ReportsPage() {
 
   const totalRevenue = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
   const avgOrderValue = completedOrders.length > 0 ? totalRevenue / completedOrders.length : 0;
+  
+  const cashOrders = completedOrders.filter(o => o.payment?.method === 'cash');
+  const upiOrders = completedOrders.filter(o => o.payment?.method === 'upi');
+  const cashRevenue = cashOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const upiRevenue = upiOrders.reduce((sum, o) => sum + o.totalAmount, 0);
 
   const exportToCSV = () => {
     const headers = ['Order #', 'Date', 'Type', 'Status', 'Items', 'Subtotal', 'Tax', 'Total'];
@@ -95,10 +101,22 @@ export default function ReportsPage() {
 
   const stats = [
     {
-      title: 'Revenue',
+      title: 'Total Revenue',
       value: `₹${totalRevenue.toLocaleString()}`,
       subtitle: dateRangeLabels[dateRange],
       icon: DollarSign,
+    },
+    {
+      title: 'Cash Payments',
+      value: `₹${cashRevenue.toLocaleString()}`,
+      subtitle: `${cashOrders.length} orders`,
+      icon: Banknote,
+    },
+    {
+      title: 'UPI Payments',
+      value: `₹${upiRevenue.toLocaleString()}`,
+      subtitle: `${upiOrders.length} orders`,
+      icon: Smartphone,
     },
     {
       title: 'Completed Orders',

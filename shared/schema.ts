@@ -79,7 +79,7 @@ export type OrderType = typeof orderTypeEnum[number];
 export const orderStatusEnum = ["new", "preparing", "ready", "served", "collected", "cancelled"] as const;
 export type OrderStatus = typeof orderStatusEnum[number];
 
-export const paymentMethodEnum = ["cash", "card", "upi"] as const;
+export const paymentMethodEnum = ["cash", "upi"] as const;
 export type PaymentMethod = typeof paymentMethodEnum[number];
 
 export const paymentStatusEnum = ["pending", "completed", "refunded"] as const;

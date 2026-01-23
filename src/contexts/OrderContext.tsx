@@ -18,7 +18,7 @@ interface OrderContextType {
   submitOrder: (customerName?: string, customerPhone?: string, pickupTime?: Date) => Promise<Order>;
   cancelCurrentOrder: () => void;
   
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi') => void;
   updateItemStatus: (orderId: string, itemId: string, status: OrderItemStatus) => void;
   cancelOrder: (orderId: string) => void;
   editExistingOrder: (orderId: string) => void;
@@ -313,11 +313,16 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     setCurrentOrder(null);
   }, []);
 
-  const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus) => {
+  const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi') => {
     const updates: any = { status };
     
     if (status === 'served' || status === 'collected') {
       updates.servedAt = new Date().toISOString();
+    }
+    
+    if (status === 'collected' && paymentMethod) {
+      updates.paymentMethod = paymentMethod;
+      updates.paidAt = new Date().toISOString();
     }
 
     try {
@@ -340,6 +345,16 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             status,
             updatedAt: new Date(),
           };
+
+          if (status === 'collected' && paymentMethod) {
+            orderUpdates.payment = { 
+              id: `pay-${Date.now()}`, 
+              orderId, 
+              method: paymentMethod, 
+              amount: order.totalAmount, 
+              status: 'completed' 
+            };
+          }
 
           if (status === 'served') {
             orderUpdates.servedAt = new Date();

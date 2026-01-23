@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
   Receipt, 
-  CreditCard, 
   Banknote, 
   Smartphone,
   Printer,
@@ -20,7 +19,7 @@ import { toast } from "sonner";
 const BillingPage = () => {
   const { orders, updateOrderStatus } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi' | null>(null);
 
   // Get orders that are ready for billing (only served orders)
   const billableOrders = orders.filter(order => order.status === 'served');
@@ -31,11 +30,11 @@ const BillingPage = () => {
     return { cgst, sgst, total: order.taxAmount };
   };
 
-  const handlePayment = (method: 'cash' | 'card' | 'upi') => {
+  const handlePayment = (method: 'cash' | 'upi') => {
     if (!selectedOrder) return;
     
     setPaymentMethod(method);
-    updateOrderStatus(selectedOrder.id, 'collected');
+    updateOrderStatus(selectedOrder.id, 'collected', method);
     toast.success(`Payment received via ${method.toUpperCase()}`);
     
     setTimeout(() => {
@@ -359,15 +358,6 @@ const BillingPage = () => {
                     >
                       <Banknote className="w-4 sm:w-5 h-4 sm:h-5" />
                       <span className="text-[10px] sm:text-xs">Cash</span>
-                    </Button>
-                    <Button
-                      variant={paymentMethod === 'card' ? 'default' : 'outline'}
-                      className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
-                      onClick={() => handlePayment('card')}
-                      data-testid="button-pay-card"
-                    >
-                      <CreditCard className="w-4 sm:w-5 h-4 sm:h-5" />
-                      <span className="text-[10px] sm:text-xs">Card</span>
                     </Button>
                     <Button
                       variant={paymentMethod === 'upi' ? 'default' : 'outline'}
