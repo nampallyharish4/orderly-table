@@ -121,27 +121,31 @@ export default function NewOrderPage() {
         </div>
 
         {/* Categories */}
-        <div className="mb-3 sm:mb-4 overflow-x-auto scrollbar-hide -mx-1 px-1">
-          <div className="flex gap-1.5 sm:gap-2 pb-2 min-w-max">
-            <Button
-              variant={selectedCategory === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedCategory('all')}
-              className="text-xs sm:text-sm"
-            >
-              All
-            </Button>
-            {mockCategories.filter(c => c.isActive).map(cat => (
+        <div className="mb-3 sm:mb-4 -mx-2 sm:-mx-3 px-2 sm:px-3">
+          <div className="overflow-x-auto scrollbar-thin pb-2">
+            <div className="flex gap-1.5 sm:gap-2 min-w-max">
               <Button
-                key={cat.id}
-                variant={selectedCategory === cat.id ? 'default' : 'outline'}
+                variant={selectedCategory === 'all' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setSelectedCategory(cat.id)}
-                className="whitespace-nowrap text-xs sm:text-sm"
+                onClick={() => setSelectedCategory('all')}
+                className="text-xs sm:text-sm flex-shrink-0"
+                data-testid="category-all"
               >
-                {cat.name}
+                All
               </Button>
-            ))}
+              {mockCategories.filter(c => c.isActive).map(cat => (
+                <Button
+                  key={cat.id}
+                  variant={selectedCategory === cat.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className="whitespace-nowrap text-xs sm:text-sm flex-shrink-0"
+                  data-testid={`category-${cat.id}`}
+                >
+                  {cat.name}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
