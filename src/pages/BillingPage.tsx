@@ -55,85 +55,137 @@ const BillingPage = () => {
     const tax = getTaxBreakdown(order);
     
     const printContent = `
+      <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="UTF-8">
           <title>Bill - ${order.orderNumber}</title>
           <style>
-            body { font-family: 'Courier New', monospace; padding: 20px; max-width: 300px; margin: 0 auto; }
-            .header { text-align: center; margin-bottom: 20px; }
-            .header h1 { margin: 0; font-size: 18px; }
-            .header p { margin: 5px 0; font-size: 12px; }
-            .divider { border-top: 1px dashed #000; margin: 10px 0; }
-            .item { display: flex; justify-content: space-between; font-size: 12px; margin: 5px 0; }
-            .item-addons { font-size: 10px; color: #666; margin-left: 10px; }
-            .total { font-weight: bold; font-size: 14px; }
-            .footer { text-align: center; margin-top: 20px; font-size: 11px; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            @page { 
+              size: 80mm auto;
+              margin: 0;
+            }
+            @media print {
+              html, body { width: 80mm; }
+            }
+            body { 
+              font-family: 'Courier New', 'Lucida Console', monospace;
+              font-size: 12px;
+              line-height: 1.4;
+              width: 80mm;
+              padding: 2mm;
+              color: #000;
+              background: #fff;
+            }
+            .header { text-align: center; margin-bottom: 8px; }
+            .header h1 { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+            .header p { font-size: 11px; margin: 2px 0; }
+            .divider { 
+              border: none;
+              border-top: 1px dashed #000;
+              margin: 6px 0;
+            }
+            .row { 
+              display: table;
+              width: 100%;
+              margin: 3px 0;
+            }
+            .row .label { 
+              display: table-cell;
+              text-align: left;
+              max-width: 55mm;
+              word-wrap: break-word;
+            }
+            .row .value { 
+              display: table-cell;
+              text-align: right;
+              white-space: nowrap;
+            }
+            .addons { 
+              font-size: 10px;
+              color: #333;
+              padding-left: 8px;
+              margin: 1px 0 3px 0;
+            }
+            .total-row { font-weight: bold; font-size: 14px; }
+            .footer { 
+              text-align: center;
+              margin-top: 10px;
+              font-size: 10px;
+            }
+            .footer p { margin: 2px 0; }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>Kaveri Family Restaurant</h1>
-            <p>Order #${order.orderNumber}</p>
-            <p>${new Date().toLocaleString()}</p>
+            <h1>KAVERI FAMILY RESTAURANT</h1>
+            <p>--------------------------------</p>
+            <p>Order: ${order.orderNumber}</p>
+            <p>${order.orderType === 'dine-in' && order.tableNumber ? `Table: ${order.tableNumber}` : 'Takeaway'}</p>
+            <p>${new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</p>
           </div>
           <div class="divider"></div>
           ${order.items.map(item => `
-            <div class="item">
-              <span>${item.menuItemName} x${item.quantity}</span>
-              <span>₹${item.totalPrice.toFixed(0)}</span>
+            <div class="row">
+              <span class="label">${item.menuItemName} x${item.quantity}</span>
+              <span class="value">${item.totalPrice.toFixed(0)}</span>
             </div>
             ${item.addOns && item.addOns.length > 0 ? `
-              <div class="item-addons">+ ${item.addOns.map(a => a.name).join(', ')}</div>
+              <div class="addons">+ ${item.addOns.map(a => a.name).join(', ')}</div>
             ` : ''}
           `).join('')}
           <div class="divider"></div>
-          <div class="item">
-            <span>Subtotal</span>
-            <span>₹${order.subtotal.toFixed(0)}</span>
+          <div class="row">
+            <span class="label">Subtotal</span>
+            <span class="value">${order.subtotal.toFixed(0)}</span>
           </div>
           ${order.serviceCharge > 0 ? `
-          <div class="item">
-            <span>Service Charge</span>
-            <span>₹${order.serviceCharge.toFixed(0)}</span>
+          <div class="row">
+            <span class="label">Service Charge</span>
+            <span class="value">${order.serviceCharge.toFixed(0)}</span>
           </div>
           ` : ''}
-          <div class="item">
-            <span>CGST (2.5%)</span>
-            <span>₹${tax.cgst.toFixed(0)}</span>
+          <div class="row">
+            <span class="label">CGST (2.5%)</span>
+            <span class="value">${tax.cgst.toFixed(0)}</span>
           </div>
-          <div class="item">
-            <span>SGST (2.5%)</span>
-            <span>₹${tax.sgst.toFixed(0)}</span>
+          <div class="row">
+            <span class="label">SGST (2.5%)</span>
+            <span class="value">${tax.sgst.toFixed(0)}</span>
           </div>
           ${order.discountAmount > 0 ? `
-          <div class="item">
-            <span>Discount</span>
-            <span>-₹${order.discountAmount.toFixed(0)}</span>
+          <div class="row">
+            <span class="label">Discount</span>
+            <span class="value">-${order.discountAmount.toFixed(0)}</span>
           </div>
           ` : ''}
           <div class="divider"></div>
-          <div class="item total">
-            <span>TOTAL</span>
-            <span>₹${order.totalAmount.toFixed(0)}</span>
+          <div class="row total-row">
+            <span class="label">TOTAL</span>
+            <span class="value">Rs.${order.totalAmount.toFixed(0)}</span>
           </div>
+          <div class="divider"></div>
           <div class="footer">
             <p>Thank you for dining with us!</p>
             <p>Visit again</p>
+            <p>--------------------------------</p>
           </div>
         </body>
       </html>
     `;
     
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    const printWindow = window.open('', '_blank', 'width=302,height=600');
     if (printWindow) {
       printWindow.document.write(printContent);
       printWindow.document.close();
       printWindow.focus();
-      printWindow.print();
-      printWindow.close();
+      setTimeout(() => {
+        printWindow.print();
+      }, 250);
     }
     
-    toast.success("Bill printed successfully");
+    toast.success("Bill sent to printer");
   };
 
   const handlePrint = () => {
