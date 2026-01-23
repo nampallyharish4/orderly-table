@@ -10,12 +10,9 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo credentials
+// Admin credentials
 const DEMO_CREDENTIALS: Record<string, { password: string; userId: string }> = {
-  'admin@restaurant.com': { password: 'admin123', userId: 'user-1' },
-  'john@restaurant.com': { password: 'waiter123', userId: 'user-2' },
-  'sarah@restaurant.com': { password: 'cashier123', userId: 'user-3' },
-  'mike@restaurant.com': { password: 'kitchen123', userId: 'user-4' },
+  'nampallyharish5544@gmail.com': { password: 'Harish81870Nampally', userId: 'user-1' },
 };
 
 const AUTH_STORAGE_KEY = 'pos_auth_user';

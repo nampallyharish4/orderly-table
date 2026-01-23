@@ -6,14 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Utensils, Eye, EyeOff, AlertCircle, User, Lock } from 'lucide-react';
-import { UserRole } from '@/types';
-
-const DEMO_ACCOUNTS = [
-  { role: 'admin' as UserRole, email: 'admin@restaurant.com', password: 'admin123', label: 'Admin' },
-  { role: 'waiter' as UserRole, email: 'john@restaurant.com', password: 'waiter123', label: 'Waiter' },
-  { role: 'cashier' as UserRole, email: 'sarah@restaurant.com', password: 'cashier123', label: 'Cashier' },
-  { role: 'kitchen' as UserRole, email: 'mike@restaurant.com', password: 'kitchen123', label: 'Kitchen' },
-];
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -38,17 +30,6 @@ export default function LoginPage() {
       navigate('/');
     } else {
       setError('Invalid email or password');
-    }
-  };
-
-  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[0]) => {
-    setEmail(account.email);
-    setPassword(account.password);
-    setError('');
-
-    const success = await login(account.email, account.password);
-    if (success) {
-      navigate('/');
     }
   };
 
@@ -132,38 +113,8 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        {/* Demo Accounts */}
-        <Card className="border-border/50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Quick Demo Access
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2">
-            {DEMO_ACCOUNTS.map(account => (
-              <Button
-                key={account.role}
-                variant="outline"
-                size="sm"
-                onClick={() => handleDemoLogin(account)}
-                disabled={isLoading}
-                className="justify-start"
-                data-testid={`button-demo-${account.role}`}
-              >
-                <span className={`w-2 h-2 rounded-full mr-2 ${
-                  account.role === 'admin' ? 'bg-primary' :
-                  account.role === 'waiter' ? 'bg-info' :
-                  account.role === 'cashier' ? 'bg-success' :
-                  'bg-warning'
-                }`} />
-                {account.label}
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-
         <p className="text-center text-xs text-muted-foreground">
-          Production-ready Restaurant POS System
+          Kaveri Family Restaurant POS System
         </p>
       </div>
     </div>

@@ -30,31 +30,17 @@ import mushroomMasala from '@/assets/images/mushroom-masala.jpg';
 export const mockUsers: User[] = [
   {
     id: 'user-1',
-    name: 'Admin User',
-    email: 'admin@restaurant.com',
-    phone: '+1234567890',
+    name: 'Harish Nampally',
+    email: 'nampallyharish5544@gmail.com',
+    phone: '+919876543210',
     role: 'admin',
     isActive: true,
     createdAt: new Date('2024-01-01'),
   },
-  {
-    id: 'user-2',
-    name: 'John Waiter',
-    email: 'john@restaurant.com',
-    phone: '+1234567891',
-    role: 'waiter',
-    isActive: true,
-    createdAt: new Date('2024-01-15'),
-  },
-  {
-    id: 'user-3',
-    name: 'Sarah Cashier',
-    email: 'sarah@restaurant.com',
-    phone: '+1234567892',
-    role: 'cashier',
-    isActive: true,
-    createdAt: new Date('2024-02-01'),
-  },
+];
+
+// Removed other users - keeping only admin
+const _removedUsers = [
   {
     id: 'user-4',
     name: 'Mike Kitchen',
