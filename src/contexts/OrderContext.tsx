@@ -125,7 +125,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isLoading || tables.length === 0) return;
     
-    const activeStatuses = ['new', 'preparing', 'ready'];
+    const activeStatuses = ['new', 'preparing', 'ready', 'served'];
     
     tables.forEach(table => {
       const activeOrders = orders.filter(
@@ -341,13 +341,20 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             updatedAt: new Date(),
           };
 
-          if (status === 'served' || status === 'collected') {
+          if (status === 'served') {
             orderUpdates.servedAt = new Date();
+          }
+          
+          if (status === 'collected') {
             if (order.tableNumber) {
               const table = tables.find(t => t.tableNumber === order.tableNumber);
               if (table) {
                 const newOrderIds = table.currentOrderIds.filter(id => id !== orderId);
-                const newStatus = newOrderIds.length > 0 ? 'occupied' : 'available';
+                const activeStatuses = ['new', 'preparing', 'ready', 'served'];
+                const remainingActiveOrders = orders.filter(
+                  o => o.id !== orderId && o.tableNumber === order.tableNumber && activeStatuses.includes(o.status)
+                );
+                const newStatus = remainingActiveOrders.length > 0 ? 'occupied' : 'available';
                 
                 setTables(prevTables =>
                   prevTables.map(t => {
