@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableStatus } from '@/types';
-import { LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, Loader2 } from 'lucide-react';
 
 export default function TablesPage() {
-  const { tables, createOrder } = useOrders();
+  const { tables, createOrder, isLoading } = useOrders();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [floorFilter, setFloorFilter] = useState<string>('all');
@@ -50,6 +50,15 @@ export default function TablesPage() {
     available: tables.filter(t => t.status === 'available').length,
     occupied: tables.filter(t => t.status === 'occupied').length,
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading tables...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
