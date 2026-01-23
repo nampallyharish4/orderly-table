@@ -1,7 +1,8 @@
 import { cn } from '@/lib/utils';
 import { MenuItem } from '@/types';
 import { Badge } from '@/components/ui/badge';
-import { Leaf, CircleDot, Plus, Clock } from 'lucide-react';
+import { Plus, Clock } from 'lucide-react';
+import { getMenuItemImage } from '@/utils/menuImages';
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -10,6 +11,8 @@ interface MenuItemCardProps {
 }
 
 export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
+  const imageUrl = item.imageUrl || getMenuItemImage(item.name);
+  
   if (compact) {
     return (
       <button
@@ -24,17 +27,17 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
         )}
       >
         <div className="flex gap-2 sm:gap-3">
-          {item.imageUrl ? (
+          {imageUrl ? (
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-secondary">
               <img 
-                src={item.imageUrl} 
+                src={imageUrl} 
                 alt={item.name} 
                 className="w-full h-full object-cover"
               />
             </div>
           ) : (
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl opacity-50">🍽️</span>
+              <span className="text-2xl opacity-50"></span>
             </div>
           )}
           <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
@@ -73,18 +76,17 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
         !item.isAvailable && 'opacity-50 cursor-not-allowed'
       )}
     >
-      {/* Image placeholder or generated image would go here */}
-      {item.imageUrl ? (
+      {imageUrl ? (
         <div className="aspect-video rounded-lg bg-secondary mb-3 overflow-hidden">
           <img 
-            src={item.imageUrl} 
+            src={imageUrl} 
             alt={item.name} 
             className="w-full h-full object-cover"
           />
         </div>
       ) : (
         <div className="aspect-video rounded-lg bg-secondary/50 mb-3 flex items-center justify-center">
-          <span className="text-4xl opacity-50">🍽️</span>
+          <span className="text-4xl opacity-50"></span>
         </div>
       )}
 
