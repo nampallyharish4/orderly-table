@@ -21,6 +21,8 @@ interface OrderContextType {
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   updateItemStatus: (orderId: string, itemId: string, status: OrderItemStatus) => void;
   cancelOrder: (orderId: string) => void;
+  editExistingOrder: (orderId: string) => void;
+  addItemsToExistingOrder: () => Promise<void>;
   
   updateTableStatus: (tableId: string, status: Table['status'], orderIds?: string[]) => void;
   refreshData: () => void;
@@ -458,6 +460,55 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }
   }, [orders, tables]);
 
+  const editExistingOrder = useCallback((orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    setCurrentOrder({
+      id: order.id,
+      orderType: order.orderType,
+      tableId: order.tableId,
+      tableNumber: order.tableNumber,
+      items: [],
+      status: order.status,
+      existingOrderId: order.id,
+    });
+  }, [orders]);
+
+  const addItemsToExistingOrder = useCallback(async () => {
+    if (!currentOrder?.existingOrderId || !currentOrder.items?.length) return;
+    
+    const existingOrder = orders.find(o => o.id === currentOrder.existingOrderId);
+    if (!existingOrder) return;
+
+    const newItems = [...existingOrder.items, ...(currentOrder.items as OrderItem[])];
+    const totals = calculateOrderTotals(newItems, existingOrder.orderType);
+
+    try {
+      await fetch(`/api/orders/${currentOrder.existingOrderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          items: newItems,
+          ...totals,
+          status: 'new',
+        }),
+      });
+
+      setOrders(prev =>
+        prev.map(o =>
+          o.id === currentOrder.existingOrderId
+            ? { ...o, items: newItems, ...totals, status: 'new' as OrderStatus, updatedAt: new Date() }
+            : o
+        )
+      );
+
+      setCurrentOrder(null);
+    } catch (error) {
+      console.error('Failed to add items to order:', error);
+    }
+  }, [currentOrder, orders]);
+
   const updateTableStatus = useCallback(async (
     tableId: string,
     status: Table['status'],
@@ -515,6 +566,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         updateOrderStatus,
         updateItemStatus,
         cancelOrder,
+        editExistingOrder,
+        addItemsToExistingOrder,
         updateTableStatus,
         refreshData: fetchData,
         getOrdersByStatus,

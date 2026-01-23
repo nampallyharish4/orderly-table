@@ -110,6 +110,7 @@ export interface Order {
   createdAt: Date;
   updatedAt: Date;
   servedAt?: Date;
+  existingOrderId?: string;
   createdBy: string;
 }
 

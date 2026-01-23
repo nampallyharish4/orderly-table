@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { Plus, Clock, ShoppingCart, ChevronRight } from 'lucide-react';
+import { Plus, Clock, ShoppingCart, ChevronRight, PlusCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface TableOrdersDialogProps {
@@ -23,7 +23,7 @@ interface TableOrdersDialogProps {
 }
 
 export function TableOrdersDialog({ table, open, onOpenChange }: TableOrdersDialogProps) {
-  const { orders, createOrder } = useOrders();
+  const { orders, createOrder, editExistingOrder } = useOrders();
   const navigate = useNavigate();
 
   if (!table) return null;
@@ -36,6 +36,12 @@ export function TableOrdersDialog({ table, open, onOpenChange }: TableOrdersDial
   const handleSelectOrder = (orderId: string) => {
     onOpenChange(false);
     navigate(`/orders/${orderId}`);
+  };
+
+  const handleAddToOrder = (orderId: string) => {
+    editExistingOrder(orderId);
+    onOpenChange(false);
+    navigate('/orders/new');
   };
 
   const handleNewOrder = () => {
@@ -66,30 +72,45 @@ export function TableOrdersDialog({ table, open, onOpenChange }: TableOrdersDial
             <ScrollArea className="max-h-64">
               <div className="space-y-2">
                 {tableOrders.map(order => (
-                  <button
+                  <div
                     key={order.id}
-                    onClick={() => handleSelectOrder(order.id)}
-                    className="w-full p-3 rounded-lg border border-border bg-card hover:bg-secondary/50 transition-colors flex items-center justify-between text-left"
+                    className="p-3 rounded-lg border border-border bg-card"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <ShoppingCart className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{order.orderNumber}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          <span>{formatDistanceToNow(order.createdAt, { addSuffix: true })}</span>
-                          <span>•</span>
-                          <span>{order.items.length} items</span>
+                    <button
+                      onClick={() => handleSelectOrder(order.id)}
+                      className="w-full flex items-center justify-between text-left hover:bg-secondary/50 rounded-lg p-2 -m-2 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <ShoppingCart className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{order.orderNumber}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            <span>{formatDistanceToNow(order.createdAt, { addSuffix: true })}</span>
+                            <span>•</span>
+                            <span>{order.items.length} items</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={order.status} size="sm" />
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    </button>
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleAddToOrder(order.id)}
+                      >
+                        <PlusCircle className="w-4 h-4 mr-2" />
+                        Add Items to This Order
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={order.status} size="sm" />
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </ScrollArea>

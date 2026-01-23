@@ -28,7 +28,7 @@ import {
 import { toast } from 'sonner';
 
 export default function NewOrderPage() {
-  const { menuItems, categories, currentOrder, addItemToOrder, removeItemFromOrder, updateItemQuantity, submitOrder, cancelCurrentOrder, isLoading } = useOrders();
+  const { menuItems, categories, currentOrder, addItemToOrder, removeItemFromOrder, updateItemQuantity, submitOrder, addItemsToExistingOrder, cancelCurrentOrder, isLoading } = useOrders();
   const navigate = useNavigate();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +37,7 @@ export default function NewOrderPage() {
   const [customerPhone, setCustomerPhone] = useState('');
 
   const isTakeaway = currentOrder?.orderType === 'takeaway';
+  const isAddingToExisting = !!currentOrder?.existingOrderId;
 
   // Filter menu items
   const filteredItems = useMemo(() => {
@@ -61,12 +62,18 @@ export default function NewOrderPage() {
 
   const handleSubmit = async () => {
     try {
-      const order = await submitOrder(
-        isTakeaway ? customerName : undefined,
-        isTakeaway ? customerPhone : undefined
-      );
-      toast.success(`Order ${order.orderNumber} created!`);
-      navigate('/orders');
+      if (isAddingToExisting) {
+        await addItemsToExistingOrder();
+        toast.success('Items added to order!');
+        navigate('/orders');
+      } else {
+        const order = await submitOrder(
+          isTakeaway ? customerName : undefined,
+          isTakeaway ? customerPhone : undefined
+        );
+        toast.success(`Order ${order.orderNumber} created!`);
+        navigate('/orders');
+      }
     } catch (error) {
       toast.error('Failed to create order');
     }
@@ -112,9 +119,16 @@ export default function NewOrderPage() {
           </Button>
           <div className="min-w-0">
             <h1 className="text-lg sm:text-xl font-bold truncate">
-              {isTakeaway ? 'New Takeaway Order' : `Table ${currentOrder.tableNumber}`}
+              {isAddingToExisting 
+                ? `Add to Table ${currentOrder.tableNumber} Order`
+                : isTakeaway 
+                  ? 'New Takeaway Order' 
+                  : `Table ${currentOrder.tableNumber}`
+              }
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Select items to add</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {isAddingToExisting ? 'Add more items to existing order' : 'Select items to add'}
+            </p>
           </div>
         </div>
 
@@ -301,7 +315,7 @@ export default function NewOrderPage() {
               data-testid="button-send-to-kitchen"
             >
               <Send className="w-4 h-4 mr-2" />
-              Send to Kitchen
+              {isAddingToExisting ? 'Add Items to Order' : 'Send to Kitchen'}
             </Button>
             <Button
               variant="outline"
