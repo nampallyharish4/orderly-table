@@ -69,20 +69,31 @@ export default function ReportsPage() {
   const avgOrderValue = completedOrders.length > 0 ? totalRevenue / completedOrders.length : 0;
   
   // Calculate cash and UPI revenue including split payments
-  const cashRevenue = completedOrders.reduce((sum, o) => {
+  const paidOrders = completedOrders.filter(o => o.payment?.method);
+  
+  const cashRevenue = paidOrders.reduce((sum, o) => {
     if (o.payment?.method === 'cash') return sum + o.totalAmount;
     if (o.payment?.method === 'split' && o.payment?.cashAmount) return sum + o.payment.cashAmount;
     return sum;
   }, 0);
   
-  const upiRevenue = completedOrders.reduce((sum, o) => {
+  const upiRevenue = paidOrders.reduce((sum, o) => {
     if (o.payment?.method === 'upi') return sum + o.totalAmount;
     if (o.payment?.method === 'split' && o.payment?.upiAmount) return sum + o.payment.upiAmount;
     return sum;
   }, 0);
   
-  const cashOrderCount = completedOrders.filter(o => o.payment?.method === 'cash' || o.payment?.method === 'split').length;
-  const upiOrderCount = completedOrders.filter(o => o.payment?.method === 'upi' || o.payment?.method === 'split').length;
+  // Count orders that have cash component (full cash or split with cash)
+  const cashOrderCount = paidOrders.filter(o => 
+    o.payment?.method === 'cash' || 
+    (o.payment?.method === 'split' && o.payment?.cashAmount && o.payment.cashAmount > 0)
+  ).length;
+  
+  // Count orders that have UPI component (full UPI or split with UPI)
+  const upiOrderCount = paidOrders.filter(o => 
+    o.payment?.method === 'upi' || 
+    (o.payment?.method === 'split' && o.payment?.upiAmount && o.payment.upiAmount > 0)
+  ).length;
 
   const exportToCSV = () => {
     const headers = ['Order #', 'Date', 'Type', 'Status', 'Items', 'Subtotal', 'Tax', 'Total'];
