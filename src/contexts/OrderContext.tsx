@@ -20,6 +20,7 @@ interface OrderContextType {
   // Order status updates
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   updateItemStatus: (orderId: string, itemId: string, status: OrderItemStatus) => void;
+  deleteOrder: (orderId: string) => void;
   
   // Table operations
   updateTableStatus: (tableId: string, status: Table['status'], orderIds?: string[]) => void;
@@ -241,6 +242,29 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const deleteOrder = useCallback((orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    // If order has a table, release the table
+    if (order.tableId) {
+      setTables(prev =>
+        prev.map(t => {
+          if (t.id !== order.tableId) return t;
+          const newOrderIds = t.currentOrderIds.filter(id => id !== orderId);
+          return {
+            ...t,
+            status: newOrderIds.length > 0 ? 'occupied' as const : 'available' as const,
+            currentOrderIds: newOrderIds,
+          };
+        })
+      );
+    }
+
+    // Remove the order from the list
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+  }, [orders]);
+
   const updateTableStatus = useCallback((
     tableId: string,
     status: Table['status'],
@@ -282,6 +306,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         cancelCurrentOrder,
         updateOrderStatus,
         updateItemStatus,
+        deleteOrder,
         updateTableStatus,
         getOrdersByStatus,
         getOrdersByType,

@@ -1,15 +1,28 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useOrders } from "@/contexts/OrderContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { ArrowLeft, User, Phone, Clock, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, User, Phone, Clock, UtensilsCrossed, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { orders } = useOrders();
+  const { orders, deleteOrder } = useOrders();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const order = orders.find((o) => o.id === id);
 
@@ -146,6 +159,40 @@ const OrderDetailPage = () => {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Orders
         </Button>
+        
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogTrigger asChild>
+            <Button 
+              variant="destructive" 
+              className="flex-1 sm:flex-none"
+              data-testid="button-delete-order"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Order
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Order</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete order {order.orderNumber}? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  deleteOrder(order.id);
+                  navigate("/orders");
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                data-testid="button-confirm-delete"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
