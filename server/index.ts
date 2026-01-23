@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { registerRoutes } from './routes.js';
 
@@ -15,7 +14,19 @@ async function startServer() {
 
   registerRoutes(app);
 
-  if (process.env.NODE_ENV === 'production') {
+  let useVite = false;
+  
+  try {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+    useVite = true;
+    console.log('Running in development mode with Vite');
+  } catch (e) {
+    console.log('Running in production mode, serving static files');
     const distPath = path.resolve(currentDir, '.');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
@@ -23,12 +34,6 @@ async function startServer() {
         res.sendFile(path.join(distPath, 'index.html'));
       }
     });
-  } else {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
   }
 
   app.listen(port, '0.0.0.0', () => {
