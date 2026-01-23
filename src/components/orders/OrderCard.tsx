@@ -33,7 +33,9 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
 
   const handleMarkServed = (e: React.MouseEvent) => {
     e.stopPropagation();
-    updateOrderStatus(order.id, isTakeaway ? 'collected' : 'served');
+    // For takeaway: mark as 'served' so it goes to billing
+    // For dine-in: mark as 'served'
+    updateOrderStatus(order.id, 'served');
   };
 
   if (compact) {
@@ -174,7 +176,7 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
             onClick={handleMarkServed}
           >
             <CheckCircle2 className="w-4 h-4 mr-2" />
-            {isTakeaway ? 'Mark Collected' : 'Mark Served'}
+            {isTakeaway ? 'Order Handed Over' : 'Mark Served'}
           </Button>
         )}
       </CardContent>
