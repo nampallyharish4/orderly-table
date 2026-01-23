@@ -120,6 +120,38 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     prevReadyCountRef.current = readyCount;
   }, [orders, playReadySound]);
 
+  useEffect(() => {
+    if (isLoading || tables.length === 0) return;
+    
+    const activeStatuses = ['new', 'preparing', 'ready'];
+    
+    tables.forEach(table => {
+      const activeOrders = orders.filter(
+        o => o.tableNumber === table.tableNumber && activeStatuses.includes(o.status)
+      );
+      
+      const shouldBeOccupied = activeOrders.length > 0;
+      const isCurrentlyOccupied = table.status === 'occupied';
+      
+      if (shouldBeOccupied !== isCurrentlyOccupied) {
+        const newStatus = shouldBeOccupied ? 'occupied' : 'available';
+        const newOrderIds = activeOrders.map(o => o.id);
+        
+        setTables(prev =>
+          prev.map(t =>
+            t.id === table.id ? { ...t, status: newStatus, currentOrderIds: newOrderIds } : t
+          )
+        );
+        
+        fetch(`/api/tables/${table.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
+        }).catch(console.error);
+      }
+    });
+  }, [isLoading, orders, tables]);
+
   const createOrder = useCallback((orderType: OrderType, tableId?: string) => {
     const table = tableId ? tables.find(t => t.id === tableId) : undefined;
     setCurrentOrder({
