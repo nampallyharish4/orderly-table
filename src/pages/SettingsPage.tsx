@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,13 +14,31 @@ import {
   MapPin,
   Phone,
   Mail,
+  Loader2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface Settings {
+  id: number;
+  restaurantName: string;
+  address: string;
+  phone: string;
+  email: string;
+  enableNotifications: boolean;
+  enableSounds: boolean;
+  autoPrintBills: boolean;
+  enableUPI: boolean;
+  enableCash: boolean;
+  updatedAt: string;
+}
+
 export default function SettingsPage() {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<Settings>({
+    id: 0,
     restaurantName: 'Kaveri Family Restaurant',
     address: '123 Main Street, City',
     phone: '+91 9876543210',
@@ -29,20 +47,85 @@ export default function SettingsPage() {
     enableSounds: true,
     autoPrintBills: false,
     enableUPI: true,
-    enableCard: true,
     enableCash: true,
+    updatedAt: new Date().toISOString(),
   });
 
-  const handleSave = () => {
-    toast({
-      title: 'Settings Saved',
-      description: 'Your settings have been updated successfully.',
-    });
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleChange = (key: string, value: string | boolean) => {
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurantName: settings.restaurantName,
+          address: settings.address,
+          phone: settings.phone,
+          email: settings.email,
+          enableNotifications: settings.enableNotifications,
+          enableSounds: settings.enableSounds,
+          autoPrintBills: settings.autoPrintBills,
+          enableUPI: settings.enableUPI,
+          enableCash: settings.enableCash,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+        toast({
+          title: 'Settings Saved',
+          description: 'Your settings have been updated successfully.',
+        });
+      } else {
+        throw new Error('Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleChange = (key: keyof Settings, value: string | boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="page-settings-loading">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6" data-testid="page-settings">
@@ -51,8 +134,12 @@ export default function SettingsPage() {
           <h1 className="text-xl sm:text-2xl font-bold">Settings</h1>
           <p className="text-sm text-muted-foreground">Manage your restaurant configuration</p>
         </div>
-        <Button onClick={handleSave} data-testid="button-save-settings">
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} disabled={isSaving} data-testid="button-save-settings">
+          {isSaving ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4 mr-2" />
+          )}
           Save Changes
         </Button>
       </div>
@@ -170,18 +257,6 @@ export default function SettingsPage() {
                 checked={settings.enableCash}
                 onCheckedChange={checked => handleChange('enableCash', checked)}
                 data-testid="switch-cash"
-              />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Card Payments</Label>
-                <p className="text-xs text-muted-foreground">Accept debit/credit cards</p>
-              </div>
-              <Switch
-                checked={settings.enableCard}
-                onCheckedChange={checked => handleChange('enableCard', checked)}
-                data-testid="switch-card"
               />
             </div>
             <Separator />

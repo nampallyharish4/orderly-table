@@ -3,7 +3,7 @@ import { db } from './db.js';
 import * as schema from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
 
-const { orders, tables, menuItems, menuCategories, users } = schema;
+const { orders, tables, menuItems, menuCategories, users, settings } = schema;
 
 const seedCategories = [
   { visibleId: 'cat-1', name: 'Biryani (Non Veg)', description: 'Authentic dum biryanis', sortOrder: 1, isActive: true },
@@ -439,6 +439,47 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error('Error seeding database:', error);
       res.status(500).json({ error: 'Failed to seed database' });
+    }
+  });
+
+  // Settings routes
+  app.get('/api/settings', async (req: Request, res: Response) => {
+    try {
+      const allSettings = await db.select().from(settings);
+      if (allSettings.length === 0) {
+        // Create default settings if none exist
+        const [newSettings] = await db.insert(settings).values({}).returning();
+        return res.json(newSettings);
+      }
+      res.json(allSettings[0]);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      res.status(500).json({ error: 'Failed to fetch settings' });
+    }
+  });
+
+  app.patch('/api/settings', async (req: Request, res: Response) => {
+    try {
+      const allSettings = await db.select().from(settings);
+      const updates = {
+        ...req.body,
+        updatedAt: new Date(),
+      };
+      
+      if (allSettings.length === 0) {
+        // Create settings if none exist
+        const [newSettings] = await db.insert(settings).values(updates).returning();
+        return res.json(newSettings);
+      }
+      
+      const [updated] = await db.update(settings)
+        .set(updates)
+        .where(eq(settings.id, allSettings[0].id))
+        .returning();
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      res.status(500).json({ error: 'Failed to update settings' });
     }
   });
 }

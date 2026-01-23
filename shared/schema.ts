@@ -122,3 +122,20 @@ export const ordersRelations = relations(orders, ({ one }) => ({
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
+
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  restaurantName: text("restaurant_name").notNull().default("Kaveri Family Restaurant"),
+  address: text("address").notNull().default("123 Main Street, City"),
+  phone: text("phone").notNull().default("+91 9876543210"),
+  email: text("email").notNull().default("contact@kaveri.com"),
+  enableNotifications: boolean("enable_notifications").notNull().default(true),
+  enableSounds: boolean("enable_sounds").notNull().default(true),
+  autoPrintBills: boolean("auto_print_bills").notNull().default(false),
+  enableUPI: boolean("enable_upi").notNull().default(true),
+  enableCash: boolean("enable_cash").notNull().default(true),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type Settings = typeof settings.$inferSelect;
+export type InsertSettings = typeof settings.$inferInsert;
