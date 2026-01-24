@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,8 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -37,13 +38,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockUsers } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
 import { User, UserRole } from '@/types';
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -55,6 +56,27 @@ export default function UsersPage() {
     role: 'waiter' as UserRole,
   });
   const { toast } = useToast();
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/users');
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.map((user: any) => ({
+          ...user,
+          createdAt: new Date(user.createdAt),
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -119,19 +141,46 @@ export default function UsersPage() {
     }
   };
 
-  const handleEditUser = () => {
+  const handleEditUser = async () => {
     if (!editingUser) return;
 
-    setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
-    setIsEditDialogOpen(false);
-    setEditingUser(null);
-    toast({
-      title: 'User Updated',
-      description: 'User details have been updated successfully.',
-    });
+    try {
+      const response = await fetch(`/api/users/${editingUser.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editingUser.name,
+          email: editingUser.email,
+          phone: editingUser.phone,
+          role: editingUser.role,
+        }),
+      });
+
+      if (response.ok) {
+        setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+        setIsEditDialogOpen(false);
+        setEditingUser(null);
+        toast({
+          title: 'User Updated',
+          description: 'User details have been updated successfully.',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to update user',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update user',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     const user = users.find(u => u.id === userId);
     if (user?.role === 'admin') {
       toast({
@@ -142,11 +191,31 @@ export default function UsersPage() {
       return;
     }
 
-    setUsers(users.filter(u => u.id !== userId));
-    toast({
-      title: 'User Deleted',
-      description: 'User has been removed successfully.',
-    });
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setUsers(users.filter(u => u.id !== userId));
+        toast({
+          title: 'User Deleted',
+          description: 'User has been removed successfully.',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete user',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete user',
+        variant: 'destructive',
+      });
+    }
   };
 
   const openEditDialog = (user: User) => {
@@ -181,7 +250,14 @@ export default function UsersPage() {
       </div>
 
       <div className="grid gap-4">
-        {filteredUsers.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-12 h-12 text-muted-foreground mb-4 animate-spin" />
+              <p className="text-muted-foreground">Loading users...</p>
+            </CardContent>
+          </Card>
+        ) : filteredUsers.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Users className="w-12 h-12 text-muted-foreground mb-4" />
