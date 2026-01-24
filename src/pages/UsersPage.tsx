@@ -50,6 +50,7 @@ export default function UsersPage() {
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
+    password: '',
     phone: '',
     role: 'waiter' as UserRole,
   });
@@ -75,8 +76,8 @@ export default function UsersPage() {
     }
   };
 
-  const handleAddUser = () => {
-    if (!newUser.name || !newUser.email) {
+  const handleAddUser = async () => {
+    if (!newUser.name || !newUser.email || !newUser.password || !newUser.phone) {
       toast({
         title: 'Error',
         description: 'Please fill in all required fields.',
@@ -85,23 +86,37 @@ export default function UsersPage() {
       return;
     }
 
-    const user: User = {
-      id: `user-${Date.now()}`,
-      name: newUser.name,
-      email: newUser.email,
-      phone: newUser.phone,
-      role: newUser.role,
-      isActive: true,
-      createdAt: new Date(),
-    };
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser),
+      });
 
-    setUsers([...users, user]);
-    setNewUser({ name: '', email: '', phone: '', role: 'waiter' });
-    setIsAddDialogOpen(false);
-    toast({
-      title: 'User Added',
-      description: `${user.name} has been added successfully.`,
-    });
+      if (response.ok) {
+        const createdUser = await response.json();
+        setUsers([...users, { ...createdUser, createdAt: new Date(createdUser.createdAt) }]);
+        setNewUser({ name: '', email: '', password: '', phone: '', role: 'waiter' });
+        setIsAddDialogOpen(false);
+        toast({
+          title: 'User Added',
+          description: `${createdUser.name} has been added successfully.`,
+        });
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.error || 'Failed to create user',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to create user',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleEditUser = () => {
@@ -307,7 +322,18 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="password">Password *</Label>
+              <Input
+                id="password"
+                type="password"
+                value={newUser.password}
+                onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                placeholder="Enter password"
+                data-testid="input-new-user-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone *</Label>
               <Input
                 id="phone"
                 value={newUser.phone}
