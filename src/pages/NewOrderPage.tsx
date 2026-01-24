@@ -175,7 +175,7 @@ export default function NewOrderPage() {
 
         {/* Menu Items */}
         <ScrollArea className="flex-1 -mx-1 px-1">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 pr-2 sm:pr-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 pr-2 sm:pr-4">
             {filteredItems.map(item => (
               <MenuItemCard
                 key={item.id}
