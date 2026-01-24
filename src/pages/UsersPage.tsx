@@ -144,16 +144,22 @@ export default function UsersPage() {
   const handleEditUser = async () => {
     if (!editingUser) return;
 
+    const updateData: any = {
+      name: editingUser.name,
+      email: editingUser.email,
+      phone: editingUser.phone,
+      role: editingUser.role,
+    };
+
+    if ((editingUser as any).newPassword) {
+      updateData.password = (editingUser as any).newPassword;
+    }
+
     try {
       const response = await fetch(`/api/users/${editingUser.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editingUser.name,
-          email: editingUser.email,
-          phone: editingUser.phone,
-          role: editingUser.role,
-        }),
+        body: JSON.stringify(updateData),
       });
 
       if (response.ok) {
@@ -456,7 +462,7 @@ export default function UsersPage() {
           {editingUser && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">Name</Label>
+                <Label htmlFor="edit-name">Name *</Label>
                 <Input
                   id="edit-name"
                   value={editingUser.name}
@@ -465,7 +471,7 @@ export default function UsersPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-email">Email</Label>
+                <Label htmlFor="edit-email">Email *</Label>
                 <Input
                   id="edit-email"
                   type="email"
@@ -475,7 +481,18 @@ export default function UsersPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-phone">Phone</Label>
+                <Label htmlFor="edit-password">Password (leave blank to keep current)</Label>
+                <Input
+                  id="edit-password"
+                  type="password"
+                  value={(editingUser as any).newPassword || ''}
+                  onChange={e => setEditingUser({ ...editingUser, newPassword: e.target.value } as any)}
+                  placeholder="Enter new password"
+                  data-testid="input-edit-user-password"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Phone *</Label>
                 <Input
                   id="edit-phone"
                   value={editingUser.phone}
