@@ -23,6 +23,8 @@ import {
 import { useOrders } from '@/contexts/OrderContext';
 import { toast } from 'sonner';
 import { format, startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 type DateRange = 'today' | 'week' | 'month' | 'year' | 'all';
 
@@ -95,31 +97,109 @@ export default function ReportsPage() {
     (o.payment?.method === 'split' && o.payment?.upiAmount && o.payment.upiAmount > 0)
   ).length;
 
-  const exportToCSV = () => {
-    const headers = ['Order #', 'Date', 'Type', 'Status', 'Items', 'Subtotal', 'Tax', 'Total'];
-    const rows = filteredOrders.map(order => [
-      order.orderNumber,
-      format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
-      order.orderType,
-      order.status,
-      order.items.map(i => `${i.menuItemName} x${i.quantity}`).join('; '),
-      order.subtotal.toFixed(2),
-      order.taxAmount.toFixed(2),
-      order.totalAmount.toFixed(2),
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `kaveri-report-${dateRangeLabels[dateRange].toLowerCase().replace(' ', '-')}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-    toast.success('Report exported successfully');
+  const exportToPDF = () => {
+    const dineInOrders = filteredOrders.filter(o => o.orderType === 'dine-in');
+    const takeawayOrders = filteredOrders.filter(o => o.orderType === 'takeaway');
+    
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const reportDate = format(new Date(), 'dd MMM yyyy');
+    const periodLabel = dateRangeLabels[dateRange];
+    
+    const addOrdersTable = (orders: typeof filteredOrders, title: string, startY: number) => {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, 14, startY);
+      
+      const orderTotal = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+      const cashTotal = orders.reduce((sum, o) => {
+        if (o.payment?.method === 'cash') return sum + o.totalAmount;
+        if (o.payment?.method === 'split' && o.payment?.cashAmount) return sum + o.payment.cashAmount;
+        return sum;
+      }, 0);
+      const upiTotal = orders.reduce((sum, o) => {
+        if (o.payment?.method === 'upi') return sum + o.totalAmount;
+        if (o.payment?.method === 'split' && o.payment?.upiAmount) return sum + o.payment.upiAmount;
+        return sum;
+      }, 0);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Total Orders: ${orders.length} | Total: Rs.${orderTotal.toLocaleString()} | Cash: Rs.${cashTotal.toLocaleString()} | UPI: Rs.${upiTotal.toLocaleString()}`, 14, startY + 6);
+      
+      const tableData = orders.map(order => [
+        order.orderNumber,
+        format(new Date(order.createdAt), 'dd/MM HH:mm'),
+        order.tableNumber || '-',
+        order.items.map(i => `${i.menuItemName} x${i.quantity}`).join(', '),
+        order.payment?.method === 'split' 
+          ? `Split (C:${order.payment.cashAmount} U:${order.payment.upiAmount})`
+          : (order.payment?.method || 'Pending'),
+        `Rs.${order.totalAmount.toLocaleString()}`,
+      ]);
+      
+      autoTable(doc, {
+        startY: startY + 10,
+        head: [['Order #', 'Date/Time', 'Table', 'Items', 'Payment', 'Total']],
+        body: tableData,
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [245, 158, 11], textColor: [0, 0, 0], fontStyle: 'bold' },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 22 },
+          2: { cellWidth: 15 },
+          3: { cellWidth: 70 },
+          4: { cellWidth: 25 },
+          5: { cellWidth: 22 },
+        },
+        alternateRowStyles: { fillColor: [250, 250, 250] },
+      });
+    };
+    
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Kaveri Family Restaurant', pageWidth / 2, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Sales Report - ${periodLabel}`, pageWidth / 2, 28, { align: 'center' });
+    doc.text(`Generated on: ${reportDate}`, pageWidth / 2, 34, { align: 'center' });
+    
+    doc.setDrawColor(245, 158, 11);
+    doc.setLineWidth(0.5);
+    doc.line(14, 40, pageWidth - 14, 40);
+    
+    if (dineInOrders.length > 0) {
+      addOrdersTable(dineInOrders, 'Dine-In Orders', 48);
+    } else {
+      doc.setFontSize(12);
+      doc.text('Dine-In Orders: No orders found', 14, 48);
+    }
+    
+    doc.addPage();
+    
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Kaveri Family Restaurant', pageWidth / 2, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Sales Report - ${periodLabel}`, pageWidth / 2, 28, { align: 'center' });
+    doc.text(`Generated on: ${reportDate}`, pageWidth / 2, 34, { align: 'center' });
+    
+    doc.setDrawColor(245, 158, 11);
+    doc.setLineWidth(0.5);
+    doc.line(14, 40, pageWidth - 14, 40);
+    
+    if (takeawayOrders.length > 0) {
+      addOrdersTable(takeawayOrders, 'Takeaway Orders', 48);
+    } else {
+      doc.setFontSize(12);
+      doc.text('Takeaway Orders: No orders found', 14, 48);
+    }
+    
+    doc.save(`kaveri-report-${periodLabel.toLowerCase().replace(' ', '-')}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    toast.success('PDF report downloaded successfully');
   };
 
   const stats = [
@@ -209,7 +289,7 @@ export default function ReportsPage() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm" onClick={exportToCSV} data-testid="button-export">
+          <Button variant="outline" size="sm" onClick={exportToPDF} data-testid="button-export">
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
