@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { CustomSwitch } from '@/components/ui/custom-switch';
 import { Separator } from '@/components/ui/separator';
 import { 
   Store, 
@@ -218,11 +218,13 @@ export default function SettingsPage() {
                 <Label>Enable Notifications</Label>
                 <p className="text-xs text-muted-foreground">Show alerts for new orders</p>
               </div>
-              <Switch
-                checked={settings.enableNotifications}
-                onCheckedChange={checked => handleChange('enableNotifications', checked)}
-                data-testid="switch-notifications"
-              />
+              <div className="scale-75 origin-right">
+                <CustomSwitch
+                  checked={settings.enableNotifications}
+                  onCheckedChange={checked => handleChange('enableNotifications', checked)}
+                  data-testid="switch-notifications"
+                />
+              </div>
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -230,11 +232,13 @@ export default function SettingsPage() {
                 <Label>Sound Alerts</Label>
                 <p className="text-xs text-muted-foreground">Play sound for order updates</p>
               </div>
-              <Switch
-                checked={settings.enableSounds}
-                onCheckedChange={checked => handleChange('enableSounds', checked)}
-                data-testid="switch-sounds"
-              />
+              <div className="scale-75 origin-right">
+                <CustomSwitch
+                  checked={settings.enableSounds}
+                  onCheckedChange={checked => handleChange('enableSounds', checked)}
+                  data-testid="switch-sounds"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -253,11 +257,13 @@ export default function SettingsPage() {
                 <Label>Cash Payments</Label>
                 <p className="text-xs text-muted-foreground">Accept cash payments</p>
               </div>
-              <Switch
-                checked={settings.enableCash}
-                onCheckedChange={checked => handleChange('enableCash', checked)}
-                data-testid="switch-cash"
-              />
+              <div className="scale-75 origin-right">
+                <CustomSwitch
+                  checked={settings.enableCash}
+                  onCheckedChange={checked => handleChange('enableCash', checked)}
+                  data-testid="switch-cash"
+                />
+              </div>
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -265,11 +271,13 @@ export default function SettingsPage() {
                 <Label>UPI Payments</Label>
                 <p className="text-xs text-muted-foreground">Accept UPI payments</p>
               </div>
-              <Switch
-                checked={settings.enableUPI}
-                onCheckedChange={checked => handleChange('enableUPI', checked)}
-                data-testid="switch-upi"
-              />
+              <div className="scale-75 origin-right">
+                <CustomSwitch
+                  checked={settings.enableUPI}
+                  onCheckedChange={checked => handleChange('enableUPI', checked)}
+                  data-testid="switch-upi"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -288,11 +296,13 @@ export default function SettingsPage() {
                 <Label>Auto-Print Bills</Label>
                 <p className="text-xs text-muted-foreground">Automatically print when order is completed</p>
               </div>
-              <Switch
-                checked={settings.autoPrintBills}
-                onCheckedChange={checked => handleChange('autoPrintBills', checked)}
-                data-testid="switch-auto-print"
-              />
+              <div className="scale-75 origin-right">
+                <CustomSwitch
+                  checked={settings.autoPrintBills}
+                  onCheckedChange={checked => handleChange('autoPrintBills', checked)}
+                  data-testid="switch-auto-print"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

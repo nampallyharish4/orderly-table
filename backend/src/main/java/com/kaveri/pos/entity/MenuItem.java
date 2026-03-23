@@ -38,9 +38,11 @@ public class MenuItem {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @JsonProperty("isVeg")
     @Column(name = "is_veg", nullable = false)
     private Boolean isVeg = false;
 
+    @JsonProperty("isAvailable")
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable = true;
 
@@ -77,8 +79,11 @@ public class MenuItem {
     public void setPrice(Double price) { this.price = price; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    @JsonProperty("isVeg")
     public Boolean getIsVeg() { return isVeg; }
     public void setIsVeg(Boolean isVeg) { this.isVeg = isVeg; }
+    
+    @JsonProperty("isAvailable")
     public Boolean getIsAvailable() { return isAvailable; }
     public void setIsAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; }
     public List<Object> getAddOns() { return addOns; }

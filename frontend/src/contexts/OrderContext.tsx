@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback, ReactNode, useEffect,
 import { Order, OrderItem, Table, MenuItem, MenuCategory, OrderType, OrderStatus, OrderItemStatus } from '@/types';
 import { generateOrderNumber, calculateOrderTotals } from '@/data/mockData';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { useAuth } from './AuthContext';
 
 interface OrderContextType {
   orders: Order[];
@@ -42,6 +43,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [currentOrder, setCurrentOrder] = useState<Partial<Order> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { playReadySound } = useNotificationSound();
+  const { user } = useAuth();
   const prevReadyCountRef = useRef<number>(0);
 
   const fetchData = useCallback(async () => {
@@ -262,7 +264,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       pickupTime,
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: 'current-user',
+      createdBy: user?.name || 'Unknown',
     };
 
     try {
@@ -364,7 +366,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
               orderId, 
               method: paymentMethod, 
               amount: order.totalAmount, 
-              status: 'completed' 
+              status: 'completed',
+              paidAt: new Date()
             };
           }
 
@@ -388,7 +391,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
                     if (t.tableNumber !== order.tableNumber) return t;
                     return { 
                       ...t, 
-                      status: newStatus as 'available' | 'occupied' | 'reserved', 
+                      status: newStatus as TableStatus, 
                       currentOrderIds: newOrderIds 
                     };
                   })
@@ -474,7 +477,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
               if (t.tableNumber !== order.tableNumber) return t;
               return {
                 ...t,
-                status: newStatus as 'available' | 'occupied' | 'reserved',
+                status: newStatus as TableStatus,
                 currentOrderIds: newOrderIds,
               };
             })

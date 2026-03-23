@@ -8,9 +8,10 @@ interface TableCardProps {
   onClick?: () => void;
   selected?: boolean;
   showOrder?: boolean;
+  creatorName?: string;
 }
 
-export function TableCard({ table, onClick, selected, showOrder }: TableCardProps) {
+export function TableCard({ table, onClick, selected, showOrder, creatorName }: TableCardProps) {
   const statusClass = {
     available: 'table-available',
     occupied: 'table-occupied',
@@ -49,6 +50,12 @@ export function TableCard({ table, onClick, selected, showOrder }: TableCardProp
           <Users className="w-3 sm:w-4 h-3 sm:h-4" />
           <span>{table.capacity}</span>
         </div>
+        {table.status === 'occupied' && creatorName && (
+          <div className="flex items-center gap-1 text-primary font-medium">
+            <span className="text-muted-foreground ml-1">•</span>
+            <span className="truncate max-w-[80px]">{creatorName}</span>
+          </div>
+        )}
       </div>
 
       {showOrder && table.currentOrderIds.length > 0 && (

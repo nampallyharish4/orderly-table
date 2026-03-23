@@ -1,0 +1,123 @@
+{
+  "restaurant": "Nagalakshmi Kaveri Family Dhaba",
+  "menu": [
+    {
+      "category": "Veg Rice",
+      "items": [
+        {"name": "Veg Meals", "single": 170, "full": null},
+        {"name": "Jeera Rice", "single": 160, "full": null},
+        {"name": "Veg Fried Rice", "single": 160, "full": null},
+        {"name": "Tomato Rice", "single": 170, "full": null},
+        {"name": "Pudina Rice", "single": 220, "full": null},
+        {"name": "Paneer Fried Rice", "single": 240, "full": null},
+        {"name": "Kaju Fried Rice", "single": 240, "full": null},
+        {"name": "Kaju Paneer Fried Rice", "single": 260, "full": null}
+      ]
+    },
+    {
+      "category": "Non Veg Rice",
+      "items": [
+        {"name": "Egg Fried Rice", "single": 190, "full": null},
+        {"name": "Chicken Fried Rice", "single": 210, "full": null}
+      ]
+    },
+    {
+      "category": "Tandoori Roti",
+      "items": [
+        {"name": "Tandoori Roti", "single": 20, "full": null},
+        {"name": "Butter Roti", "single": 25, "full": null},
+        {"name": "Plain Naan", "single": 35, "full": null},
+        {"name": "Butter Naan", "single": 40, "full": null},
+        {"name": "Garlic Naan", "single": 45, "full": null},
+        {"name": "Coriander Naan", "single": 45, "full": null}
+      ]
+    },
+    {
+      "category": "Tandoori Non Veg",
+      "items": [
+        {"name": "Tandoori Chicken", "single": 350, "full": 550},
+        {"name": "Tangdi Kabab", "single": 240, "full": 450},
+        {"name": "Chicken Tikka", "single": 300, "full": null}
+      ]
+    },
+    {
+      "category": "Indian Non Veg Curries",
+      "items": [
+        {"name": "Butter Chicken", "single": 260, "full": null},
+        {"name": "Chicken Masala (Bone)", "single": 210, "full": null},
+        {"name": "Chicken Tikka Masala", "single": 260, "full": null},
+        {"name": "Kadai Chicken", "single": 260, "full": null},
+        {"name": "Mutton Curry", "single": 150, "full": null},
+        {"name": "Egg Masala", "single": 150, "full": null},
+        {"name": "Egg Burji", "single": 150, "full": null}
+      ]
+    },
+    {
+      "category": "Veg Curries",
+      "items": [
+        {"name": "Tomato Curry", "single": 150, "full": null},
+        {"name": "Dal Fry", "single": 120, "full": null},
+        {"name": "Mixed Veg Curry", "single": 170, "full": null},
+        {"name": "Palak Paneer", "single": 200, "full": null},
+        {"name": "Paneer Butter Masala", "single": 200, "full": null},
+        {"name": "Kaju Tomato", "single": 250, "full": null},
+        {"name": "Kaju Paneer", "single": 280, "full": null},
+        {"name": "Mushroom Masala", "single": 280, "full": null},
+        {"name": "Kadai Paneer", "single": 250, "full": null}
+      ]
+    },
+    {
+      "category": "Non Veg Starters",
+      "items": [
+        {"name": "Chicken Manchuria", "single": 260, "full": null},
+        {"name": "Chicken 65", "single": 260, "full": null},
+        {"name": "Chicken Majestic", "single": 250, "full": null},
+        {"name": "Chicken 555", "single": 260, "full": null},
+        {"name": "Dragon Chicken", "single": 260, "full": null},
+        {"name": "Kaju Chicken", "single": 300, "full": null},
+        {"name": "Chicken Popcorn (100g)", "single": 260, "full": null},
+        {"name": "Chicken Fry", "single": 200, "full": null},
+        {"name": "Chilli Chicken", "single": 260, "full": null}
+      ]
+    },
+    {
+      "category": "Veg Biryani",
+      "items": [
+        {"name": "Veg Biryani", "single": 150, "full": 210},
+        {"name": "Paneer Biryani", "single": 220, "full": 320},
+        {"name": "Ulavacharu Biryani", "single": null, "full": 200},
+        {"name": "Biryani Rice", "single": 120, "full": null}
+      ]
+    },
+    {
+      "category": "Veg Starters",
+      "items": [
+        {"name": "Veg Manchuria", "single": 150, "full": null},
+        {"name": "Gobi Manchuria", "single": 160, "full": null},
+        {"name": "Paneer 65", "single": 280, "full": null}
+      ]
+    },
+    {
+      "category": "Non Veg Biryani",
+      "items": [
+        {"name": "Chicken Dum Biryani", "single": 160, "full": 240},
+        {"name": "Chicken Fry Biryani", "single": 170, "full": 250},
+        {"name": "Egg Biryani", "single": 160, "full": 320},
+        {"name": "Fish Biryani", "single": 200, "full": 320},
+        {"name": "Mutton Biryani", "single": 220, "full": 360},
+        {"name": "Boneless Chicken Biryani", "single": 220, "full": null},
+        {"name": "Boneless Mutton Biryani", "single": null, "full": null},
+        {"name": "Prawns Biryani", "single": 220, "full": 360}
+      ]
+    },
+    {
+      "category": "Family Packs",
+      "items": [
+        {"name": "Chicken Dum Biryani (Family Pack)", "single": null, "full": 600},
+        {"name": "Chicken Dum Biryani (Jumbo Pack)", "single": null, "full": 800},
+        {"name": "Chicken Fry Biryani (Family Pack)", "single": null, "full": 700},
+        {"name": "Chicken Fry Biryani (Jumbo Pack)", "single": null, "full": 850}
+      ]
+    }
+  ]
+}

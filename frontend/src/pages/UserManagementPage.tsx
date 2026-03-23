@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
+import { CustomSwitch } from '@/components/ui/custom-switch';
 import {
   Dialog,
   DialogContent,
@@ -281,11 +281,13 @@ export default function UserManagementPage() {
                       <Badge className={roleColors[user.role]}>
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </Badge>
-                      <Switch
-                        checked={user.isActive}
-                        onCheckedChange={() => handleToggleActive(user)}
-                        data-testid={`switch-active-${user.id}`}
-                      />
+                      <div className="scale-75">
+                        <CustomSwitch
+                          checked={user.isActive}
+                          onCheckedChange={() => handleToggleActive(user)}
+                          data-testid={`switch-active-${user.id}`}
+                        />
+                      </div>
                       <Button
                         variant="ghost"
                         size="icon"

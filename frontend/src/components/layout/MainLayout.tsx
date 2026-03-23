@@ -12,6 +12,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Utensils,
   LayoutGrid,
   ClipboardList,
@@ -59,6 +67,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   if (!user) return null;
 
@@ -135,9 +144,12 @@ export function MainLayout({ children }: MainLayoutProps) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
+              <DropdownMenuItem 
+                onClick={() => setIsLogoutDialogOpen(true)} 
+                className="text-destructive focus:text-destructive cursor-pointer px-3 py-2.5 rounded-lg transition-colors hover:bg-destructive/10"
+              >
                 <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -170,8 +182,8 @@ export function MainLayout({ children }: MainLayoutProps) {
             ))}
             <button
               onClick={() => {
-                logout();
                 setMobileMenuOpen(false);
+                setIsLogoutDialogOpen(true);
               }}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
             >
@@ -188,6 +200,40 @@ export function MainLayout({ children }: MainLayoutProps) {
           {children}
         </div>
       </main>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] p-6 gap-6">
+          <DialogHeader className="gap-2">
+            <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
+              <LogOut className="w-6 h-6 text-destructive" />
+            </div>
+            <DialogTitle className="text-xl font-bold">Sign Out</DialogTitle>
+            <DialogDescription className="text-base text-muted-foreground">
+              Are you sure you want to sign out? You will need to log in again to access your account.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button
+              variant="outline"
+              className="sm:flex-1 h-11 text-base rounded-xl"
+              onClick={() => setIsLogoutDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="sm:flex-1 h-11 text-base rounded-xl bg-destructive hover:bg-destructive/90 shadow-lg shadow-destructive/20"
+              onClick={() => {
+                setIsLogoutDialogOpen(false);
+                logout();
+              }}
+            >
+              Sign Out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

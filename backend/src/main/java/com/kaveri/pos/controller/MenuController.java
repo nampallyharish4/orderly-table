@@ -29,10 +29,69 @@ public class MenuController {
         }
     }
 
+    @PostMapping("/api/categories")
+    public ResponseEntity<?> createCategory(@RequestBody Map<String, Object> body) {
+        try {
+            MenuCategory category = new MenuCategory();
+            
+            List<MenuCategory> allCats = menuCategoryRepository.findAll();
+            int maxId = 0;
+            for (MenuCategory existingCat : allCats) {
+                if (existingCat.getVisibleId() != null && existingCat.getVisibleId().startsWith("cat-")) {
+                    try {
+                        int num = Integer.parseInt(existingCat.getVisibleId().substring(4));
+                        if (num > maxId) {
+                            maxId = num;
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+            category.setVisibleId("cat-" + (maxId + 1));
+            
+            category.setName(getString(body, "name"));
+            category.setDescription(getString(body, "description") != null ? getString(body, "description") : "");
+            category.setImageUrl(getString(body, "imageUrl"));
+            category.setSortOrder(maxId + 1);
+            
+            // In case frontend sends isActive or isAvailable, handle gracefully. But MenuCategory uses isActive.
+            category.setIsActive(true);
+
+            MenuCategory saved = menuCategoryRepository.save(category);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to create category"));
+        }
+    }
+
+    @DeleteMapping("/api/categories/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteCategory(@PathVariable String id) {
+        try {
+            Optional<MenuCategory> optCat = menuCategoryRepository.findByVisibleId(id);
+            if (optCat.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Category not found"));
+            }
+            Integer catDbId = optCat.get().getDbId();
+            
+            // Delete all items under this category safely first
+            List<MenuItem> items = menuItemRepository.findAll();
+            for (MenuItem i : items) {
+                if (i.getCategoryDbId() != null && i.getCategoryDbId().equals(catDbId)) {
+                    menuItemRepository.delete(i);
+                }
+            }
+            
+            menuCategoryRepository.deleteByVisibleId(id);
+            return ResponseEntity.ok(Map.of("success", true, "id", id));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to delete category"));
+        }
+    }
+
     @GetMapping("/api/menu-items")
     public ResponseEntity<List<MenuItem>> getAllMenuItems() {
         try {
-            List<MenuItem> items = menuItemRepository.findAll();
+            List<MenuItem> items = menuItemRepository.findAllByOrderByDbIdAsc();
             List<MenuCategory> categories = menuCategoryRepository.findAll();
             Map<Integer, MenuCategory> categoryMap = new HashMap<>();
             for (MenuCategory cat : categories) {
@@ -47,6 +106,7 @@ public class MenuController {
             }
             return ResponseEntity.ok(items);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
@@ -62,7 +122,21 @@ public class MenuController {
             MenuCategory category = optCat.get();
 
             MenuItem item = new MenuItem();
-            item.setVisibleId("item-" + System.currentTimeMillis());
+            
+            List<MenuItem> allItems = menuItemRepository.findAll();
+            int maxId = 0;
+            for (MenuItem existingItem : allItems) {
+                if (existingItem.getVisibleId() != null && existingItem.getVisibleId().startsWith("item-")) {
+                    try {
+                        int num = Integer.parseInt(existingItem.getVisibleId().substring(5));
+                        if (num > maxId) {
+                            maxId = num;
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+            item.setVisibleId("item-" + (maxId + 1));
+            
             item.setCategoryDbId(category.getDbId());
             item.setName(getString(body, "name"));
             item.setDescription(getString(body, "description") != null ? getString(body, "description") : "");

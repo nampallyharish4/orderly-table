@@ -10,7 +10,7 @@ import { Table, TableStatus } from '@/types';
 import { LayoutGrid, List, Loader2 } from 'lucide-react';
 
 export default function TablesPage() {
-  const { tables, createOrder, isLoading } = useOrders();
+  const { tables, orders, createOrder, isLoading } = useOrders();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [floorFilter, setFloorFilter] = useState<string>('all');
@@ -167,24 +167,34 @@ export default function TablesPage() {
                 </h2>
                 {regularTables.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 mb-4">
-                    {regularTables.map(table => (
-                      <TableCard
-                        key={table.id}
-                        table={table}
-                        onClick={() => handleTableClick(table)}
-                      />
-                    ))}
+                    {regularTables.map(table => {
+                      const tableOrders = orders.filter(o => table.currentOrderIds.includes(o.id));
+                      const firstOrder = tableOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
+                      return (
+                        <TableCard
+                          key={table.id}
+                          table={table}
+                          onClick={() => handleTableClick(table)}
+                          creatorName={firstOrder?.createdBy}
+                        />
+                      );
+                    })}
                   </div>
                 )}
                 {smallTables.length > 0 && (
                   <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
-                    {smallTables.map(table => (
-                      <TableCard
-                        key={table.id}
-                        table={table}
-                        onClick={() => handleTableClick(table)}
-                      />
-                    ))}
+                    {smallTables.map(table => {
+                      const tableOrders = orders.filter(o => table.currentOrderIds.includes(o.id));
+                      const firstOrder = tableOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
+                      return (
+                        <TableCard
+                          key={table.id}
+                          table={table}
+                          onClick={() => handleTableClick(table)}
+                          creatorName={firstOrder?.createdBy}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -208,7 +218,21 @@ export default function TablesPage() {
                 </div>
                 <div className="text-left">
                   <p className="font-medium">{table.floor} Floor</p>
-                  <p className="text-sm text-muted-foreground">Capacity: {table.capacity}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground">Capacity: {table.capacity}</p>
+                    {table.status === 'occupied' && (
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        {(() => {
+                           const tableOrders = orders.filter(o => table.currentOrderIds.includes(o.id));
+                           const firstOrder = tableOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
+                           return firstOrder ? (
+                             <p className="text-xs font-medium text-primary">By: {firstOrder.createdBy}</p>
+                           ) : null;
+                        })()}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <Badge variant="outline" className={`capitalize ${
