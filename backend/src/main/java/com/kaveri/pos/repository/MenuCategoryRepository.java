@@ -8,6 +8,8 @@ import java.util.Optional;
 
 @Repository
 public interface MenuCategoryRepository extends JpaRepository<MenuCategory, Integer> {
+    Optional<MenuCategory> findTopByOrderByDbIdDesc();
     Optional<MenuCategory> findByVisibleId(String visibleId);
     void deleteByVisibleId(String visibleId);
 }
+

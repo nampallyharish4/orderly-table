@@ -10,6 +10,9 @@ import java.util.List;
 @Repository
 public interface MenuItemRepository extends JpaRepository<MenuItem, Integer> {
     List<MenuItem> findAllByOrderByDbIdAsc();
+    Optional<MenuItem> findTopByOrderByDbIdDesc();
     Optional<MenuItem> findByVisibleId(String visibleId);
     void deleteByVisibleId(String visibleId);
+    void deleteByCategoryDbId(Integer categoryDbId);
 }
+

@@ -46,27 +46,44 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const { playReadySound } = useNotificationSound();
   const { user } = useAuth();
   const prevReadyCountRef = useRef<number>(0);
+  const lastUpdatedRef = useRef<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+
+  const fetchStaticData = useCallback(async () => {
+    try {
+      console.log('Fetching static data (menu/categories)...');
+      const [menuRes, categoriesRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/menu-items`),
+        fetch(`${API_BASE_URL}/api/categories`),
+      ]);
+
+      if (menuRes.ok) {
+        const menuData = await menuRes.json();
+        setMenuItems(menuData);
+      }
+      if (categoriesRes.ok) {
+        const categoriesData = await categoriesRes.json();
+        setCategories(categoriesData);
+      }
+    } catch (error) {
+      console.error('Failed to fetch static data:', error);
+    }
+  }, []);
+
+  const fetchData = useCallback(async (isPoll = false) => {
       try {
-        console.log('Fetching data from API...');
-        const [ordersRes, tablesRes, menuRes, categoriesRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/orders`),
+        let url = `${API_BASE_URL}/api/orders`;
+        if (isPoll && lastUpdatedRef.current) {
+          url += `?since=${encodeURIComponent(lastUpdatedRef.current)}`;
+        }
+          
+        const [ordersRes, tablesRes] = await Promise.all([
+          fetch(url),
           fetch(`${API_BASE_URL}/api/tables`),
-          fetch(`${API_BASE_URL}/api/menu-items`),
-          fetch(`${API_BASE_URL}/api/categories`),
         ]);
-
-        console.log('API responses:', {
-          orders: ordersRes.status,
-          tables: tablesRes.status,
-          menu: menuRes.status,
-          categories: categoriesRes.status
-        });
 
         if (ordersRes.ok) {
           const ordersData = await ordersRes.json();
-          console.log('Orders loaded:', ordersData.length);
           const parsedOrders = ordersData.map((o: any) => ({
             ...o,
             createdAt: new Date(o.createdAt),
@@ -75,54 +92,65 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             paidAt: o.paidAt ? new Date(o.paidAt) : undefined,
             pickupTime: o.pickupTime ? new Date(o.pickupTime) : undefined,
           }));
-          setOrders(parsedOrders);
-        } else {
-          console.error('Orders fetch failed:', ordersRes.status);
+          
+          if (!isPoll) {
+            setOrders(parsedOrders);
+            // Set lastUpdated to the latest order's updatedAt or now
+            if (parsedOrders.length > 0) {
+              const maxUpdated = new Date(Math.max(...parsedOrders.map((o: any) => o.updatedAt.getTime())));
+              lastUpdatedRef.current = maxUpdated.toISOString();
+            } else {
+              lastUpdatedRef.current = new Date().toISOString();
+            }
+          } else if (parsedOrders.length > 0) {
+            // Merge updated orders into state
+            setOrders(prev => {
+              const newOrders = [...prev];
+              parsedOrders.forEach((updated: Order) => {
+                const idx = newOrders.findIndex(o => o.id === updated.id);
+                if (idx !== -1) {
+                  newOrders[idx] = updated;
+                } else {
+                  newOrders.unshift(updated);
+                }
+              });
+              return newOrders;
+            });
+            // Update lastUpdatedRef
+            const maxUpdated = new Date(Math.max(...parsedOrders.map((o: any) => o.updatedAt.getTime())));
+            lastUpdatedRef.current = maxUpdated.toISOString();
+          }
         }
 
         if (tablesRes.ok) {
           const tablesData = await tablesRes.json();
-          console.log('Tables loaded:', tablesData.length, tablesData);
           setTables(tablesData.map((t: any) => ({
             ...t,
             currentOrderIds: t.currentOrderIds || [],
           })));
-        } else {
-          console.error('Tables fetch failed:', tablesRes.status);
-        }
-
-        if (menuRes.ok) {
-          const menuData = await menuRes.json();
-          console.log('Menu items loaded:', menuData.length);
-          setMenuItems(menuData);
-        } else {
-          console.error('Menu fetch failed:', menuRes.status);
-        }
-
-        if (categoriesRes.ok) {
-          const categoriesData = await categoriesRes.json();
-          console.log('Categories loaded:', categoriesData.length);
-          setCategories(categoriesData);
-        } else {
-          console.error('Categories fetch failed:', categoriesRes.status);
         }
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Failed to poll data:', error);
       } finally {
         setIsLoading(false);
       }
   }, []);
 
   useEffect(() => {
-    fetchData();
+    fetchStaticData();
+    // Initial load: Fetch everything
+    fetchData(false);
     
-    // Auto-refresh data every 5 seconds for real-time updates
+    // Auto-refresh using delta polling every 5 seconds
     const intervalId = setInterval(() => {
-      fetchData();
+      fetchData(true);
     }, 5000);
     
     return () => clearInterval(intervalId);
-  }, [fetchData]);
+  }, [fetchData, fetchStaticData]);
+
+
+
 
   useEffect(() => {
     const readyCount = orders.filter(o => o.status === 'ready').length;

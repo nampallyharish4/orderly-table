@@ -11,8 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_orders_status", columnList = "status"),
+    @Index(name = "idx_orders_created_at", columnList = "created_at"),
+    @Index(name = "idx_orders_visible_id", columnList = "visible_id")
+})
 public class Order {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

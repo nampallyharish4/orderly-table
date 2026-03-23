@@ -18,9 +18,21 @@ public class OrderController {
     private OrderRepository orderRepository;
 
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
+    public ResponseEntity<List<Order>> getAllOrders(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String since) {
         try {
-            List<Order> orders = orderRepository.findAllByOrderByCreatedAtDesc();
+            List<Order> orders;
+            if (since != null && !since.isEmpty()) {
+                OffsetDateTime lastUpdated = OffsetDateTime.parse(since);
+                orders = orderRepository.findByUpdatedAtAfterOrderByUpdatedAtDesc(lastUpdated);
+            } else if (status != null && !status.isEmpty()) {
+                List<String> statuses = Arrays.asList(status.split(","));
+                orders = orderRepository.findByStatusInOrderByCreatedAtDesc(statuses);
+            } else {
+                orders = orderRepository.findAllByOrderByCreatedAtDesc();
+            }
+            
             for (Order order : orders) {
                 if (order.getPaymentMethod() != null) {
                     Map<String, Object> payment = new LinkedHashMap<>();
@@ -37,9 +49,12 @@ public class OrderController {
             }
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
+
+
 
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> body) {

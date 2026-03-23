@@ -33,30 +33,25 @@ public class MenuController {
     public ResponseEntity<?> createCategory(@RequestBody Map<String, Object> body) {
         try {
             MenuCategory category = new MenuCategory();
-            
-            List<MenuCategory> allCats = menuCategoryRepository.findAll();
-            int maxId = 0;
-            for (MenuCategory existingCat : allCats) {
-                if (existingCat.getVisibleId() != null && existingCat.getVisibleId().startsWith("cat-")) {
-                    try {
-                        int num = Integer.parseInt(existingCat.getVisibleId().substring(4));
-                        if (num > maxId) {
-                            maxId = num;
-                        }
-                    } catch (NumberFormatException ignored) {}
+            Optional<MenuCategory> lastCat = menuCategoryRepository.findTopByOrderByDbIdDesc();
+
+            int nextId = lastCat.map(cat -> {
+                if (cat.getVisibleId() != null && cat.getVisibleId().startsWith("cat-")) {
+                    try { return Integer.parseInt(cat.getVisibleId().substring(4)) + 1; } catch (NumberFormatException e) { return 0; }
                 }
-            }
-            category.setVisibleId("cat-" + (maxId + 1));
+                return 0;
+            }).orElse(1);
+            if (nextId == 0) nextId = (int) (menuCategoryRepository.count() + 1);
             
+            category.setVisibleId("cat-" + nextId);
             category.setName(getString(body, "name"));
             category.setDescription(getString(body, "description") != null ? getString(body, "description") : "");
             category.setImageUrl(getString(body, "imageUrl"));
-            category.setSortOrder(maxId + 1);
-            
-            // In case frontend sends isActive or isAvailable, handle gracefully. But MenuCategory uses isActive.
+            category.setSortOrder(nextId);
             category.setIsActive(true);
 
             MenuCategory saved = menuCategoryRepository.save(category);
+
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to create category"));
@@ -74,12 +69,8 @@ public class MenuController {
             Integer catDbId = optCat.get().getDbId();
             
             // Delete all items under this category safely first
-            List<MenuItem> items = menuItemRepository.findAll();
-            for (MenuItem i : items) {
-                if (i.getCategoryDbId() != null && i.getCategoryDbId().equals(catDbId)) {
-                    menuItemRepository.delete(i);
-                }
-            }
+            menuItemRepository.deleteByCategoryDbId(catDbId);
+
             
             menuCategoryRepository.deleteByVisibleId(id);
             return ResponseEntity.ok(Map.of("success", true, "id", id));
@@ -123,20 +114,16 @@ public class MenuController {
 
             MenuItem item = new MenuItem();
             
-            List<MenuItem> allItems = menuItemRepository.findAll();
-            int maxId = 0;
-            for (MenuItem existingItem : allItems) {
-                if (existingItem.getVisibleId() != null && existingItem.getVisibleId().startsWith("item-")) {
-                    try {
-                        int num = Integer.parseInt(existingItem.getVisibleId().substring(5));
-                        if (num > maxId) {
-                            maxId = num;
-                        }
-                    } catch (NumberFormatException ignored) {}
+            Optional<MenuItem> lastItem = menuItemRepository.findTopByOrderByDbIdDesc();
+            int nextId = lastItem.map(i -> {
+                if (i.getVisibleId() != null && i.getVisibleId().startsWith("item-")) {
+                    try { return Integer.parseInt(i.getVisibleId().substring(5)) + 1; } catch (NumberFormatException e) { return 0; }
                 }
-            }
-            item.setVisibleId("item-" + (maxId + 1));
+                return 0;
+            }).orElse(1);
+            if (nextId == 0) nextId = (int) (menuItemRepository.count() + 1);
             
+            item.setVisibleId("item-" + nextId);
             item.setCategoryDbId(category.getDbId());
             item.setName(getString(body, "name"));
             item.setDescription(getString(body, "description") != null ? getString(body, "description") : "");
@@ -149,6 +136,7 @@ public class MenuController {
             item.setImageUrl(getString(body, "imageUrl"));
 
             MenuItem saved = menuItemRepository.save(item);
+
             saved.setCategoryId(category.getVisibleId());
             saved.setCategory(category.getName());
             return ResponseEntity.ok(saved);
