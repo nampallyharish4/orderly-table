@@ -2,9 +2,9 @@ package com.kaveri.pos.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +46,9 @@ public class MenuItem {
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable = true;
 
-    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "add_ons", columnDefinition = "jsonb", nullable = false)
-    private List<Object> addOns = new ArrayList<>();
+    private List<java.util.Map<String, Object>> addOns = new ArrayList<>();
 
     @Column(name = "preparation_time")
     private Integer preparationTime;
@@ -86,8 +86,8 @@ public class MenuItem {
     @JsonProperty("isAvailable")
     public Boolean getIsAvailable() { return isAvailable; }
     public void setIsAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; }
-    public List<Object> getAddOns() { return addOns; }
-    public void setAddOns(List<Object> addOns) { this.addOns = addOns; }
+    public List<java.util.Map<String, Object>> getAddOns() { return addOns; }
+    public void setAddOns(List<java.util.Map<String, Object>> addOns) { this.addOns = addOns; }
     public Integer getPreparationTime() { return preparationTime; }
     public void setPreparationTime(Integer preparationTime) { this.preparationTime = preparationTime; }
     public Integer getSortOrder() { return sortOrder; }
