@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,7 +79,7 @@ export default function UserManagementPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users');
+      const response = await fetch(`${API_BASE_URL}/api/users`);
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -151,7 +152,7 @@ export default function UserManagementPage() {
           updateData.password = formData.password;
         }
 
-        const response = await fetch(`/api/users/${editingUser.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/users/${editingUser.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updateData),
@@ -166,7 +167,7 @@ export default function UserManagementPage() {
           toast.error(error.error || 'Failed to update user');
         }
       } else {
-        const response = await fetch('/api/users', {
+        const response = await fetch(`${API_BASE_URL}/api/users`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
@@ -191,7 +192,7 @@ export default function UserManagementPage() {
 
   const handleToggleActive = async (user: UserData) => {
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${user.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !user.isActive }),
@@ -213,7 +214,7 @@ export default function UserManagementPage() {
     }
 
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${user.id}`, {
         method: 'DELETE',
       });
 

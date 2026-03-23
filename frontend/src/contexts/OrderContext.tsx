@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
-import { Order, OrderItem, Table, MenuItem, MenuCategory, OrderType, OrderStatus, OrderItemStatus } from '@/types';
+import { Order, OrderItem, Table, TableStatus, MenuItem, MenuCategory, OrderType, OrderStatus, OrderItemStatus } from '@/types';
 import { generateOrderNumber, calculateOrderTotals } from '@/data/mockData';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { useAuth } from './AuthContext';
+import { API_BASE_URL } from '@/config';
 
 interface OrderContextType {
   orders: Order[];
@@ -50,10 +51,10 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       try {
         console.log('Fetching data from API...');
         const [ordersRes, tablesRes, menuRes, categoriesRes] = await Promise.all([
-          fetch('/api/orders'),
-          fetch('/api/tables'),
-          fetch('/api/menu-items'),
-          fetch('/api/categories'),
+          fetch(`${API_BASE_URL}/api/orders`),
+          fetch(`${API_BASE_URL}/api/tables`),
+          fetch(`${API_BASE_URL}/api/menu-items`),
+          fetch(`${API_BASE_URL}/api/categories`),
         ]);
 
         console.log('API responses:', {
@@ -154,7 +155,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           )
         );
         
-        fetch(`/api/tables/${table.id}`, {
+        fetch(`${API_BASE_URL}/api/tables/${table.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
@@ -268,7 +269,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     };
 
     try {
-      const response = await fetch('/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newOrder),
@@ -303,7 +304,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           )
         );
         
-        await fetch(`/api/tables/${currentOrder.tableId}`, {
+        await fetch(`${API_BASE_URL}/api/tables/${currentOrder.tableId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'occupied', currentOrderIds: newOrderIds }),
@@ -340,7 +341,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -397,7 +398,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
                   })
                 );
                 
-                fetch(`/api/tables/${table.id}`, {
+                fetch(`${API_BASE_URL}/api/tables/${table.id}`, {
                   method: 'PATCH',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
@@ -433,7 +434,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      await fetch(`/api/orders/${orderId}`, {
+      await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: updatedItems, status: newOrderStatus }),
@@ -460,7 +461,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     if (!order) return;
 
     try {
-      await fetch(`/api/orders/${orderId}`, {
+      await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'cancelled' }),
@@ -483,7 +484,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             })
           );
           
-          await fetch(`/api/tables/${table.id}`, {
+          await fetch(`${API_BASE_URL}/api/tables/${table.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
@@ -522,7 +523,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     const totals = calculateOrderTotals(newItems, existingOrder.orderType);
 
     try {
-      await fetch(`/api/orders/${currentOrder.existingOrderId}`, {
+      await fetch(`${API_BASE_URL}/api/orders/${currentOrder.existingOrderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -555,7 +556,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       const table = tables.find(t => t.id === tableId);
       const newOrderIds = orderIds ?? table?.currentOrderIds ?? [];
       
-      await fetch(`/api/tables/${tableId}`, {
+      await fetch(`${API_BASE_URL}/api/tables/${tableId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, currentOrderIds: newOrderIds }),

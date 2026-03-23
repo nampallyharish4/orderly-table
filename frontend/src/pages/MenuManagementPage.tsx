@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE_URL } from '@/config';
 import { useOrders } from '@/contexts/OrderContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -103,7 +104,7 @@ export default function MenuManagementPage() {
     
     setDeletingId(itemToDelete.id);
     try {
-      const response = await fetch(`/api/menu-items/${itemToDelete.id}`, { method: 'DELETE' });
+      const response = await fetch(`${API_BASE_URL}/api/menu-items/${itemToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete');
       toast({ title: 'Success', description: 'Menu item deleted' });
       refreshData();
@@ -120,7 +121,7 @@ export default function MenuManagementPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/categories/${categoryToDelete}`, { method: 'DELETE' });
+      const response = await fetch(`${API_BASE_URL}/api/categories/${categoryToDelete}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete category');
       
       toast({ title: 'Success', description: 'Category and associated items deleted successfully' });
@@ -175,7 +176,7 @@ export default function MenuManagementPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/categories', {
+      const response = await fetch(`${API_BASE_URL}/api/categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(categoryFormData),
@@ -200,7 +201,7 @@ export default function MenuManagementPage() {
     setOptimisticAvailability(prev => ({ ...prev, [item.id]: nextAvailability }));
 
     try {
-      await fetch(`/api/menu-items/${item.id}`, {
+      await fetch(`${API_BASE_URL}/api/menu-items/${item.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isAvailable: nextAvailability }),
