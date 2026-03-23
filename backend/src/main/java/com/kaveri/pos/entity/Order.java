@@ -2,9 +2,9 @@ package com.kaveri.pos.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -42,9 +42,9 @@ public class Order {
     @Column(name = "customer_phone")
     private String customerPhone;
 
-    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "items", columnDefinition = "jsonb", nullable = false)
-    private List<Object> items = new ArrayList<>();
+    private List<java.util.Map<String, Object>> items = new ArrayList<>();
 
     @Column(name = "subtotal", nullable = false)
     private Double subtotal = 0.0;
@@ -125,8 +125,8 @@ public class Order {
     public void setCustomerName(String customerName) { this.customerName = customerName; }
     public String getCustomerPhone() { return customerPhone; }
     public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
-    public List<Object> getItems() { return items; }
-    public void setItems(List<Object> items) { this.items = items; }
+    public List<java.util.Map<String, Object>> getItems() { return items; }
+    public void setItems(List<java.util.Map<String, Object>> items) { this.items = items; }
     public Double getSubtotal() { return subtotal; }
     public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
     public Double getTaxAmount() { return taxAmount; }

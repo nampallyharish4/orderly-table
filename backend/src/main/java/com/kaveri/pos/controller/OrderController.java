@@ -66,7 +66,7 @@ public class OrderController {
             order.setTableNumber(getString(body, "tableNumber"));
             order.setCustomerName(getString(body, "customerName"));
             order.setCustomerPhone(getString(body, "customerPhone"));
-            order.setItems(body.get("items") != null ? (List<Object>) body.get("items") : new ArrayList<>());
+            order.setItems(body.get("items") != null ? (List<Map<String, Object>>) body.get("items") : new ArrayList<>());
             order.setSubtotal(toDouble(body.get("subtotal")));
             order.setTaxAmount(toDouble(body.get("taxAmount")));
             order.setServiceCharge(toDouble(body.get("serviceCharge")));
@@ -98,7 +98,7 @@ public class OrderController {
             Order order = optOrder.get();
 
             if (body.containsKey("status")) order.setStatus(body.get("status").toString());
-            if (body.containsKey("items")) order.setItems((List<Object>) body.get("items"));
+            if (body.containsKey("items")) order.setItems((List<Map<String, Object>>) body.get("items"));
             if (body.containsKey("paymentMethod") && body.get("paymentMethod") != null)
                 order.setPaymentMethod(body.get("paymentMethod").toString());
             if (body.containsKey("paymentStatus") && body.get("paymentStatus") != null)
