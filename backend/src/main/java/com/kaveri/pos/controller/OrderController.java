@@ -1,0 +1,145 @@
+package com.kaveri.pos.controller;
+
+import com.kaveri.pos.entity.Order;
+import com.kaveri.pos.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @GetMapping
+    public ResponseEntity<List<Order>> getAllOrders() {
+        try {
+            List<Order> orders = orderRepository.findAllByOrderByCreatedAtDesc();
+            for (Order order : orders) {
+                if (order.getPaymentMethod() != null) {
+                    Map<String, Object> payment = new LinkedHashMap<>();
+                    payment.put("id", "pay-" + order.getDbId());
+                    payment.put("orderId", order.getVisibleId());
+                    payment.put("method", order.getPaymentMethod());
+                    payment.put("amount", order.getTotalAmount());
+                    payment.put("cashAmount", order.getCashAmount());
+                    payment.put("upiAmount", order.getUpiAmount());
+                    payment.put("status", order.getPaymentStatus() != null ? order.getPaymentStatus() : "completed");
+                    payment.put("paidAt", order.getPaidAt());
+                    order.setPayment(payment);
+                }
+            }
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> body) {
+        try {
+            String visibleId = body.containsKey("id") && body.get("id") != null
+                    ? body.get("id").toString()
+                    : "order-" + System.currentTimeMillis();
+
+            Integer tableDbId = null;
+            if (body.get("tableId") != null) {
+                String tableIdStr = body.get("tableId").toString();
+                if (tableIdStr.startsWith("table-")) {
+                    try { tableDbId = Integer.parseInt(tableIdStr.replace("table-", "")); } catch (NumberFormatException ignored) {}
+                } else {
+                    try { tableDbId = Integer.parseInt(tableIdStr); } catch (NumberFormatException ignored) {}
+                }
+            }
+
+            Order order = new Order();
+            order.setVisibleId(visibleId);
+            order.setOrderNumber(getString(body, "orderNumber"));
+            order.setOrderType(getString(body, "orderType"));
+            order.setTableDbId(tableDbId);
+            order.setTableNumber(getString(body, "tableNumber"));
+            order.setCustomerName(getString(body, "customerName"));
+            order.setCustomerPhone(getString(body, "customerPhone"));
+            order.setItems(body.get("items") != null ? (List<Object>) body.get("items") : new ArrayList<>());
+            order.setSubtotal(toDouble(body.get("subtotal")));
+            order.setTaxAmount(toDouble(body.get("taxAmount")));
+            order.setServiceCharge(toDouble(body.get("serviceCharge")));
+            order.setDiscountAmount(toDouble(body.get("discountAmount")));
+            order.setTotalAmount(toDouble(body.get("totalAmount")));
+            order.setStatus(body.get("status") != null ? body.get("status").toString() : "new");
+            order.setNotes(getString(body, "notes"));
+            order.setCreatedBy(body.get("createdBy") != null ? body.get("createdBy").toString() : "system");
+            order.setCreatedAt(OffsetDateTime.now());
+            order.setUpdatedAt(OffsetDateTime.now());
+
+            Order saved = orderRepository.save(order);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            Map<String, String> err = new HashMap<>();
+            err.put("error", "Failed to create order");
+            err.put("details", e.getMessage());
+            return ResponseEntity.status(500).body(err);
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateOrder(@PathVariable String id, @RequestBody Map<String, Object> body) {
+        try {
+            Optional<Order> optOrder = orderRepository.findByVisibleId(id);
+            if (optOrder.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Order not found"));
+            }
+            Order order = optOrder.get();
+
+            if (body.containsKey("status")) order.setStatus(body.get("status").toString());
+            if (body.containsKey("items")) order.setItems((List<Object>) body.get("items"));
+            if (body.containsKey("paymentMethod") && body.get("paymentMethod") != null)
+                order.setPaymentMethod(body.get("paymentMethod").toString());
+            if (body.containsKey("paymentStatus") && body.get("paymentStatus") != null)
+                order.setPaymentStatus(body.get("paymentStatus").toString());
+            if (body.containsKey("cashAmount")) order.setCashAmount(toDouble(body.get("cashAmount")));
+            if (body.containsKey("upiAmount")) order.setUpiAmount(toDouble(body.get("upiAmount")));
+            if (body.containsKey("paidAt") && body.get("paidAt") != null)
+                order.setPaidAt(OffsetDateTime.parse(body.get("paidAt").toString()));
+            if (body.containsKey("servedAt") && body.get("servedAt") != null)
+                order.setServedAt(OffsetDateTime.parse(body.get("servedAt").toString()));
+            if (body.containsKey("subtotal")) order.setSubtotal(toDouble(body.get("subtotal")));
+            if (body.containsKey("taxAmount")) order.setTaxAmount(toDouble(body.get("taxAmount")));
+            if (body.containsKey("serviceCharge")) order.setServiceCharge(toDouble(body.get("serviceCharge")));
+            if (body.containsKey("discountAmount")) order.setDiscountAmount(toDouble(body.get("discountAmount")));
+            if (body.containsKey("totalAmount")) order.setTotalAmount(toDouble(body.get("totalAmount")));
+            order.setUpdatedAt(OffsetDateTime.now());
+
+            Order saved = orderRepository.save(order);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to update order"));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteOrder(@PathVariable String id) {
+        try {
+            orderRepository.deleteByVisibleId(id);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to delete order"));
+        }
+    }
+
+    private String getString(Map<String, Object> body, String key) {
+        return body.get(key) != null ? body.get(key).toString() : null;
+    }
+
+    private Double toDouble(Object val) {
+        if (val == null) return 0.0;
+        try { return Double.parseDouble(val.toString()); } catch (Exception e) { return 0.0; }
+    }
+}

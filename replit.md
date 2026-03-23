@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-featured Restaurant Point of Sale (POS) application built with React and TypeScript. The system handles table management, order processing, kitchen display, and billing operations for a restaurant. It features role-based access control with different interfaces for admins, waiters, cashiers, and kitchen staff. The application uses a dark professional theme optimized for long shifts and tablet touch targets.
+This is a full-featured Restaurant Point of Sale (POS) application built with React and TypeScript frontend, and a Java Spring Boot backend. The system handles table management, order processing, kitchen display, and billing operations for a restaurant. It features role-based access control with different interfaces for admins, waiters, cashiers, and kitchen staff.
 
 ## User Preferences
 
@@ -14,66 +14,72 @@ Preferred communication style: Simple, everyday language.
 - **React 18** with TypeScript for type-safe component development
 - **Vite** as the build tool and development server (runs on port 5000)
 - **React Router v6** for client-side routing with protected routes
+- Vite proxies all `/api/*` requests to the Spring Boot backend on port 8080
 
 ### UI Components & Styling
 - **Shadcn/UI** component library built on Radix UI primitives
 - **Tailwind CSS** with custom design tokens for the restaurant theme
-- **Class Variance Authority (CVA)** for component variant management
 - Dark theme optimized for restaurant environments with warm amber primary color
 
 ### State Management
 - **React Context API** for global state:
   - `AuthContext`: User authentication, login/logout, role management
   - `OrderContext`: Orders, tables, menu items, and order operations
-- **TanStack Query** available for server state management (ready for API integration)
 - Local storage for auth persistence
 
 ### Authentication & Authorization
-- Role-based access control with four user types: admin, waiter, cashier, kitchen
-- Demo credentials built into the app for testing different roles
+- Role-based access control: admin, waiter, cashier, kitchen
 - Protected routes that redirect based on user role permissions
-- Route access controlled by `canAccessRoute` utility function
 
-### Backend & Data Layer
-- **Express.js** server with Vite middleware for development
-- **PostgreSQL** database with Drizzle ORM for data persistence
-- Database schema defined in `shared/schema.ts`
-- Database connection in `server/db.ts`
-- Configuration in `drizzle.config.ts`
+### Backend
+- **Java Spring Boot 3.2** running on port 8080
+- **Spring Data JPA** with Hibernate 6 ORM
+- **PostgreSQL** database (existing schema, ddl-auto=none)
+- **hypersistence-utils** for JSONB column mapping
+- CORS configured to allow all origins for development
 
 #### API Endpoints
-- `GET /api/orders` - Fetch all orders
+- `POST /api/auth/login` - User authentication
+- `GET /api/orders` - Fetch all orders (with payment info)
 - `POST /api/orders` - Create new order
 - `PATCH /api/orders/:id` - Update order status, items, payment info
 - `DELETE /api/orders/:id` - Delete an order
 - `GET /api/tables` - Fetch all tables
 - `PATCH /api/tables/:id` - Update table status and current orders
-- `GET /api/menu-items` - Fetch all menu items
+- `GET /api/menu-items` - Fetch all menu items (with category info)
 - `GET /api/categories` - Fetch all menu categories
+- `POST /api/menu-items` - Create menu item
+- `PATCH /api/menu-items/:id` - Update menu item
+- `DELETE /api/menu-items/:id` - Delete menu item
+- `GET /api/users` - Fetch all users
+- `POST /api/users` - Create user
+- `PATCH /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Delete user
+- `GET /api/settings` - Fetch restaurant settings
+- `PATCH /api/settings` - Update settings
 
-#### Database Scripts
-- `npm run db:push` - Push schema changes to database
+#### Database Scripts (Node.js)
+- `npm run db:push` - Push schema changes to database (Drizzle)
 - `npm run db:seed` - Seed initial data (users, menu items, tables)
-- `npm run db:studio` - Open Drizzle Studio for database management
 
 #### ID System
-- Tables use `visibleId` (string like "table-1", "order-123") for client-facing IDs
-- Internal serial `id` for database references
+- Entities use `visibleId` (string like "table-1", "order-123") as client-facing `id`
+- Internal serial `dbId` for database primary key references
 
-### Key Features
-- **Dashboard**: Overview stats, active orders, revenue tracking
-- **Table Management**: Visual table grid, status tracking, capacity display
-- **Order System**: Create orders (dine-in/takeaway), add menu items, track status
-- **Kitchen Display**: Real-time order queue, item status updates, priority indicators
-- **Billing**: Payment processing (cash/card/UPI), bill printing, tax calculations
+### Workflows
+- **Start application**: `npx vite` — Frontend dev server on port 5000
+- **Spring Boot Backend**: `cd backend && mvn spring-boot:run` — Backend API on port 8080
 
 ### Project Structure
 ```
-server/
-├── index.ts         # Express server with Vite middleware
-├── routes.ts        # API route handlers
-├── db.ts           # Database connection
-└── seed.ts         # Database seeding script
+backend/
+├── pom.xml
+└── src/main/java/com/kaveri/pos/
+    ├── KaveriPosApplication.java
+    ├── config/CorsConfig.java
+    ├── entity/          # JPA entities (Order, RestaurantTable, MenuItem, etc.)
+    ├── repository/      # Spring Data JPA repositories
+    └── controller/      # REST controllers
 
 src/
 ├── components/       # Reusable UI components
@@ -84,14 +90,15 @@ src/
 │   ├── orders/      # Order-related components
 │   └── tables/      # Table management components
 ├── contexts/        # React Context providers
-├── data/           # Mock data and utilities
-├── hooks/          # Custom React hooks
-├── pages/          # Route page components
-├── types/          # TypeScript type definitions
-└── utils/          # Utility functions
+├── hooks/           # Custom React hooks
+├── pages/           # Route page components
+└── utils/           # Utility functions
 
 shared/
-└── schema.ts       # Drizzle ORM schema definitions
+└── schema.ts        # Drizzle ORM schema (for migrations/seeding only)
+
+scripts/
+└── seed.ts          # Database seeding script
 ```
 
 ## External Dependencies
@@ -99,23 +106,12 @@ shared/
 ### UI Framework
 - Radix UI primitives (dialog, dropdown, tabs, etc.)
 - Lucide React for icons
-- Embla Carousel for carousel functionality
-- Vaul for drawer components
+- Sonner for toast notifications
+- Recharts for analytics
 
-### Utilities
-- **date-fns**: Date formatting and manipulation
-- **clsx + tailwind-merge**: Conditional class name handling
-- **react-hook-form + zod**: Form handling and validation
-- **sonner**: Toast notifications
-
-### Development
-- **Vitest**: Testing framework with jsdom environment
-- **ESLint**: Code linting with TypeScript and React plugins
-- **TypeScript**: Strict type checking disabled for flexibility
-
-### Audio
-- Web Audio API for notification sounds (order ready alerts)
-
-### Fonts
-- Inter (UI text)
-- JetBrains Mono (monospace elements)
+### Backend (Java)
+- Spring Boot 3.2.5
+- Spring Data JPA / Hibernate 6
+- PostgreSQL JDBC driver
+- hypersistence-utils-hibernate-63 for JSONB support
+- Jackson for JSON serialization
