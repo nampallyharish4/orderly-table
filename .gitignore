@@ -64,8 +64,9 @@ frontend/node_modules/
 attached_assets/
 
 # Secrets and Properties
-backend/src/main/resources/application.properties
+**/application.properties
 *.properties
+!**/application.properties.example
 !*.example
 !*.template
 .env*
