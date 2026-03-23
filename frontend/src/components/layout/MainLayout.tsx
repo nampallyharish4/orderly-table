@@ -82,11 +82,11 @@ export function MainLayout({ children }: MainLayoutProps) {
     // Calculate badge count
     let badgeCount = 0;
     if (item.path === '/orders') {
-      badgeCount = orders.filter(o => o.status !== 'collected' && o.status !== 'cancelled').length;
+      badgeCount = orders.filter(o => !['collected', 'cancelled'].includes(o.status)).length;
     } else if (item.path === '/kitchen') {
-      badgeCount = orders.filter(o => o.status === 'new' || o.status === 'preparing').length;
+      badgeCount = orders.filter(o => o.status === 'new').length;
     } else if (item.path === '/billing') {
-      badgeCount = orders.filter(o => o.status === 'ready').length;
+      badgeCount = orders.filter(o => o.status === 'served').length;
     }
 
     return (

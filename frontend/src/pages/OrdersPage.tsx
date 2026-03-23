@@ -33,10 +33,10 @@ export default function OrdersPage() {
   });
 
   const activeOrders = filteredOrders.filter(o => 
-    ['new', 'preparing', 'ready'].includes(o.status)
+    ['new', 'preparing', 'ready', 'served'].includes(o.status)
   );
   const completedOrders = filteredOrders.filter(o => 
-    ['served', 'collected'].includes(o.status)
+    o.status === 'collected'
   );
   const cancelledOrders = filteredOrders.filter(o => o.status === 'cancelled');
 
@@ -49,6 +49,7 @@ export default function OrdersPage() {
     new: orders.filter(o => o.status === 'new').length,
     preparing: orders.filter(o => o.status === 'preparing').length,
     ready: orders.filter(o => o.status === 'ready').length,
+    served: orders.filter(o => o.status === 'served').length,
   };
 
   return (
