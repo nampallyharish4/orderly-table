@@ -54,9 +54,8 @@ public class OrderController {
         }
     }
 
-
-
     @PostMapping
+    @SuppressWarnings("unchecked")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> body) {
         try {
             String visibleId = body.containsKey("id") && body.get("id") != null
@@ -104,6 +103,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}")
+    @SuppressWarnings("unchecked")
     public ResponseEntity<?> updateOrder(@PathVariable String id, @RequestBody Map<String, Object> body) {
         try {
             Optional<Order> optOrder = orderRepository.findByVisibleId(id);

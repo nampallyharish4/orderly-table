@@ -27,7 +27,9 @@ public class TableController {
     }
 
     @PatchMapping("/{id}")
+    @SuppressWarnings("unchecked")
     public ResponseEntity<?> updateTable(@PathVariable String id, @RequestBody Map<String, Object> body) {
+
         try {
             Optional<RestaurantTable> optTable = tableRepository.findByVisibleId(id);
             if (optTable.isEmpty()) {
