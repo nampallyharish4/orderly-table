@@ -75,3 +75,26 @@ credentials/
 *.key
 *.p12
 *.jks
+
+# Migration and development scripts
+data for migration/
+*.mjs
+migrate_*.js
+import_*.js
+*.sql
+!schema.sql
+!data.sql
+!import.sql
+
+# Local JSON files
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+!components.json
+!vercel.json
+!eslint.config.js
+!postcss.config.js
+!tailwind.config.ts
+!vite.config.ts
+!vitest.config.ts
