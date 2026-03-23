@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrders } from '@/contexts/OrderContext';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,6 +66,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const { user, logout } = useAuth();
+  const { orders } = useOrders();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
@@ -76,20 +78,43 @@ export function MainLayout({ children }: MainLayoutProps) {
   const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = location.pathname === item.path;
     const Icon = item.icon;
+    
+    // Calculate badge count
+    let badgeCount = 0;
+    if (item.path === '/orders') {
+      badgeCount = orders.filter(o => o.status !== 'collected' && o.status !== 'cancelled').length;
+    } else if (item.path === '/kitchen') {
+      badgeCount = orders.filter(o => o.status === 'new' || o.status === 'preparing').length;
+    } else if (item.path === '/billing') {
+      badgeCount = orders.filter(o => o.status === 'ready').length;
+    }
 
     return (
       <Link
         to={item.path}
         onClick={() => setMobileMenuOpen(false)}
         className={cn(
-          'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+          'flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all group',
           isActive
             ? 'bg-primary text-primary-foreground shadow-glow'
             : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
         )}
       >
-        <Icon className="w-5 h-5" />
-        <span>{item.label}</span>
+        <div className="flex items-center gap-3">
+          <Icon className="w-5 h-5" />
+          <span>{item.label}</span>
+        </div>
+        
+        {badgeCount > 0 && (
+          <span className={cn(
+            "flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold",
+            isActive 
+              ? "bg-primary-foreground text-primary" 
+              : "bg-primary text-primary-foreground"
+          )}>
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </span>
+        )}
       </Link>
     );
   };
