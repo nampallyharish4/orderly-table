@@ -67,12 +67,12 @@ Preferred communication style: Simple, everyday language.
 - Internal serial `dbId` for database primary key references
 
 ### Workflows
-- **Start application**: `npx vite` — Frontend dev server on port 5000
+- **Start application**: `cd frontend && npx vite` — Frontend dev server on port 5000
 - **Spring Boot Backend**: `cd backend && mvn spring-boot:run` — Backend API on port 8080
 
 ### Project Structure
 ```
-backend/
+backend/                            # Java Spring Boot backend
 ├── pom.xml
 └── src/main/java/com/kaveri/pos/
     ├── KaveriPosApplication.java
@@ -81,24 +81,23 @@ backend/
     ├── repository/      # Spring Data JPA repositories
     └── controller/      # REST controllers
 
-src/
-├── components/       # Reusable UI components
-│   ├── ui/          # Shadcn/UI base components
-│   ├── auth/        # Authentication components
-│   ├── layout/      # Page layout components
-│   ├── menu/        # Menu item components
-│   ├── orders/      # Order-related components
-│   └── tables/      # Table management components
-├── contexts/        # React Context providers
-├── hooks/           # Custom React hooks
-├── pages/           # Route page components
-└── utils/           # Utility functions
-
-shared/
-└── schema.ts        # Drizzle ORM schema (for migrations/seeding only)
-
-scripts/
-└── seed.ts          # Database seeding script
+frontend/                           # React/Vite frontend
+├── src/
+│   ├── components/       # Reusable UI components
+│   │   ├── ui/          # Shadcn/UI base components
+│   │   ├── auth/        # Authentication components
+│   │   ├── layout/      # Page layout components
+│   │   ├── menu/        # Menu item components
+│   │   ├── orders/      # Order-related components
+│   │   └── tables/      # Table management components
+│   ├── contexts/        # React Context providers
+│   ├── hooks/           # Custom React hooks
+│   ├── pages/           # Route page components
+│   └── utils/           # Utility functions
+├── public/
+├── index.html
+├── vite.config.ts
+└── package.json
 ```
 
 ## External Dependencies
