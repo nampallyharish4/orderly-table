@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useOrders } from '@/contexts/OrderContext';
 import { useNavigate } from 'react-router-dom';
 import { TableCard } from '@/components/tables/TableCard';
@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableStatus } from '@/types';
-import { LayoutGrid, List, Loader2, Utensils, CheckCircle2 } from 'lucide-react';
+import { LayoutGrid, List, Loader2, Utensils, CheckCircle2, Settings, Save, Edit3 } from 'lucide-react';
+import { Rnd } from 'react-rnd';
 
 export default function TablesPage() {
   const { tables, orders, createOrder, isLoading } = useOrders();
@@ -17,6 +18,52 @@ export default function TablesPage() {
   const [statusFilter, setStatusFilter] = useState<TableStatus | 'all'>('all');
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  
+  // Layout Canvas Customization State
+  const [isEditMode, setIsEditMode] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ w: 800, h: 800 });
+
+  const defaultTablePositions: Record<string, { top: string, left: string, width: string, height: string }> = {
+    'T2': { top: '2%', left: '2%', width: '46%', height: '22%' },
+    'T3': { top: '24%', left: '2%', width: '46%', height: '22%' },
+    'T1': { top: '2%', left: '52%', width: '46%', height: '22%' },
+    'T4': { top: '24%', left: '75%', width: '23%', height: '19%' },
+    'T5': { top: '43%', left: '75%', width: '23%', height: '19%' },
+    'F1': { top: '62%', left: '13.5%', width: '23%', height: '19%' },
+    'F2': { top: '81%', left: '13.5%', width: '23%', height: '19%' },
+    'T6': { top: '62%', left: '52%', width: '23%', height: '19%' },
+    'T7': { top: '62%', left: '75%', width: '23%', height: '19%' },
+    'T8': { top: '81%', left: '52%', width: '23%', height: '19%' },
+    'T9': { top: '81%', left: '75%', width: '23%', height: '19%' },
+  };
+
+  const [tablePositions, setTablePositions] = useState<Record<string, { top: string, left: string, width: string, height: string }>>(() => {
+    const saved = localStorage.getItem('orderly_table_layout');
+    if (saved) return JSON.parse(saved);
+    return defaultTablePositions;
+  });
+
+  // Track container pixel dimensions for react-rnd math
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerSize({ w: entry.contentRect.width, h: entry.contentRect.height });
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [viewMode]);
+
+  const toggleEditMode = () => {
+    if (isEditMode) {
+      // Save
+      localStorage.setItem('orderly_table_layout', JSON.stringify(tablePositions));
+    }
+    setIsEditMode(!isEditMode);
+  };
+
   // Map a table to its logical section
   const getTableSection = (t: Table) => {
     const floor = (t.floor || '').toLowerCase();
@@ -48,6 +95,8 @@ export default function TablesPage() {
   }, {} as Record<string, Table[]>);
 
   const handleTableClick = (table: Table) => {
+    if (isEditMode) return; // Disable clicks opening dialogs during edit mode
+    
     if (table.status === 'occupied' && table.currentOrderIds.length > 0) {
       // Show dialog to select order or create new one
       setSelectedTable(table);
@@ -159,7 +208,17 @@ export default function TablesPage() {
           </div>
         </div>
 
-        <div className="ml-auto flex gap-1 bg-secondary/50 rounded-lg p-0.5">
+        <div className="ml-auto flex gap-1 bg-secondary/50 rounded-lg p-0.5 items-center">
+          {viewMode === 'grid' && (
+            <Button
+              variant={isEditMode ? 'default' : 'outline'}
+              size="sm"
+              onClick={toggleEditMode}
+              className={`mr-2 h-8 text-xs ${isEditMode ? 'bg-amber-500 hover:bg-amber-600 border-0 shadow-md' : 'border-border/50'}`}
+            >
+              {isEditMode ? <><Save className="w-3.5 h-3.5 mr-1" /> Save Canvas</> : <><Edit3 className="w-3.5 h-3.5 mr-1" /> Edit Layout</>}
+            </Button>
+          )}
           <Button
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="icon"
@@ -181,36 +240,61 @@ export default function TablesPage() {
 
       {/* Tables Grid / Floor Plan */}
       {viewMode === 'grid' ? (
-        <div className="w-full relative aspect-[4/5] sm:aspect-square lg:aspect-[4/3] max-w-6xl mx-auto rounded-3xl border border-white/5 bg-black/10 overflow-hidden shadow-2xl p-4">
+        <div ref={containerRef} className={`w-full relative aspect-[4/5] sm:aspect-square lg:aspect-[4/3] max-w-6xl mx-auto rounded-3xl border ${isEditMode ? 'border-amber-500/50 bg-black/20' : 'border-white/5 bg-black/10'} overflow-hidden shadow-2xl p-4 transition-colors`}>
+          {isEditMode && (
+             <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-10">
+                <LayoutGrid className="w-64 h-64" />
+             </div>
+          )}
           {filteredTables.filter(t => !(t as any).hidden).map(table => {
             const tableOrders = orders.filter(o => table.currentOrderIds.includes(o.id));
             const firstOrder = tableOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
             
-            // Floorplan layout absolute positioning
-            const tablePositions: Record<string, React.CSSProperties> = {
-              'T2': { top: '2%', left: '2%', width: '46%', height: '22%' },
-              'T3': { top: '24%', left: '2%', width: '46%', height: '22%' },
-              'T1': { top: '2%', left: '52%', width: '46%', height: '22%' },
-              'T4': { top: '24%', left: '75%', width: '23%', height: '19%' },
-              'T5': { top: '43%', left: '75%', width: '23%', height: '19%' },
-              'F1': { top: '62%', left: '13.5%', width: '23%', height: '19%' },
-              'F2': { top: '81%', left: '13.5%', width: '23%', height: '19%' },
-              'T6': { top: '62%', left: '52%', width: '23%', height: '19%' },
-              'T7': { top: '62%', left: '75%', width: '23%', height: '19%' },
-              'T8': { top: '81%', left: '52%', width: '23%', height: '19%' },
-              'T9': { top: '81%', left: '75%', width: '23%', height: '19%' },
-            };
-
             const position = tablePositions[table.tableNumber] || { top: '10%', left: '10%', width: '17%', height: '16%' };
+            
+            // Map percentage values into current physical container pixels for react-rnd
+            const pxX = (parseFloat(position.left) / 100) * containerSize.w || 0;
+            const pxY = (parseFloat(position.top) / 100) * containerSize.h || 0;
+            const pxW = (parseFloat(position.width) / 100) * containerSize.w || 0;
+            const pxH = (parseFloat(position.height) / 100) * containerSize.h || 0;
 
             return (
-              <div key={table.id} className="absolute transition-all duration-700 ease-in-out" style={position}>
+              <Rnd
+                key={table.id}
+                bounds="parent"
+                position={{ x: pxX, y: pxY }}
+                size={{ width: pxW, height: pxH }}
+                disableDragging={!isEditMode}
+                enableResizing={isEditMode}
+                onDragStop={(e, d) => {
+                  setTablePositions(prev => ({
+                    ...prev,
+                    [table.tableNumber]: {
+                      ...prev[table.tableNumber],
+                      left: `${(d.x / containerSize.w) * 100}%`,
+                      top: `${(d.y / containerSize.h) * 100}%`
+                    }
+                  }));
+                }}
+                onResizeStop={(e, direction, ref, delta, position) => {
+                  setTablePositions(prev => ({
+                    ...prev,
+                    [table.tableNumber]: {
+                      left: `${(position.x / containerSize.w) * 100}%`,
+                      top: `${(position.y / containerSize.h) * 100}%`,
+                      width: `${(ref.offsetWidth / containerSize.w) * 100}%`,
+                      height: `${(ref.offsetHeight / containerSize.h) * 100}%`
+                    }
+                  }));
+                }}
+                className={`absolute ${isEditMode ? 'z-50 cursor-move ring-2 ring-amber-500/50 rounded-lg hover:ring-amber-500 bg-amber-500/10' : 'transition-all duration-700 ease-in-out cursor-pointer'}`}
+              >
                 <TableCard
                   table={table}
                   onClick={() => handleTableClick(table)}
                   creatorName={firstOrder?.createdBy}
                 />
-              </div>
+              </Rnd>
             );
           })}
         </div>
