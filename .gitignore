@@ -62,11 +62,9 @@ backend/target/
 frontend/dist/
 frontend/node_modules/
 attached_assets/
-
 # Secrets and Properties
-/backend/src/main/resources/application.properties
 *.properties
-!**/application.properties.example
+/backend/src/main/resources/application.properties
 !*.example
 !*.template
 .env*
