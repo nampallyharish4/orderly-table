@@ -252,11 +252,27 @@ export default function TablesPage() {
             
             const position = tablePositions[table.tableNumber] || { top: '10%', left: '10%', width: '17%', height: '16%' };
             
-            // Map percentage values into current physical container pixels for react-rnd
+            // Map percentage values into current physical container pixels for react-rnd (only used in edit mode)
             const pxX = (parseFloat(position.left) / 100) * containerSize.w || 0;
             const pxY = (parseFloat(position.top) / 100) * containerSize.h || 0;
             const pxW = (parseFloat(position.width) / 100) * containerSize.w || 0;
             const pxH = (parseFloat(position.height) / 100) * containerSize.h || 0;
+
+            if (!isEditMode) {
+              return (
+                <div 
+                  key={table.id} 
+                  className="absolute transition-all duration-300 ease-in-out cursor-pointer hover:scale-[1.02]"
+                  style={{ top: position.top, left: position.left, width: position.width, height: position.height }}
+                >
+                  <TableCard
+                    table={table}
+                    onClick={() => handleTableClick(table)}
+                    creatorName={firstOrder?.createdBy}
+                  />
+                </div>
+              );
+            }
 
             return (
               <Rnd
@@ -264,8 +280,8 @@ export default function TablesPage() {
                 bounds="parent"
                 position={{ x: pxX, y: pxY }}
                 size={{ width: pxW, height: pxH }}
-                disableDragging={!isEditMode}
-                enableResizing={isEditMode}
+                disableDragging={false}
+                enableResizing={true}
                 onDragStop={(e, d) => {
                   setTablePositions(prev => ({
                     ...prev,
@@ -287,7 +303,7 @@ export default function TablesPage() {
                     }
                   }));
                 }}
-                className={`absolute ${isEditMode ? 'z-50 cursor-move ring-2 ring-amber-500/50 rounded-lg hover:ring-amber-500 bg-amber-500/10' : 'transition-all duration-700 ease-in-out cursor-pointer'}`}
+                className={'absolute z-50 cursor-move ring-2 ring-amber-500/50 rounded-lg hover:ring-amber-500 bg-amber-500/10'}
               >
                 <TableCard
                   table={table}
