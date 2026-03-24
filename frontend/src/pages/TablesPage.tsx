@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableStatus } from '@/types';
-import { LayoutGrid, List, Loader2 } from 'lucide-react';
+import { LayoutGrid, List, Loader2, Utensils, CheckCircle2 } from 'lucide-react';
 
 export default function TablesPage() {
   const { tables, orders, createOrder, isLoading } = useOrders();
@@ -65,8 +65,8 @@ export default function TablesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Table Management</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-gradient-primary">Table Management</h1>
+          <p className="text-muted-foreground mt-1">
             Select an available table to start a new order
           </p>
         </div>
@@ -74,30 +74,44 @@ export default function TablesPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <Card className="table-available">
-          <CardContent className="py-3 sm:py-4 text-center">
-            <p className="text-2xl sm:text-3xl font-bold text-table-available">{stats.available}</p>
-            <p className="text-xs sm:text-sm text-muted-foreground">Available</p>
+        <Card className="stat-card-success border overflow-hidden group hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="py-3 sm:py-4 relative">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-gradient-success flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle2 className="w-5 sm:w-6 h-5 sm:h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-bold text-emerald-400">{stats.available}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Available</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card className="table-occupied">
-          <CardContent className="py-3 sm:py-4 text-center">
-            <p className="text-2xl sm:text-3xl font-bold text-table-occupied">{stats.occupied}</p>
-            <p className="text-xs sm:text-sm text-muted-foreground">Occupied</p>
+        <Card className="stat-card-primary border overflow-hidden group hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="py-3 sm:py-4 relative">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <Utensils className="w-5 sm:w-6 h-5 sm:h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-bold text-amber-400">{stats.occupied}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Occupied</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm">
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide">
-          <span className="text-xs sm:text-sm text-muted-foreground shrink-0">Floor:</span>
+          <span className="text-xs sm:text-sm text-muted-foreground shrink-0 font-medium">Floor:</span>
           <div className="flex gap-1">
             <Button
               variant={floorFilter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFloorFilter('all')}
-              className="text-xs sm:text-sm"
+              className={`text-xs sm:text-sm ${floorFilter === 'all' ? 'bg-gradient-primary border-0 shadow-md' : ''}`}
             >
               All
             </Button>
@@ -107,7 +121,7 @@ export default function TablesPage() {
                 variant={floorFilter === floor ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFloorFilter(floor)}
-                className="text-xs sm:text-sm whitespace-nowrap"
+                className={`text-xs sm:text-sm whitespace-nowrap ${floorFilter === floor ? 'bg-gradient-primary border-0 shadow-md' : ''}`}
               >
                 {floor}
               </Button>
@@ -116,7 +130,7 @@ export default function TablesPage() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scrollbar-hide">
-          <span className="text-xs sm:text-sm text-muted-foreground shrink-0">Status:</span>
+          <span className="text-xs sm:text-sm text-muted-foreground shrink-0 font-medium">Status:</span>
           <div className="flex gap-1">
             {(['all', 'available', 'occupied'] as const).map(status => (
               <Button
@@ -124,7 +138,7 @@ export default function TablesPage() {
                 variant={statusFilter === status ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setStatusFilter(status)}
-                className="capitalize text-xs sm:text-sm"
+                className={`capitalize text-xs sm:text-sm ${statusFilter === status ? 'bg-gradient-primary border-0 shadow-md' : ''}`}
               >
                 {status}
               </Button>
@@ -132,12 +146,12 @@ export default function TablesPage() {
           </div>
         </div>
 
-        <div className="ml-auto flex gap-1">
+        <div className="ml-auto flex gap-1 bg-secondary/50 rounded-lg p-0.5">
           <Button
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="icon"
             onClick={() => setViewMode('grid')}
-            className="h-9 w-9"
+            className={`h-8 w-8 ${viewMode === 'grid' ? 'shadow-sm' : ''}`}
           >
             <LayoutGrid className="w-4 h-4" />
           </Button>
@@ -145,7 +159,7 @@ export default function TablesPage() {
             variant={viewMode === 'list' ? 'secondary' : 'ghost'}
             size="icon"
             onClick={() => setViewMode('list')}
-            className="h-9 w-9"
+            className={`h-8 w-8 ${viewMode === 'list' ? 'shadow-sm' : ''}`}
           >
             <List className="w-4 h-4" />
           </Button>
@@ -161,9 +175,11 @@ export default function TablesPage() {
             
             return floorTables.length > 0 && (
               <div key={floor}>
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  {floor}
-                  <Badge variant="secondary">{floorTables.filter(t => !(t as any).hidden).length} tables</Badge>
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 floor-header">
+                  <span className="text-gradient-primary">{floor}</span>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                    {floorTables.filter(t => !(t as any).hidden).length} tables
+                  </Badge>
                 </h2>
                 {regularTables.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 mb-4">
@@ -207,12 +223,13 @@ export default function TablesPage() {
             <button
               key={table.id}
               onClick={() => handleTableClick(table)}
-              className="w-full p-4 rounded-xl border border-border bg-card hover:bg-secondary/50 transition-colors flex items-center justify-between"
+              className="w-full p-4 rounded-xl border border-border bg-card hover:bg-secondary/50 transition-all duration-200 flex items-center justify-between group hover:border-primary/30 hover:shadow-md"
             >
               <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg ${
-                  table.status === 'available' ? 'bg-table-available/20 text-table-available' :
-                  'bg-table-occupied/20 text-table-occupied'
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg transition-transform duration-200 group-hover:scale-110 ${
+                  table.status === 'available' 
+                    ? 'bg-gradient-success text-white shadow-md' 
+                    : 'bg-gradient-primary text-white shadow-md'
                 }`}>
                   {table.tableNumber}
                 </div>
@@ -222,12 +239,12 @@ export default function TablesPage() {
                     <p className="text-sm text-muted-foreground">Capacity: {table.capacity}</p>
                     {table.status === 'occupied' && (
                       <>
-                        <span className="text-muted-foreground">•</span>
+                        <span className="text-muted-foreground/50">•</span>
                         {(() => {
                            const tableOrders = orders.filter(o => table.currentOrderIds.includes(o.id));
                            const firstOrder = tableOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
                            return firstOrder ? (
-                             <p className="text-xs font-medium text-primary">By: {firstOrder.createdBy}</p>
+                             <p className="text-xs font-medium text-amber-400">By: {firstOrder.createdBy}</p>
                            ) : null;
                         })()}
                       </>
@@ -236,8 +253,8 @@ export default function TablesPage() {
                 </div>
               </div>
               <Badge variant="outline" className={`capitalize ${
-                table.status === 'available' ? 'border-table-available text-table-available' :
-                'border-table-occupied text-table-occupied'
+                table.status === 'available' ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/10' :
+                'border-amber-500/50 text-amber-400 bg-amber-500/10'
               }`}>
                 {table.status}
               </Badge>
@@ -247,8 +264,9 @@ export default function TablesPage() {
       )}
 
       {filteredTables.length === 0 && (
-        <Card>
+        <Card className="border-dashed border-muted-foreground/20">
           <CardContent className="py-12 text-center text-muted-foreground">
+            <LayoutGrid className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p>No tables match your filters</p>
           </CardContent>
         </Card>

@@ -34,19 +34,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-surface p-4">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-orbs"
+      style={{
+        background: 'radial-gradient(ellipse at 20% 50%, hsl(225 18% 12%) 0%, hsl(225 18% 7%) 100%)',
+      }}
+    >
+      {/* Animated background grid */}
+      <div className="absolute inset-0 opacity-[0.03]" 
+        style={{
+          backgroundImage: 'linear-gradient(hsl(0 0% 100%) 1px, transparent 1px), linear-gradient(to right, hsl(0 0% 100%) 1px, transparent 1px)',
+          backgroundSize: '60px 60px'
+        }}
+      />
+
+      <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Logo */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4">
-            <Utensils className="w-8 h-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-primary mb-5 shadow-xl shadow-primary/25 hover:scale-105 transition-transform duration-300">
+            <Utensils className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Kaveri Family Restaurant</h1>
-          <p className="text-muted-foreground mt-2">Sign in to manage your restaurant</p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            <span className="text-gradient-primary">Kaveri</span>{' '}
+            <span className="text-foreground">Family Restaurant</span>
+          </h1>
+          <p className="text-muted-foreground mt-2 text-sm">Sign in to manage your restaurant</p>
         </div>
 
         {/* Login Card */}
-        <Card className="border-border/50">
+        <Card className="border-border/30 bg-card/80 backdrop-blur-xl shadow-2xl shadow-black/20">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl">Welcome back</CardTitle>
             <CardDescription>Enter your credentials to access the system</CardDescription>
@@ -54,23 +69,23 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   {error}
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <div className="relative group">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-11 border-border/50 focus:border-primary/50 transition-colors"
                     autoComplete="email"
                     data-testid="input-email"
                   />
@@ -78,23 +93,23 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <div className="relative group">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 h-11 border-border/50 focus:border-primary/50 transition-colors"
                     autoComplete="current-password"
                     data-testid="input-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -103,7 +118,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold"
+                className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold h-11 shadow-lg shadow-primary/25 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30"
                 disabled={isLoading}
                 data-testid="button-signin"
               >
@@ -113,8 +128,8 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground">
-          Kaveri Family Restaurant POS System
+        <p className="text-center text-xs text-muted-foreground/70">
+          Kaveri Family Restaurant • Order Management System
         </p>
       </div>
     </div>

@@ -42,18 +42,19 @@ interface NavItem {
   path: string;
   label: string;
   icon: React.ElementType;
+  color?: string;
 }
 
 const allNavItems: NavItem[] = [
-  { path: '/', label: 'Dashboard', icon: LayoutGrid },
-  { path: '/tables', label: 'Tables', icon: Utensils },
-  { path: '/orders', label: 'Orders', icon: ClipboardList },
-  { path: '/kitchen', label: 'Kitchen', icon: ChefHat },
-  { path: '/billing', label: 'Billing', icon: Receipt },
-  { path: '/reports', label: 'Reports', icon: BarChart3 },
-  { path: '/menu', label: 'Menu', icon: UtensilsCrossed },
-  { path: '/users', label: 'Users', icon: Users },
-  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: '/', label: 'Dashboard', icon: LayoutGrid, color: 'from-amber-500 to-orange-500' },
+  { path: '/tables', label: 'Tables', icon: Utensils, color: 'from-emerald-500 to-teal-500' },
+  { path: '/orders', label: 'Orders', icon: ClipboardList, color: 'from-sky-500 to-blue-500' },
+  { path: '/kitchen', label: 'Kitchen', icon: ChefHat, color: 'from-amber-500 to-yellow-500' },
+  { path: '/billing', label: 'Billing', icon: Receipt, color: 'from-violet-500 to-purple-500' },
+  { path: '/reports', label: 'Reports', icon: BarChart3, color: 'from-cyan-500 to-teal-500' },
+  { path: '/menu', label: 'Menu', icon: UtensilsCrossed, color: 'from-rose-500 to-pink-500' },
+  { path: '/users', label: 'Users', icon: Users, color: 'from-indigo-500 to-violet-500' },
+  { path: '/settings', label: 'Settings', icon: Settings, color: 'from-slate-500 to-gray-500' },
 ];
 
 function getNavItemsForRole(role: UserRole): NavItem[] {
@@ -94,14 +95,20 @@ export function MainLayout({ children }: MainLayoutProps) {
         to={item.path}
         onClick={() => setMobileMenuOpen(false)}
         className={cn(
-          'flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all group',
+          'flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group',
           isActive
-            ? 'bg-primary text-primary-foreground shadow-glow'
-            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+            ? `bg-gradient-to-r ${item.color} text-white shadow-lg`
+            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80'
         )}
       >
         <div className="flex items-center gap-3">
-          <Icon className="w-5 h-5" />
+          {isActive ? (
+            <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/20">
+              <Icon className="w-4 h-4 text-white" />
+            </div>
+          ) : (
+            <Icon className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+          )}
           <span>{item.label}</span>
         </div>
         
@@ -109,7 +116,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           <span className={cn(
             "flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold",
             isActive 
-              ? "bg-primary-foreground text-primary" 
+              ? "bg-white/25 text-white" 
               : "bg-primary text-primary-foreground"
           )}>
             {badgeCount > 99 ? '99+' : badgeCount}
@@ -121,10 +128,10 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
-      case 'admin': return 'bg-primary/20 text-primary';
-      case 'waiter': return 'bg-info/20 text-info';
-      case 'cashier': return 'bg-success/20 text-success';
-      case 'kitchen': return 'bg-warning/20 text-warning';
+      case 'admin': return 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400';
+      case 'waiter': return 'bg-gradient-to-r from-sky-500/20 to-blue-500/20 text-sky-400';
+      case 'cashier': return 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400';
+      case 'kitchen': return 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-yellow-400';
     }
   };
 
@@ -134,11 +141,13 @@ export function MainLayout({ children }: MainLayoutProps) {
       <aside className="hidden lg:flex flex-col w-60 xl:w-64 bg-sidebar border-r border-sidebar-border shrink-0">
         {/* Logo */}
         <div className="flex items-center gap-2 xl:gap-3 px-4 xl:px-6 py-4 xl:py-5 border-b border-sidebar-border">
-          <div className="w-9 xl:w-10 h-9 xl:h-10 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0">
-            <Utensils className="w-4 xl:w-5 h-4 xl:h-5 text-primary-foreground" />
+          <div className="w-9 xl:w-10 h-9 xl:h-10 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/25">
+            <Utensils className="w-4 xl:w-5 h-4 xl:h-5 text-white" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-bold text-base xl:text-lg truncate">Kaveri Family Restaurant</h1>
+            <h1 className="font-bold text-base xl:text-lg truncate">
+              <span className="text-gradient-primary">Kaveri</span>
+            </h1>
             <p className="text-[10px] xl:text-xs text-muted-foreground truncate">Order Management</p>
           </div>
         </div>
@@ -154,13 +163,13 @@ export function MainLayout({ children }: MainLayoutProps) {
         <div className="p-3 xl:p-4 border-t border-sidebar-border">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-2 xl:gap-3 p-2 xl:p-3 rounded-xl hover:bg-secondary transition-colors">
-                <div className="w-9 xl:w-10 h-9 xl:h-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                  <User className="w-4 xl:w-5 h-4 xl:h-5 text-muted-foreground" />
+              <button className="w-full flex items-center gap-2 xl:gap-3 p-2 xl:p-3 rounded-xl hover:bg-secondary/80 transition-all duration-200 group">
+                <div className="w-9 xl:w-10 h-9 xl:h-10 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center shrink-0 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                  <User className="w-4 xl:w-5 h-4 xl:h-5 text-primary" />
                 </div>
                 <div className="flex-1 text-left min-w-0">
                   <p className="text-xs xl:text-sm font-medium truncate">{user.name}</p>
-                  <span className={cn('text-[10px] xl:text-xs px-1.5 xl:px-2 py-0.5 rounded-full capitalize', getRoleBadgeColor(user.role))}>
+                  <span className={cn('text-[10px] xl:text-xs px-1.5 xl:px-2 py-0.5 rounded-full capitalize font-medium', getRoleBadgeColor(user.role))}>
                     {user.role}
                   </span>
                 </div>
@@ -182,13 +191,13 @@ export function MainLayout({ children }: MainLayoutProps) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <Utensils className="w-4 h-4 text-primary-foreground" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-md shadow-primary/20">
+              <Utensils className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold">Kaveri</span>
+            <span className="font-bold text-gradient-primary">Kaveri</span>
           </div>
           <Button
             variant="ghost"
@@ -201,7 +210,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-background border-b border-border p-4 space-y-1 animate-slide-in-up">
+          <div className="absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border p-4 space-y-1 animate-slide-in-up shadow-xl">
             {navItems.map(item => (
               <NavLink key={item.path} item={item} />
             ))}
