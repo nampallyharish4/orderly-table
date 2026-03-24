@@ -52,6 +52,11 @@ public class SettingsController {
             if (body.containsKey("autoPrintBills")) settings.setAutoPrintBills(Boolean.parseBoolean(body.get("autoPrintBills").toString()));
             if (body.containsKey("enableUPI")) settings.setEnableUPI(Boolean.parseBoolean(body.get("enableUPI").toString()));
             if (body.containsKey("enableCash")) settings.setEnableCash(Boolean.parseBoolean(body.get("enableCash").toString()));
+            if (body.containsKey("tableLayout")) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> layout = (Map<String, Object>) body.get("tableLayout");
+                settings.setTableLayout(layout);
+            }
             settings.setUpdatedAt(OffsetDateTime.now());
 
             return ResponseEntity.ok(settingsRepository.save(settings));

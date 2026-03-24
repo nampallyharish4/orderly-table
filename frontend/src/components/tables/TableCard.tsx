@@ -32,18 +32,11 @@ export function TableCard({ table, onClick, selected, showOrder, creatorName }: 
   const currentTableImage = shape === 'rectangular' ? tableImage6 : tableImage4;
 
   // Always fit the parent container completely to support arbitrary floorplan placements
-  let containerDimensions = "w-full h-full min-h-[80px]";
-  let imageDimensions = "";
-  if (shape === 'rectangular') {
-    imageDimensions = "w-[120%] h-[120%] object-contain"; 
-  } else if (shape === 'oval') {
-    imageDimensions = "w-[145%] h-[145%] object-contain";
-  } else {
-    imageDimensions = "w-[145%] h-[145%] object-contain";
-  }
+  let containerDimensions = "w-full h-full min-h-[50px]";
+  let imageDimensions = "w-full h-full object-contain"; 
 
   return (
-    <div className="flex flex-col items-center justify-center p-2 mb-4 w-full h-full">
+    <div className="flex flex-col items-center justify-center w-full h-full group/card relative">
       <button
         onClick={onClick}
         data-testid={`table-${table.tableNumber}`}
@@ -85,22 +78,24 @@ export function TableCard({ table, onClick, selected, showOrder, creatorName }: 
               <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]" />
             </div>
           )}
+
+          {/* Status indicator pill absolute overlay at bottom */}
+          <div className="absolute bottom-1 z-20">
+            {isAvailable ? (
+              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold border border-emerald-500/50 text-emerald-400 bg-black/80 backdrop-blur-sm shadow-lg uppercase tracking-tight">
+                Available
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold border border-red-500/50 text-red-400 bg-black/80 backdrop-blur-sm shadow-lg uppercase tracking-tight">
+                Occupied
+              </span>
+            )}
+          </div>
         </div>
       </button>
 
-      {/* Info labels underneath */}
-      <div className="flex flex-col items-center gap-1 mt-4">
-        {/* Status indicator pill matches screenshot available text */}
-        {isAvailable ? (
-           <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium border border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
-             Available
-           </span>
-        ) : (
-           <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium border border-red-500/50 text-red-400 bg-red-500/10">
-             Occupied
-           </span>
-        )}
-        
+      {/* Info labels underneath (only for additional info if needed) */}
+      <div className="flex flex-col items-center gap-0.5 mt-0.5">
         {isOccupied && showOrder && table.currentOrderIds.length > 0 && (
            <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 opacity-80 mt-0.5">
              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />

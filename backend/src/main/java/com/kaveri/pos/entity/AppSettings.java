@@ -1,9 +1,10 @@
 package com.kaveri.pos.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
-
-
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 @Entity
 @Table(name = "settings")
@@ -44,6 +45,10 @@ public class AppSettings {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "table_layout", columnDefinition = "jsonb")
+    private Map<String, Object> tableLayout;
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public String getRestaurantName() { return restaurantName; }
@@ -66,4 +71,7 @@ public class AppSettings {
     public void setEnableCash(Boolean enableCash) { this.enableCash = enableCash; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public Map<String, Object> getTableLayout() { return tableLayout; }
+    public void setTableLayout(Map<String, Object> tableLayout) { this.tableLayout = tableLayout; }
 }

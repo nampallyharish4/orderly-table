@@ -53,13 +53,36 @@ export default function TablesPage() {
       }
     });
     observer.observe(containerRef.current);
+    
+    // Fetch remote settings to sync layout
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.tableLayout && Object.keys(data.tableLayout).length > 0) {
+          setTablePositions(data.tableLayout);
+          localStorage.setItem('orderly_table_layout', JSON.stringify(data.tableLayout));
+        }
+      })
+      .catch(err => console.error('Failed to sync layout from server:', err));
+
     return () => observer.disconnect();
   }, [viewMode]);
 
-  const toggleEditMode = () => {
+  const toggleEditMode = async () => {
     if (isEditMode) {
-      // Save
+      // Save locally as backup
       localStorage.setItem('orderly_table_layout', JSON.stringify(tablePositions));
+      
+      // Save to server (Supabase database)
+      try {
+        await fetch('/api/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tableLayout: tablePositions })
+        });
+      } catch (err) {
+        console.error('Failed to save layout to server:', err);
+      }
     }
     setIsEditMode(!isEditMode);
   };
@@ -240,7 +263,7 @@ export default function TablesPage() {
 
       {/* Tables Grid / Floor Plan */}
       {viewMode === 'grid' ? (
-        <div ref={containerRef} className={`w-full relative aspect-[4/5] sm:aspect-square lg:aspect-[4/3] max-w-6xl mx-auto rounded-3xl border ${isEditMode ? 'border-amber-500/50 bg-black/20' : 'border-white/5 bg-black/10'} overflow-hidden shadow-2xl p-4 transition-colors`}>
+        <div ref={containerRef} className={`w-full relative aspect-[4/5] sm:aspect-square lg:aspect-[4/3] max-w-6xl mx-auto rounded-3xl border ${isEditMode ? 'border-amber-500/50 bg-black/20' : 'border-white/5 bg-black/10'} shadow-2xl transition-colors`}>
           {isEditMode && (
              <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-10">
                 <LayoutGrid className="w-64 h-64" />
