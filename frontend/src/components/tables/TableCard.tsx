@@ -1,7 +1,8 @@
 import { cn } from '@/lib/utils';
 import { Table } from '@/types';
-import { StatusBadge } from '@/components/ui/status-badge';
 import { Users, Sparkles } from 'lucide-react';
+import tableImage4 from '@/assets/4_SEATER.png';
+import tableImage6 from '@/assets/6_SEATER.png';
 
 interface TableCardProps {
   table: Table & { size?: string };
@@ -12,78 +13,107 @@ interface TableCardProps {
 }
 
 export function TableCard({ table, onClick, selected, showOrder, creatorName }: TableCardProps) {
-  const isSmall = !!table.size;
   const isAvailable = table.status === 'available';
   const isOccupied = table.status === 'occupied';
 
+  const floor = (table.floor || '').toLowerCase();
+  const num = (table.tableNumber || '').toUpperCase();
+  
+  // Decide table type heuristics
+  let shape: 'rectangular' | 'oval' | 'square' = 'square';
+  if (floor.includes('large') || (num.startsWith('T') && table.capacity >= 6) || table.capacity >= 6) {
+    shape = 'rectangular';
+  } else if (floor.includes('family') || num.startsWith('F') || (table.capacity === 4 && floor.includes('family'))) {
+    shape = 'oval';
+  } else {
+    shape = 'square';
+  }
+
+  const currentTableImage = shape === 'rectangular' ? tableImage6 : tableImage4;
+
+  // Always fit the parent container completely to support arbitrary floorplan placements
+  let containerDimensions = "w-full h-full min-h-[80px]";
+  let imageDimensions = "";
+  if (shape === 'rectangular') {
+    imageDimensions = "w-[120%] h-[120%] object-contain"; 
+  } else if (shape === 'oval') {
+    imageDimensions = "w-[145%] h-[145%] object-contain";
+  } else {
+    imageDimensions = "w-[145%] h-[145%] object-contain";
+  }
+
   return (
-    <button
-      onClick={onClick}
-      data-testid={`table-${table.tableNumber}`}
-      className={cn(
-        'group relative rounded-2xl border-2 text-left transition-all duration-300 w-full overflow-hidden',
-        'hover:scale-[1.03] active:scale-[0.97] hover:-translate-y-0.5',
-        isSmall ? 'p-2 sm:p-3' : 'p-3 sm:p-4',
-        isAvailable && 'table-available',
-        isOccupied && 'table-occupied',
-        selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
-        !onClick && 'cursor-default'
-      )}
-    >
-      {/* Decorative gradient overlay on hover */}
-      <div className={cn(
-        'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none',
-        isAvailable && 'bg-gradient-to-br from-emerald-500/5 to-teal-500/5',
-        isOccupied && 'bg-gradient-to-br from-amber-500/5 to-orange-500/5'
-      )} />
-
-      {/* Available sparkle indicator */}
-      {isAvailable && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Sparkles className="w-3 h-3 text-emerald-400 animate-pulse" />
-        </div>
-      )}
-
-      <div className={cn(
-        "relative flex items-start justify-between gap-2",
-        isSmall ? "mb-1 sm:mb-2" : "mb-2 sm:mb-3"
-      )}>
-        <div className="min-w-0">
-          <h3 className={cn(
-            "font-bold tracking-tight",
-            isSmall ? "text-lg sm:text-xl" : "text-xl sm:text-2xl",
-            isAvailable && "text-emerald-300",
-            isOccupied && "text-amber-300"
-          )}>{table.tableNumber}</h3>
-        </div>
-        <StatusBadge status={table.status} size="sm" showIcon={false} />
-      </div>
-
-      <div className="relative flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
-        <div className={cn(
-          "flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-colors",
-          isAvailable && "bg-emerald-500/10",
-          isOccupied && "bg-amber-500/10"
-        )}>
-          <Users className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-          <span className="font-medium">{table.capacity}</span>
-        </div>
-        {isOccupied && creatorName && (
-          <div className="flex items-center gap-1 text-primary font-medium">
-            <span className="text-muted-foreground/50 ml-0.5">•</span>
-            <span className="truncate max-w-[80px] text-amber-400">{creatorName}</span>
-          </div>
+    <div className="flex flex-col items-center justify-center p-2 mb-4 w-full h-full">
+      <button
+        onClick={onClick}
+        data-testid={`table-${table.tableNumber}`}
+        className={cn(
+          "group relative flex items-center justify-center transition-all duration-300 hover:scale-[1.05] active:scale-[0.98]",
+          containerDimensions,
+          !onClick && "cursor-default"
         )}
-      </div>
+      >
+        {/* Table Image Container */}
+        <div className={cn(
+          "relative flex items-center justify-center w-full h-full",
+          selected && "scale-[1.05]"
+        )}>
+          {/* User's Transparent PNG Table */}
+          <img 
+            src={currentTableImage} 
+            alt="Table Layout" 
+            className={cn(
+              "absolute inset-0 m-auto select-none pointer-events-none transition-transform duration-300",
+              imageDimensions
+            )}
+          />
 
-      {showOrder && table.currentOrderIds.length > 0 && (
-        <div className="relative mt-3 pt-3 border-t border-border/30">
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            {table.currentOrderIds.length} Active Order{table.currentOrderIds.length > 1 ? 's' : ''}
-          </p>
+          {/* Table Labels Overlaid Context */}
+          <div className="relative z-10 flex flex-col items-center justify-center bg-black/60 px-3 py-1.5 rounded-xl backdrop-blur-sm border border-white/20 shadow-lg">
+             <span className="font-extrabold text-lg sm:text-xl text-white tracking-widest drop-shadow-md">
+               {table.tableNumber}
+             </span>
+             <div className="flex items-center gap-1 opacity-90 text-zinc-200 text-[10px] sm:text-xs">
+               <Users className="w-3 h-3" />
+               <span>{table.capacity}</span>
+             </div>
+          </div>
+
+          {/* Available Sparkle Overlaid */}
+          {isAvailable && (
+            <div className="absolute top-2 right-2 z-20">
+              <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]" />
+            </div>
+          )}
         </div>
-      )}
-    </button>
+      </button>
+
+      {/* Info labels underneath */}
+      <div className="flex flex-col items-center gap-1 mt-4">
+        {/* Status indicator pill matches screenshot available text */}
+        {isAvailable ? (
+           <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium border border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+             Available
+           </span>
+        ) : (
+           <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium border border-red-500/50 text-red-400 bg-red-500/10">
+             Occupied
+           </span>
+        )}
+        
+        {isOccupied && showOrder && table.currentOrderIds.length > 0 && (
+           <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 opacity-80 mt-0.5">
+             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+             {table.currentOrderIds.length} Order{table.currentOrderIds.length > 1 ? 's' : ''}
+           </span>
+         )}
+         
+         {isOccupied && creatorName && (
+           <span className="text-[10px] sm:text-xs text-muted-foreground truncate max-w-[120px] opacity-80">
+             By: {creatorName}
+           </span>
+         )}
+      </div>
+    </div>
   );
 }

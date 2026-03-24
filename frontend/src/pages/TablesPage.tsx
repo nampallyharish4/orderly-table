@@ -17,20 +17,33 @@ export default function TablesPage() {
   const [statusFilter, setStatusFilter] = useState<TableStatus | 'all'>('all');
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  // Map a table to its logical section
+  const getTableSection = (t: Table) => {
+    const floor = (t.floor || '').toLowerCase();
+    const num = (t.tableNumber || '').toUpperCase();
+    if (floor.includes('large') || (num.startsWith('T') && t.capacity >= 6) || t.capacity >= 6) {
+      return 'Large Tables';
+    } else if (floor.includes('family') || num.startsWith('F') || (t.capacity === 4 && floor.includes('family'))) {
+      return 'Family Section';
+    } else {
+      return 'Small Tables';
+    }
+  };
 
-  // Get unique floors
-  const floors = Array.from(new Set(tables.map(t => t.floor)));
+  // Get unique sections available
+  const floors = ['Large Tables', 'Family Section', 'Small Tables'];
 
-  // Filter tables
+  // Filter tables based on section and status
   const filteredTables = tables.filter(t => {
-    if (floorFilter !== 'all' && t.floor !== floorFilter) return false;
+    const section = getTableSection(t);
+    if (floorFilter !== 'all' && section !== floorFilter) return false;
     if (statusFilter !== 'all' && t.status !== statusFilter) return false;
     return true;
   });
 
-  // Group by floor for grid view
-  const tablesByFloor = floors.reduce((acc, floor) => {
-    acc[floor] = filteredTables.filter(t => t.floor === floor);
+  // Group by section for grid view
+  const tablesBySection = floors.reduce((acc, section) => {
+    acc[section] = filteredTables.filter(t => getTableSection(t) === section);
     return acc;
   }, {} as Record<string, Table[]>);
 
@@ -166,53 +179,37 @@ export default function TablesPage() {
         </div>
       </div>
 
-      {/* Tables Grid */}
+      {/* Tables Grid / Floor Plan */}
       {viewMode === 'grid' ? (
-        <div className="space-y-8">
-          {Object.entries(tablesByFloor).map(([floor, floorTables]) => {
-            const regularTables = floorTables.filter(t => !(t as any).size && !(t as any).hidden);
-            const smallTables = floorTables.filter(t => (t as any).size && !(t as any).hidden);
+        <div className="w-full relative aspect-[4/5] sm:aspect-square lg:aspect-[4/3] max-w-6xl mx-auto rounded-3xl border border-white/5 bg-black/10 overflow-hidden shadow-2xl p-4">
+          {filteredTables.filter(t => !(t as any).hidden).map(table => {
+            const tableOrders = orders.filter(o => table.currentOrderIds.includes(o.id));
+            const firstOrder = tableOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
             
-            return floorTables.length > 0 && (
-              <div key={floor}>
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 floor-header">
-                  <span className="text-gradient-primary">{floor}</span>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                    {floorTables.filter(t => !(t as any).hidden).length} tables
-                  </Badge>
-                </h2>
-                {regularTables.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 mb-4">
-                    {regularTables.map(table => {
-                      const tableOrders = orders.filter(o => table.currentOrderIds.includes(o.id));
-                      const firstOrder = tableOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
-                      return (
-                        <TableCard
-                          key={table.id}
-                          table={table}
-                          onClick={() => handleTableClick(table)}
-                          creatorName={firstOrder?.createdBy}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-                {smallTables.length > 0 && (
-                  <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
-                    {smallTables.map(table => {
-                      const tableOrders = orders.filter(o => table.currentOrderIds.includes(o.id));
-                      const firstOrder = tableOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
-                      return (
-                        <TableCard
-                          key={table.id}
-                          table={table}
-                          onClick={() => handleTableClick(table)}
-                          creatorName={firstOrder?.createdBy}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+            // Floorplan layout absolute positioning
+            const tablePositions: Record<string, React.CSSProperties> = {
+              'T2': { top: '2%', left: '2%', width: '46%', height: '22%' },
+              'T3': { top: '24%', left: '2%', width: '46%', height: '22%' },
+              'T1': { top: '2%', left: '52%', width: '46%', height: '22%' },
+              'T4': { top: '24%', left: '75%', width: '23%', height: '19%' },
+              'T5': { top: '43%', left: '75%', width: '23%', height: '19%' },
+              'F1': { top: '62%', left: '13.5%', width: '23%', height: '19%' },
+              'F2': { top: '81%', left: '13.5%', width: '23%', height: '19%' },
+              'T6': { top: '62%', left: '52%', width: '23%', height: '19%' },
+              'T7': { top: '62%', left: '75%', width: '23%', height: '19%' },
+              'T8': { top: '81%', left: '52%', width: '23%', height: '19%' },
+              'T9': { top: '81%', left: '75%', width: '23%', height: '19%' },
+            };
+
+            const position = tablePositions[table.tableNumber] || { top: '10%', left: '10%', width: '17%', height: '16%' };
+
+            return (
+              <div key={table.id} className="absolute transition-all duration-700 ease-in-out" style={position}>
+                <TableCard
+                  table={table}
+                  onClick={() => handleTableClick(table)}
+                  creatorName={firstOrder?.createdBy}
+                />
               </div>
             );
           })}
