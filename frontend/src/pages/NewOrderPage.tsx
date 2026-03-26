@@ -345,35 +345,53 @@ export default function NewOrderPage() {
           </button>
         </div>
 
-        {/* Categories - Pill Style */}
+        {/* Categories - Color Coded Pill Style */}
         <div className="mb-3 sm:mb-4">
           <div className="overflow-x-auto scrollbar-thin pb-2 -mx-1 px-1">
             <div className="flex gap-2 min-w-max">
               <button
                 onClick={() => setSelectedCategory('all')}
                 data-testid="category-all"
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
                   selectedCategory === 'all'
-                    ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-md shadow-primary/25'
-                    : 'bg-secondary/60 text-foreground/70 hover:bg-secondary hover:text-foreground'
+                    ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-md shadow-primary/25 scale-105'
+                    : 'bg-secondary/60 text-foreground/70 hover:bg-secondary hover:text-foreground border border-border/50'
                 }`}
               >
                 🍽️ All Items
               </button>
-              {categories.filter(c => c.isActive).map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  data-testid={`category-${cat.id}`}
-                  className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
-                    selectedCategory === cat.id
-                      ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-md shadow-primary/25'
-                      : 'bg-secondary/60 text-foreground/70 hover:bg-secondary hover:text-foreground'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
+              {categories.filter(c => c.isActive).map(cat => {
+                const nameUpper = cat.name.toUpperCase();
+                const isNonVeg = nameUpper.includes('NON VEG') || nameUpper.includes('NON-VEG') || nameUpper.includes('NONVEG') || nameUpper.includes('CHICKEN') || nameUpper.includes('MUTTON') || nameUpper.includes('FISH') || nameUpper.includes('EGG');
+                const isVeg = !isNonVeg;
+                const isSelected = selectedCategory === cat.id;
+
+                const selectedClass = isVeg
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md shadow-emerald-500/25 scale-105'
+                  : 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md shadow-red-500/25 scale-105';
+
+                const unselectedClass = isVeg
+                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50'
+                  : 'bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500/50';
+
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    data-testid={`category-${cat.id}`}
+                    className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
+                      isSelected ? selectedClass : unselectedClass
+                    }`}
+                  >
+                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                      isVeg 
+                        ? isSelected ? 'bg-white shadow-sm' : 'bg-emerald-500'
+                        : isSelected ? 'bg-white shadow-sm' : 'bg-red-500'
+                    }`} />
+                    {cat.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
