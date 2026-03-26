@@ -207,11 +207,11 @@ export function MainLayout({ children }: MainLayoutProps) {
               <Button
                 variant="outline"
                 size="icon"
-                className="relative rounded-full border-primary/20 bg-primary/5 hover:bg-primary/10 mr-1"
-                onClick={() => document.getElementById('order-summary')?.scrollIntoView({ behavior: 'smooth' })}
+                className="relative rounded-xl border-primary/20 bg-primary/5 hover:bg-primary/10 mr-1"
+                onClick={() => document.getElementById('mobile-cart-button')?.click()}
               >
                 <ShoppingCart className="w-5 h-5 text-primary" />
-                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold shadow-sm shadow-red-500/20">
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white min-w-[18px] h-[18px] px-1 rounded-full text-[10px] flex items-center justify-center font-bold shadow-sm shadow-red-500/20">
                   {currentOrder?.items?.length}
                 </span>
               </Button>

@@ -20,8 +20,8 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
         disabled={!item.isAvailable}
         data-testid={`menu-item-${item.id}`}
         className={cn(
-          'w-full rounded-xl border border-border text-left transition-all group',
-          'hover:border-primary/50 hover:shadow-lg active:scale-[0.97]',
+          'w-full rounded-xl text-left transition-all group',
+          'hover:shadow-lg active:scale-[0.97]',
           'bg-card shadow-sm overflow-hidden',
           !item.isAvailable && 'opacity-50 cursor-not-allowed grayscale-[0.3]'
         )}

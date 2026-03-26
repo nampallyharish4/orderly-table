@@ -53,12 +53,10 @@ const BillingPage = () => {
       setPaymentMethod(method);
       toast.success(`Payment received via ${method.toUpperCase()}`);
       
-      setTimeout(() => {
-        setSelectedOrder(null);
-        setPaymentMethod(null);
-        setShowSplitInput(false);
-        setCashAmount('');
-      }, 2000);
+      setSelectedOrder(null);
+      setPaymentMethod(null);
+      setShowSplitInput(false);
+      setCashAmount('');
     } finally {
       setIsSubmitting(false);
     }
@@ -90,12 +88,10 @@ const BillingPage = () => {
       setPaymentMethod('split');
       toast.success(`Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`);
       
-      setTimeout(() => {
-        setSelectedOrder(null);
-        setPaymentMethod(null);
-        setShowSplitInput(false);
-        setCashAmount('');
-      }, 2000);
+      setSelectedOrder(null);
+      setPaymentMethod(null);
+      setShowSplitInput(false);
+      setCashAmount('');
     } finally {
       setIsSubmitting(false);
     }
