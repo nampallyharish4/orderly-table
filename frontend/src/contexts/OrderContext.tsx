@@ -52,10 +52,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const fetchStaticData = useCallback(async () => {
     try {
       console.log('Fetching static data (menu/categories)...');
-      const [menuRes, categoriesRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/menu-items`),
-        fetch(`${API_BASE_URL}/api/categories`),
-      ]);
+      const menuRes = await fetch(`${API_BASE_URL}/api/menu-items`);
+      const categoriesRes = await fetch(`${API_BASE_URL}/api/categories`);
 
       if (menuRes.ok) {
         const menuData = await menuRes.json();
@@ -77,10 +75,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           url += `?since=${encodeURIComponent(lastUpdatedRef.current)}`;
         }
           
-        const [ordersRes, tablesRes] = await Promise.all([
-          fetch(url),
-          fetch(`${API_BASE_URL}/api/tables`),
-        ]);
+        const ordersRes = await fetch(url);
+        const tablesRes = await fetch(`${API_BASE_URL}/api/tables`);
 
         if (ordersRes.ok) {
           const ordersData = await ordersRes.json();
