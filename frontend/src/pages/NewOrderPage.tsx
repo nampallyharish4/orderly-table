@@ -271,7 +271,7 @@ export default function NewOrderPage() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-[calc(100vh-120px)] lg:h-[calc(100vh-120px)]">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-[calc(100vh-120px)] lg:h-[calc(100vh-120px)] relative pb-24 lg:pb-0">
       {/* Menu Section */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
@@ -417,7 +417,7 @@ export default function NewOrderPage() {
       </div>
 
       {/* Order Summary */}
-      <Card className="w-full lg:w-80 xl:w-96 flex flex-col max-h-[50vh] lg:max-h-none">
+      <Card id="order-summary" className="w-full lg:w-80 xl:w-96 flex flex-col scroll-mt-24 max-h-[60vh] lg:max-h-none border-primary/20 shadow-xl shadow-primary/5 lg:shadow-none lg:border-border">
         <CardHeader className="pb-2 sm:pb-3">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <ShoppingCart className="w-4 sm:w-5 h-4 sm:h-5" />
@@ -621,6 +621,28 @@ export default function NewOrderPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Floating Mobile Cart Button */}
+      {(currentOrder.items?.length || 0) > 0 && (
+        <div className="lg:hidden fixed bottom-4 left-4 right-4 z-50 pointer-events-none fade-in animate-in slide-in-from-bottom-5 duration-300">
+          <Button 
+            className="w-full shadow-2xl shadow-primary/25 bg-primary/95 backdrop-blur-md hover:bg-primary text-primary-foreground rounded-2xl h-14 flex items-center justify-between px-5 sm:px-6 pointer-events-auto transition-all active:scale-[0.98]"
+            onClick={() => {
+              document.getElementById('order-summary')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-primary-foreground/20 text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                {currentOrder.items?.length}
+              </div>
+              <span className="font-semibold text-lg">₹{total.toFixed(0)}</span>
+            </div>
+            <div className="flex items-center gap-2 font-semibold text-base tracking-wide">
+              View Cart <ShoppingCart className="w-5 h-5 ml-1" />
+            </div>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
