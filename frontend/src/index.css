@@ -404,9 +404,25 @@
     background: var(--gradient-surface);
   }
 
-  /* Glass effect for overlays */
+  /* Ultra-premium glass finish */
   .glass {
-    @apply bg-background/80 backdrop-blur-xl;
+    @apply bg-background/50 backdrop-blur-2xl border border-white/5;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  .light .glass {
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    @apply border-black/5;
+  }
+
+  .glass-card {
+    @apply bg-card/40 backdrop-blur-xl border border-white/10 shadow-lg;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    @apply bg-card/60 border-primary/20 shadow-glow;
+    transform: translateY(-2px);
   }
 
   /* Gradient text */
@@ -482,7 +498,7 @@
   button, [role="button"], a {
     min-height: 40px;
   }
-  
+
   /* Reduce padding on mobile cards */
   .card-mobile-compact {
     padding: 0.75rem;
@@ -513,4 +529,9 @@
 
 main > div {
   animation: page-enter 0.3s ease-out;
+}
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
 }

@@ -20,48 +20,46 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
         disabled={!item.isAvailable}
         data-testid={`menu-item-${item.id}`}
         className={cn(
-          'w-full p-2 sm:p-3 rounded-xl border border-border text-left transition-all',
-          'hover:border-primary/50 hover:bg-secondary/50 active:scale-[0.98]',
-          'shadow-sm hover:shadow-md',
-          !item.isAvailable && 'opacity-50 cursor-not-allowed'
+          'w-full rounded-xl border border-border text-left transition-all group',
+          'hover:border-primary/50 hover:shadow-lg active:scale-[0.97]',
+          'bg-card shadow-sm overflow-hidden',
+          !item.isAvailable && 'opacity-50 cursor-not-allowed grayscale-[0.3]'
         )}
       >
-        <div className="flex gap-2 sm:gap-3">
-          {imageUrl ? (
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-secondary">
-              <img 
-                src={imageUrl} 
-                alt={item.name} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl opacity-50"></span>
-            </div>
-          )}
-          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                {item.isVeg ? (
-                  <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-success flex items-center justify-center flex-shrink-0">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-success" />
-                  </div>
-                ) : (
-                  <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-destructive flex items-center justify-center flex-shrink-0">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-destructive" />
-                  </div>
-                )}
-                <span className="font-semibold text-xs sm:text-sm leading-tight truncate">{item.name}</span>
-              </div>
-              {item.description && (
-                <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-1">{item.description}</p>
-              )}
-            </div>
-            <span className="font-mono-price text-sm sm:text-base font-bold text-primary">
-              ₹{item.price.toFixed(0)}
-            </span>
+        {/* Image on top */}
+        {imageUrl ? (
+          <div className="w-full aspect-[16/10] overflow-hidden bg-secondary">
+            <img 
+              src={imageUrl} 
+              alt={item.name} 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
           </div>
+        ) : (
+          <div className="w-full aspect-[16/10] bg-secondary/50 flex items-center justify-center">
+            <span className="text-3xl opacity-40">🍽️</span>
+          </div>
+        )}
+        {/* Content below image */}
+        <div className="p-2.5 sm:p-3 space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            {item.isVeg ? (
+              <div className="w-4 h-4 rounded border-2 border-green-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+              </div>
+            ) : (
+              <div className="w-4 h-4 rounded border-2 border-red-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-2 h-2 rounded-full bg-red-500" />
+              </div>
+            )}
+            <span className="font-bold text-sm sm:text-base text-foreground leading-tight truncate">{item.name}</span>
+          </div>
+          {item.description && (
+            <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-1">{item.description}</p>
+          )}
+          <span className="font-mono-price text-base sm:text-lg font-extrabold text-primary block">
+            ₹{item.price.toFixed(0)}
+          </span>
         </div>
       </button>
     );

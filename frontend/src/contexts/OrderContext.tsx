@@ -222,23 +222,49 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     const addOnsTotal = selectedAddOns.reduce((sum, a) => sum + a.price, 0);
     const itemTotal = (menuItem.price + addOnsTotal) * quantity;
 
-    const newItem: OrderItem = {
-      id: `oi-${Date.now()}`,
-      menuItemId: menuItem.id,
-      menuItemName: menuItem.name,
-      quantity,
-      unitPrice: menuItem.price,
-      totalPrice: itemTotal,
-      notes,
-      addOns: selectedAddOns,
-      status: 'pending',
-      isVeg: menuItem.isVeg,
-    };
+    setCurrentOrder(prev => {
+      if (!prev) return null;
+      
+      const existingItems = [...(prev.items || [])];
+      
+      // Check if item with same ID, addons and notes already exists
+      const existingItemIndex = existingItems.findIndex(item => 
+        item.menuItemId === menuItem.id && 
+        JSON.stringify(item.addOns) === JSON.stringify(selectedAddOns) &&
+        (item.notes || '') === (notes || '')
+      );
 
-    setCurrentOrder(prev => ({
-      ...prev,
-      items: [...(prev?.items || []), newItem],
-    }));
+      if (existingItemIndex !== -1) {
+        // Update existing item
+        const existingItem = existingItems[existingItemIndex];
+        const newQuantity = existingItem.quantity + quantity;
+        existingItems[existingItemIndex] = {
+          ...existingItem,
+          quantity: newQuantity,
+          totalPrice: (existingItem.unitPrice + addOnsTotal) * newQuantity
+        };
+      } else {
+        // Add new item
+        const newItem: OrderItem = {
+          id: `oi-${Date.now()}`,
+          menuItemId: menuItem.id,
+          menuItemName: menuItem.name,
+          quantity,
+          unitPrice: menuItem.price,
+          totalPrice: itemTotal,
+          notes,
+          addOns: selectedAddOns,
+          status: 'pending',
+          isVeg: menuItem.isVeg,
+        };
+        existingItems.push(newItem);
+      }
+
+      return {
+        ...prev,
+        items: existingItems,
+      };
+    });
   }, [currentOrder]);
 
   const removeItemFromOrder = useCallback((itemIndex: number) => {
