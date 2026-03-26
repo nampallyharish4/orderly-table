@@ -469,21 +469,26 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   }, [tables]);
 
   const processPayment = useCallback(async (orderId: string, paymentMethod: 'cash' | 'upi' | 'split', cashAmount?: number, upiAmount?: number) => {
-    const paymentData: any = {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const updates: any = {
       paymentMethod,
       paymentStatus: 'completed',
-      paidAt: new Date().toISOString()
+      paidAt: new Date().toISOString(),
+      status: 'collected' // Also update status to collected when payment is received
     };
+    
     if (paymentMethod === 'split' && cashAmount !== undefined && upiAmount !== undefined) {
-      paymentData.cashAmount = cashAmount;
-      paymentData.upiAmount = upiAmount;
+      updates.cashAmount = cashAmount;
+      updates.upiAmount = upiAmount;
     }
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentData),
+        body: JSON.stringify(updates),
       });
 
       if (!response.ok) {
@@ -492,26 +497,59 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       }
 
       setOrders(prev =>
-        prev.map(order => {
-          if (order.id !== orderId) return order;
-          return {
-            ...order,
+        prev.map(o => {
+          if (o.id !== orderId) return o;
+          
+          const orderUpdates: Partial<Order> = {
+            status: 'collected',
             payment: { 
               id: `pay-${Date.now()}`, 
               orderId, 
               method: paymentMethod, 
-              amount: order.totalAmount, 
+              amount: o.totalAmount, 
               status: 'completed',
               paidAt: new Date()
             },
             updatedAt: new Date(),
           };
+
+          // Handle table status update if this was a dine-in order
+          if (o.tableNumber) {
+            const table = tables.find(t => t.tableNumber === o.tableNumber);
+            if (table) {
+              const newOrderIds = table.currentOrderIds.filter(id => id !== orderId);
+              const activeStatuses = ['new', 'preparing', 'ready', 'served'];
+              const remainingActiveOrders = orders.filter(
+                rem => rem.id !== orderId && rem.tableNumber === o.tableNumber && activeStatuses.includes(rem.status)
+              );
+              const newStatus = remainingActiveOrders.length > 0 ? 'occupied' : 'available';
+              
+              setTables(prevTables =>
+                prevTables.map(t => {
+                  if (t.tableNumber !== o.tableNumber) return t;
+                  return { 
+                    ...t, 
+                    status: newStatus as TableStatus, 
+                    currentOrderIds: newOrderIds 
+                  };
+                })
+              );
+              
+              fetch(`${API_BASE_URL}/api/tables/${table.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
+              }).catch(console.error);
+            }
+          }
+
+          return { ...o, ...orderUpdates };
         })
       );
     } catch (error) {
       console.error('Failed to process payment:', error);
     }
-  }, []);
+  }, [orders, tables]);
 
   const updateItemStatus = useCallback(async (orderId: string, itemId: string, status: OrderItemStatus) => {
     const order = orders.find(o => o.id === orderId);
