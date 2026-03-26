@@ -273,7 +273,7 @@ export default function NewOrderPage() {
   return (
     <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-[calc(100vh-120px)] lg:h-[calc(100vh-120px)] relative pb-24 lg:pb-0">
       {/* Menu Section */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div id="menu-header" className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
           <Button variant="ghost" size="icon" onClick={handleCancel} className="shrink-0">
@@ -599,6 +599,7 @@ export default function NewOrderPage() {
           )}
 
           {/* Actions */}
+          {/* Actions */}
           <div className="mt-4 space-y-2">
             <Button
               className="w-full bg-gradient-primary hover:opacity-90"
@@ -621,6 +622,35 @@ export default function NewOrderPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Mobile Floating Cart Bar */}
+      {(currentOrder.items?.length || 0) > 0 && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-background/95 backdrop-blur-xl border-t border-border shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-40 animate-in slide-in-from-bottom-4">
+          <div className="flex items-center justify-between gap-3 max-w-[600px] mx-auto">
+            <div className="pl-1">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{currentOrder.items?.length} Items Added</p>
+              <p className="font-bold text-lg text-primary font-mono-price leading-tight">₹{total.toFixed(0)}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                className="rounded-xl border-border bg-background hover:bg-secondary/80 px-4 shadow-sm"
+                onClick={() => document.getElementById('menu-header')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Menu
+              </Button>
+              <Button 
+                size="default" 
+                className="bg-gradient-primary rounded-xl shadow-lg shadow-primary/25 min-w-[120px]"
+                onClick={() => document.getElementById('order-summary')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                View Cart
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
