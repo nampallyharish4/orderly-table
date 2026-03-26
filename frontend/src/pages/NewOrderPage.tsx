@@ -458,7 +458,7 @@ export default function NewOrderPage() {
           )}
 
           {/* Items List */}
-          <ScrollArea className="flex-1 -mx-4 px-4">
+          <div className="flex-1 -mx-4 px-4 overflow-y-auto min-h-0 touch-pan-y scrollbar-thin pt-2">
             {!currentOrder.items?.length ? (
               <div className="text-center py-8 text-muted-foreground">
                 <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -584,7 +584,7 @@ export default function NewOrderPage() {
                 )}
               </div>
             )}
-          </ScrollArea>
+          </div>
 
           {/* Totals */}
           {(currentOrder.items?.length || 0) > 0 && (
