@@ -34,6 +34,7 @@ import {
   Menu,
   X,
   UtensilsCrossed,
+  ShoppingCart,
 } from 'lucide-react';
 import { useState } from 'react';
 import { canAccessRoute, UserRole } from '@/types';
@@ -68,7 +69,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const { user, logout } = useAuth();
-  const { orders } = useOrders();
+  const { orders, currentOrder } = useOrders();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
@@ -202,6 +203,19 @@ export function MainLayout({ children }: MainLayoutProps) {
             <span className="font-bold text-gradient-primary">Kaveri</span>
           </div>
           <div className="flex items-center gap-2">
+            {location.pathname === '/orders/new' && (currentOrder?.items?.length || 0) > 0 && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative rounded-full border-primary/20 bg-primary/5 hover:bg-primary/10 mr-1"
+                onClick={() => document.getElementById('order-summary')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <ShoppingCart className="w-5 h-5 text-primary" />
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold shadow-sm shadow-red-500/20">
+                  {currentOrder?.items?.length}
+                </span>
+              </Button>
+            )}
             <AnimatedThemeToggler />
             <Button
               variant="ghost"

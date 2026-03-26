@@ -621,28 +621,6 @@ export default function NewOrderPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Floating Mobile Cart Button */}
-      {(currentOrder.items?.length || 0) > 0 && (
-        <div className="lg:hidden fixed bottom-4 left-4 right-4 z-50 pointer-events-none fade-in animate-in slide-in-from-bottom-5 duration-300">
-          <Button 
-            className="w-full shadow-2xl shadow-primary/25 bg-primary/95 backdrop-blur-md hover:bg-primary text-primary-foreground rounded-2xl h-14 flex items-center justify-between px-5 sm:px-6 pointer-events-auto transition-all active:scale-[0.98]"
-            onClick={() => {
-              document.getElementById('order-summary')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="bg-primary-foreground/20 text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center font-bold">
-                {currentOrder.items?.length}
-              </div>
-              <span className="font-semibold text-lg">₹{total.toFixed(0)}</span>
-            </div>
-            <div className="flex items-center gap-2 font-semibold text-base tracking-wide">
-              View Cart <ShoppingCart className="w-5 h-5 ml-1" />
-            </div>
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
