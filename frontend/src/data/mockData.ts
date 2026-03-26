@@ -1189,7 +1189,8 @@ export function generateOrderNumber(): string {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  return `ORD-${dateStr}-${hours}-${minutes}-${seconds}`;
+  const randomId = Math.floor(1000 + Math.random() * 9000);
+  return `ORD-${dateStr}-${hours}${minutes}${seconds}-${randomId}`;
 }
 
 // Helper function to calculate order totals

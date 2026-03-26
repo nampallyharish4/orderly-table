@@ -122,7 +122,6 @@ export default function NewOrderPage() {
     const menuItem = menuItems.find(m => m.name.toLowerCase() === recName.toLowerCase());
     if (menuItem) {
       addItemToOrder(menuItem, 1);
-      toast.success(`Added ${menuItem.name}`, { icon: '✨' });
       // Remove from recommendations
       setRecommendations(prev => prev.filter(r => r.name.toLowerCase() !== recName.toLowerCase()));
     }
@@ -219,7 +218,6 @@ export default function NewOrderPage() {
 
   const handleAddItem = (item: MenuItem) => {
     addItemToOrder(item, 1);
-    toast.success(`Added ${item.name}`);
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
