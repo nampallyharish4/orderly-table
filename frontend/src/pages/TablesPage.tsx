@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { API_BASE_URL } from '@/config';
 import { useOrders } from '@/contexts/OrderContext';
 import { useNavigate } from 'react-router-dom';
 import { TableCard } from '@/components/tables/TableCard';
@@ -55,7 +56,7 @@ export default function TablesPage() {
     observer.observe(containerRef.current);
     
     // Fetch remote settings to sync layout
-    fetch('/api/settings')
+    fetch(`${API_BASE_URL}/api/settings`)
       .then(res => res.json())
       .then(data => {
         if (data.tableLayout && Object.keys(data.tableLayout).length > 0) {
@@ -75,7 +76,7 @@ export default function TablesPage() {
       
       // Save to server (Supabase database)
       try {
-        await fetch('/api/settings', {
+        await fetch(`${API_BASE_URL}/api/settings`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tableLayout: tablePositions })
