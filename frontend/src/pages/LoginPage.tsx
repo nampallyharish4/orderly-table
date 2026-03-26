@@ -34,15 +34,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-orbs"
-      style={{
-        background: 'radial-gradient(ellipse at 20% 50%, hsl(225 18% 12%) 0%, hsl(225 18% 7%) 100%)',
-      }}
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background text-foreground bg-orbs"
     >
       {/* Animated background grid */}
-      <div className="absolute inset-0 opacity-[0.03]" 
+      <div className="absolute inset-0 opacity-[0.05] text-foreground" 
         style={{
-          backgroundImage: 'linear-gradient(hsl(0 0% 100%) 1px, transparent 1px), linear-gradient(to right, hsl(0 0% 100%) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px)',
           backgroundSize: '60px 60px'
         }}
       />

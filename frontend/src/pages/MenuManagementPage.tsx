@@ -145,7 +145,7 @@ export default function MenuManagementPage() {
 
     setIsSaving(true);
     try {
-      const url = editingItem ? `/api/menu-items/${editingItem.id}` : '/api/menu-items';
+      const url = editingItem ? `${API_BASE_URL}/api/menu-items/${editingItem.id}` : `${API_BASE_URL}/api/menu-items`;
       const method = editingItem ? 'PATCH' : 'POST';
 
       const response = await fetch(url, {
