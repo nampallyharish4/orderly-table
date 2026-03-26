@@ -359,11 +359,11 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           )
         );
         
-        await fetch(`${API_BASE_URL}/api/tables/${currentOrder.tableId}`, {
+        fetch(`${API_BASE_URL}/api/tables/${currentOrder.tableId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'occupied', currentOrderIds: newOrderIds }),
-        });
+        }).catch(e => console.error('Failed to update table, but order was created', e));
       }
 
       setCurrentOrder(null);
@@ -539,11 +539,11 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             })
           );
           
-          await fetch(`${API_BASE_URL}/api/tables/${table.id}`, {
+          fetch(`${API_BASE_URL}/api/tables/${table.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus, currentOrderIds: newOrderIds }),
-          });
+          }).catch(e => console.error('Failed to update table status on cancel', e));
         }
       }
 
@@ -611,17 +611,17 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       const table = tables.find(t => t.id === tableId);
       const newOrderIds = orderIds ?? table?.currentOrderIds ?? [];
       
-      await fetch(`${API_BASE_URL}/api/tables/${tableId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, currentOrderIds: newOrderIds }),
-      });
-
       setTables(prev =>
         prev.map(t =>
           t.id === tableId ? { ...t, status, currentOrderIds: newOrderIds } : t
         )
       );
+
+      await fetch(`${API_BASE_URL}/api/tables/${tableId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, currentOrderIds: newOrderIds }),
+      });
     } catch (error) {
       console.error('Failed to update table status:', error);
     }
