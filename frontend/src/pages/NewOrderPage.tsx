@@ -222,7 +222,10 @@ export default function NewOrderPage() {
     toast.success(`Added ${item.name}`);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     try {
       if (isAddingToExisting) {
         await addItemsToExistingOrder();
@@ -238,6 +241,8 @@ export default function NewOrderPage() {
       }
     } catch (error) {
       toast.error('Failed to create order');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -604,12 +609,12 @@ export default function NewOrderPage() {
             <Button
               className="w-full bg-gradient-primary hover:opacity-90"
               size="lg"
-              disabled={!currentOrder.items?.length}
+              disabled={!currentOrder.items?.length || isSubmitting}
               onClick={handleSubmit}
               data-testid="button-send-to-kitchen"
             >
-              <Send className="w-4 h-4 mr-2" />
-              {isAddingToExisting ? 'Add Items to Order' : 'Send to Kitchen'}
+              {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+              {isSubmitting ? 'Processing...' : isAddingToExisting ? 'Add Items to Order' : 'Send to Kitchen'}
             </Button>
             <Button
               variant="outline"

@@ -19,6 +19,7 @@ export default function TablesPage() {
   const [statusFilter, setStatusFilter] = useState<TableStatus | 'all'>('all');
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Layout Canvas Customization State
   const [isEditMode, setIsEditMode] = useState(false);
@@ -71,6 +72,7 @@ export default function TablesPage() {
 
   const toggleEditMode = async () => {
     if (isEditMode) {
+      setIsSaving(true);
       // Save locally as backup
       localStorage.setItem('orderly_table_layout', JSON.stringify(tablePositions));
       
@@ -83,6 +85,8 @@ export default function TablesPage() {
         });
       } catch (err) {
         console.error('Failed to save layout to server:', err);
+      } finally {
+        setIsSaving(false);
       }
     }
     setIsEditMode(!isEditMode);
@@ -238,9 +242,10 @@ export default function TablesPage() {
               variant={isEditMode ? 'default' : 'outline'}
               size="sm"
               onClick={toggleEditMode}
+              disabled={isSaving}
               className={`mr-2 h-8 text-xs ${isEditMode ? 'bg-amber-500 hover:bg-amber-600 border-0 shadow-md' : 'border-border/50'}`}
             >
-              {isEditMode ? <><Save className="w-3.5 h-3.5 mr-1" /> Save Canvas</> : <><Edit3 className="w-3.5 h-3.5 mr-1" /> Edit Layout</>}
+              {isEditMode ? (isSaving ? <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Saving...</> : <><Save className="w-3.5 h-3.5 mr-1" /> Save Canvas</>) : <><Edit3 className="w-3.5 h-3.5 mr-1" /> Edit Layout</>}
             </Button>
           )}
           <Button

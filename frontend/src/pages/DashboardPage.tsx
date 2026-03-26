@@ -15,11 +15,13 @@ import {
   ArrowRight,
   IndianRupee,
   Sparkles,
+  Calendar as CalendarIcon,
+  Loader2
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { orders, tables, getActiveKitchenOrders } = useOrders();
+  const { orders, tables, getActiveKitchenOrders, isLoading } = useOrders();
 
   // Stats
   const todayOrders = orders.filter(o => {
@@ -43,6 +45,15 @@ export default function DashboardPage() {
   const takeawayCount = todayOrders.filter(o => o.orderType === 'takeaway').length;
 
   const recentOrders = activeOrders.slice(0, 5);
+
+  if (isLoading && orders.length === 0 && tables.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="dashboard-loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading dashboard...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">

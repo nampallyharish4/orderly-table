@@ -12,7 +12,8 @@ import {
   ChevronDown,
   Banknote,
   Smartphone,
-  Users
+  Users,
+  Loader2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -37,7 +38,7 @@ const dateRangeLabels: Record<DateRange, string> = {
 };
 
 export default function ReportsPage() {
-  const { orders } = useOrders();
+  const { orders, isLoading } = useOrders();
   const [dateRange, setDateRange] = useState<DateRange>('month');
 
   const getDateRangeStart = (range: DateRange): Date | null => {
@@ -260,6 +261,15 @@ export default function ReportsPage() {
   };
 
   const topItems = getTopItems();
+
+  if (isLoading && orders.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="reports-loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading reports...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6" data-testid="page-reports">

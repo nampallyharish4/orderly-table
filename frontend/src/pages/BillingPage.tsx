@@ -12,22 +12,27 @@ import {
   Smartphone,
   Printer,
   Share2,
-  Check,
   IndianRupee,
-  Split
+  Split,
+  Loader2,
+  Check
 } from "lucide-react";
 import { Order } from "@/types";
 import { toast } from "sonner";
 
 const BillingPage = () => {
-  const { orders, updateOrderStatus } = useOrders();
+  const { orders, updateOrderStatus, processPayment, isLoading } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi' | 'split' | null>(null);
   const [showSplitInput, setShowSplitInput] = useState(false);
   const [cashAmount, setCashAmount] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get orders that are ready for billing (only served orders)
-  const billableOrders = orders.filter(order => order.status === 'served');
+  // Get orders that are ready for billing (any active order not yet completed payment)
+  const billableOrders = orders.filter(
+    order => ['new', 'preparing', 'ready', 'served'].includes(order.status) &&
+             (!order.payment || order.payment.status !== 'completed')
+  );
 
   const getTaxBreakdown = (order: Order) => {
     const cgst = order.taxAmount / 2;
@@ -35,22 +40,31 @@ const BillingPage = () => {
     return { cgst, sgst, total: order.taxAmount };
   };
 
-  const handlePayment = (method: 'cash' | 'upi') => {
+  const handlePayment = async (method: 'cash' | 'upi') => {
     if (!selectedOrder) return;
     
-    setPaymentMethod(method);
-    updateOrderStatus(selectedOrder.id, 'collected', method);
-    toast.success(`Payment received via ${method.toUpperCase()}`);
-    
-    setTimeout(() => {
-      setSelectedOrder(null);
-      setPaymentMethod(null);
-      setShowSplitInput(false);
-      setCashAmount('');
-    }, 2000);
+    setIsSubmitting(true);
+    try {
+      if (selectedOrder.status === 'served') {
+        await updateOrderStatus(selectedOrder.id, 'collected', method);
+      } else {
+        await processPayment(selectedOrder.id, method);
+      }
+      setPaymentMethod(method);
+      toast.success(`Payment received via ${method.toUpperCase()}`);
+      
+      setTimeout(() => {
+        setSelectedOrder(null);
+        setPaymentMethod(null);
+        setShowSplitInput(false);
+        setCashAmount('');
+      }, 2000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSplitPayment = () => {
+  const handleSplitPayment = async () => {
     if (!selectedOrder) return;
     
     const cashValue = parseFloat(cashAmount) || 0;
@@ -66,16 +80,25 @@ const BillingPage = () => {
       return;
     }
     
-    setPaymentMethod('split');
-    updateOrderStatus(selectedOrder.id, 'collected', 'split', cashValue, upiValue);
-    toast.success(`Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`);
-    
-    setTimeout(() => {
-      setSelectedOrder(null);
-      setPaymentMethod(null);
-      setShowSplitInput(false);
-      setCashAmount('');
-    }, 2000);
+    setIsSubmitting(true);
+    try {
+      if (selectedOrder.status === 'served') {
+        await updateOrderStatus(selectedOrder.id, 'collected', 'split', cashValue, upiValue);
+      } else {
+        await processPayment(selectedOrder.id, 'split', cashValue, upiValue);
+      }
+      setPaymentMethod('split');
+      toast.success(`Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`);
+      
+      setTimeout(() => {
+        setSelectedOrder(null);
+        setPaymentMethod(null);
+        setShowSplitInput(false);
+        setCashAmount('');
+      }, 2000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getUpiAmount = () => {
@@ -232,6 +255,15 @@ const BillingPage = () => {
   const handleShare = () => {
     toast.success("Bill shared via WhatsApp");
   };
+
+  if (isLoading && orders.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="billing-loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading billing data...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -400,18 +432,20 @@ const BillingPage = () => {
                       variant={paymentMethod === 'cash' ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('cash')}
+                      disabled={isSubmitting}
                       data-testid="button-pay-cash"
                     >
-                      <Banknote className="w-4 sm:w-5 h-4 sm:h-5" />
+                      {isSubmitting && paymentMethod === null ? <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" /> : <Banknote className="w-4 sm:w-5 h-4 sm:h-5" />}
                       <span className="text-[10px] sm:text-xs">Cash</span>
                     </Button>
                     <Button
                       variant={paymentMethod === 'upi' ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('upi')}
+                      disabled={isSubmitting}
                       data-testid="button-pay-upi"
                     >
-                      <Smartphone className="w-4 sm:w-5 h-4 sm:h-5" />
+                      {isSubmitting && paymentMethod === null ? <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" /> : <Smartphone className="w-4 sm:w-5 h-4 sm:h-5" />}
                       <span className="text-[10px] sm:text-xs">UPI</span>
                     </Button>
                     <Button
@@ -451,11 +485,11 @@ const BillingPage = () => {
                     <Button 
                       className="w-full" 
                       onClick={handleSplitPayment}
-                      disabled={!cashAmount || parseFloat(cashAmount) <= 0 || parseFloat(cashAmount) >= selectedOrder.totalAmount}
+                      disabled={!cashAmount || parseFloat(cashAmount) <= 0 || parseFloat(cashAmount) >= selectedOrder.totalAmount || isSubmitting}
                       data-testid="button-confirm-split"
                     >
-                      <Check className="w-4 h-4 mr-2" />
-                      Confirm Split Payment
+                      {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+                      {isSubmitting ? 'Processing...' : 'Confirm Split Payment'}
                     </Button>
                   </div>
                 )}

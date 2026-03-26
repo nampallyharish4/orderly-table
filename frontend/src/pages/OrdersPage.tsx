@@ -8,10 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { OrderStatus } from '@/types';
-import { Plus, Search, Package, Utensils, Filter } from 'lucide-react';
+import { Plus, Search, Package, Utensils, Filter, Loader2 } from 'lucide-react';
 
 export default function OrdersPage() {
-  const { orders, createOrder, updateOrderStatus } = useOrders();
+  const { orders, createOrder, updateOrderStatus, isLoading } = useOrders();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
@@ -51,6 +51,15 @@ export default function OrdersPage() {
     ready: orders.filter(o => o.status === 'ready').length,
     served: orders.filter(o => o.status === 'served').length,
   };
+
+  if (isLoading && orders.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="orders-loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading orders...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

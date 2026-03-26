@@ -20,8 +20,10 @@ interface OrderContextType {
   submitOrder: (customerName?: string, customerPhone?: string, pickupTime?: Date) => Promise<Order>;
   cancelCurrentOrder: () => void;
   
-  updateOrderStatus: (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi' | 'split', cashAmount?: number, upiAmount?: number) => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi' | 'split', cashAmount?: number, upiAmount?: number) => Promise<void>;
+  processPayment: (orderId: string, paymentMethod: 'cash' | 'upi' | 'split', cashAmount?: number, upiAmount?: number) => Promise<void>;
   updateItemStatus: (orderId: string, itemId: string, status: OrderItemStatus) => void;
+  startPreparingOrder: (orderId: string) => Promise<void>;
   cancelOrder: (orderId: string) => void;
   editExistingOrder: (orderId: string) => void;
   addItemsToExistingOrder: () => Promise<void>;
@@ -466,6 +468,51 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }
   }, [tables]);
 
+  const processPayment = useCallback(async (orderId: string, paymentMethod: 'cash' | 'upi' | 'split', cashAmount?: number, upiAmount?: number) => {
+    const paymentData: any = {
+      paymentMethod,
+      paymentStatus: 'completed',
+      paidAt: new Date().toISOString()
+    };
+    if (paymentMethod === 'split' && cashAmount !== undefined && upiAmount !== undefined) {
+      paymentData.cashAmount = cashAmount;
+      paymentData.upiAmount = upiAmount;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to process payment');
+        return;
+      }
+
+      setOrders(prev =>
+        prev.map(order => {
+          if (order.id !== orderId) return order;
+          return {
+            ...order,
+            payment: { 
+              id: `pay-${Date.now()}`, 
+              orderId, 
+              method: paymentMethod, 
+              amount: order.totalAmount, 
+              status: 'completed',
+              paidAt: new Date()
+            },
+            updatedAt: new Date(),
+          };
+        })
+      );
+    } catch (error) {
+      console.error('Failed to process payment:', error);
+    }
+  }, []);
+
   const updateItemStatus = useCallback(async (orderId: string, itemId: string, status: OrderItemStatus) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
@@ -504,6 +551,37 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       );
     } catch (error) {
       console.error('Failed to update item status:', error);
+    }
+  }, [orders]);
+
+  const startPreparingOrder = useCallback(async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const updatedItems = order.items.map(item =>
+      item.status === 'pending' ? { ...item, status: 'preparing' as OrderItemStatus } : item
+    );
+
+    try {
+      await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: updatedItems, status: 'preparing' }),
+      });
+
+      setOrders(prev =>
+        prev.map(o => {
+          if (o.id !== orderId) return o;
+          return {
+            ...o,
+            items: updatedItems,
+            status: 'preparing',
+            updatedAt: new Date(),
+          };
+        })
+      );
+    } catch (error) {
+      console.error('Failed to start preparing order:', error);
     }
   }, [orders]);
 
@@ -653,7 +731,9 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         submitOrder,
         cancelCurrentOrder,
         updateOrderStatus,
+        processPayment,
         updateItemStatus,
+        startPreparingOrder,
         cancelOrder,
         editExistingOrder,
         addItemsToExistingOrder,

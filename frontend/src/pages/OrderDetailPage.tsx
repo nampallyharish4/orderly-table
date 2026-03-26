@@ -4,7 +4,9 @@ import { useOrders } from "@/contexts/OrderContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { ArrowLeft, User, Phone, Clock, UtensilsCrossed, Trash2 } from "lucide-react";
+import { ArrowLeft, User, Phone, Clock, UtensilsCrossed,  Printer, Trash2,
+  Loader2
+} from 'lucide-react';
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -21,10 +23,19 @@ import {
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { orders, cancelOrder } = useOrders();
+  const { orders, cancelOrder, isLoading } = useOrders();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   const order = orders.find((o) => o.id === id);
+
+  if (isLoading && orders.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="order-detail-loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading order details...</span>
+      </div>
+    );
+  }
 
   if (!order) {
     return (

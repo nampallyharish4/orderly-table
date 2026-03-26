@@ -56,6 +56,7 @@ export default function UsersPage() {
     phone: '',
     role: 'waiter' as UserRole,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -109,6 +110,7 @@ export default function UsersPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'POST',
@@ -139,6 +141,8 @@ export default function UsersPage() {
         description: 'Failed to create user',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,6 +160,7 @@ export default function UsersPage() {
       updateData.password = (editingUser as any).newPassword;
     }
 
+    setIsSubmitting(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/users/${editingUser.id}`, {
         method: 'PATCH',
@@ -184,6 +189,8 @@ export default function UsersPage() {
         description: 'Failed to update user',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -447,8 +454,8 @@ export default function UsersPage() {
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddUser} data-testid="button-confirm-add-user">
-              Add User
+            <Button onClick={handleAddUser} disabled={isSubmitting} data-testid="button-confirm-add-user">
+              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Adding...</> : 'Add User'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -525,8 +532,8 @@ export default function UsersPage() {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleEditUser} data-testid="button-confirm-edit-user">
-              Save Changes
+            <Button onClick={handleEditUser} disabled={isSubmitting} data-testid="button-confirm-edit-user">
+              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>

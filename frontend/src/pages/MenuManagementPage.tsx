@@ -11,12 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { MenuItem } from '@/types';
-import { Plus, Pencil, Search, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Search, Trash2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getMenuItemImage } from '@/utils/menuImages';
 
 export default function MenuManagementPage() {
-  const { menuItems, categories, refreshData } = useOrders();
+  const { menuItems, categories, refreshData, isLoading } = useOrders();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -215,6 +215,15 @@ export default function MenuManagementPage() {
       toast({ title: 'Error', description: 'Failed to update availability', variant: 'destructive' });
     }
   };
+
+  if (isLoading && menuItems.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="menu-loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading menu...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6" data-testid="page-menu-management">
@@ -483,7 +492,7 @@ export default function MenuManagementPage() {
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>Cancel</Button>
             <Button onClick={handleSave} disabled={isSaving} data-testid="button-save-item">
-              {isSaving ? 'Saving...' : 'Save'}
+              {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -500,7 +509,7 @@ export default function MenuManagementPage() {
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setItemToDelete(null)}>Cancel</Button>
             <Button variant="destructive" onClick={confirmDelete} disabled={!!deletingId}>
-              {deletingId ? 'Deleting...' : 'Delete'}
+              {deletingId ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deleting...</> : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -541,7 +550,7 @@ export default function MenuManagementPage() {
           <DialogFooter>
             <Button variant="outline" onClick={closeCategoryDialog}>Cancel</Button>
             <Button onClick={handleSaveCategory} disabled={isSaving} data-testid="button-save-category">
-              {isSaving ? 'Saving...' : 'Save'}
+              {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -558,7 +567,7 @@ export default function MenuManagementPage() {
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setCategoryToDelete(null)}>Cancel</Button>
             <Button variant="destructive" onClick={confirmDeleteCategory} disabled={isSaving}>
-              {isSaving ? 'Deleting...' : 'Delete Completely'}
+              {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deleting...</> : 'Delete Completely'}
             </Button>
           </DialogFooter>
         </DialogContent>

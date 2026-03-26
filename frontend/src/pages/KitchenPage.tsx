@@ -18,13 +18,16 @@ import {
   Leaf,
   CircleDot,
   Volume2,
-  VolumeX
+  VolumeX,
+  Loader2
 } from 'lucide-react';
 import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 
 export default function KitchenPage() {
-  const { orders, updateItemStatus, updateOrderStatus } = useOrders();
+  const { orders, updateItemStatus, updateOrderStatus, startPreparingOrder, isLoading } = useOrders();
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const { playReadySound } = useNotificationSound();
 
   // Get active kitchen orders
@@ -43,19 +46,24 @@ export default function KitchenPage() {
     return 'normal';
   };
 
-  const handleStartPreparing = (order: Order) => {
-    // Update all pending items to preparing
-    order.items.forEach(item => {
-      if (item.status === 'pending') {
-        updateItemStatus(order.id, item.id, 'preparing');
-      }
-    });
+  const handleStartPreparing = async (order: Order) => {
+    setUpdatingOrderId(order.id);
+    try {
+      await startPreparingOrder(order.id);
+    } finally {
+      setUpdatingOrderId(null);
+    }
   };
 
-  const handleItemReady = (orderId: string, itemId: string) => {
-    updateItemStatus(orderId, itemId, 'ready');
-    if (soundEnabled) {
-      playReadySound();
+  const handleItemReady = async (orderId: string, itemId: string) => {
+    setUpdatingItemId(itemId);
+    try {
+      await updateItemStatus(orderId, itemId, 'ready');
+      if (soundEnabled) {
+        playReadySound();
+      }
+    } finally {
+      setUpdatingItemId(null);
     }
   };
 
@@ -147,9 +155,14 @@ export default function KitchenPage() {
                     size="sm"
                     variant={item.status === 'preparing' ? 'default' : 'outline'}
                     onClick={() => handleItemReady(order.id, item.id)}
+                    disabled={updatingItemId === item.id}
                     className={item.status === 'preparing' ? 'bg-success hover:bg-success/90' : ''}
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                    {updatingItemId === item.id ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                    )}
                     {item.status === 'preparing' ? 'Done' : 'Start'}
                   </Button>
                 )}
@@ -169,9 +182,14 @@ export default function KitchenPage() {
               <Button 
                 className="flex-1 bg-gradient-primary hover:opacity-90"
                 onClick={() => handleStartPreparing(order)}
+                disabled={updatingOrderId === order.id}
               >
-                <ChefHat className="w-4 h-4 mr-2" />
-                Start Preparing
+                {updatingOrderId === order.id ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <ChefHat className="w-4 h-4 mr-2" />
+                )}
+                {updatingOrderId === order.id ? 'Starting...' : 'Start Preparing'}
               </Button>
             )}
           </div>
@@ -179,6 +197,15 @@ export default function KitchenPage() {
       </Card>
     );
   };
+
+  if (isLoading && orders.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="kitchen-loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading kitchen orders...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">

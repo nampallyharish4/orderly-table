@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Order, hasPermission } from '@/types';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, User, Package, Printer, CheckCircle2 } from 'lucide-react';
+import { Clock, User, Package, Printer, CheckCircle2, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { printBill } from '@/utils/printBill';
 import { useOrders } from '@/contexts/OrderContext';
@@ -19,6 +20,7 @@ interface OrderCardProps {
 export function OrderCard({ order, onClick, showItems = false, compact = false }: OrderCardProps) {
   const { updateOrderStatus } = useOrders();
   const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const timeAgo = formatDistanceToNow(order.createdAt, { addSuffix: true });
   const isReady = order.status === 'ready';
   const isTakeaway = order.orderType === 'takeaway';
@@ -31,11 +33,20 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
     printBill(order);
   };
 
-  const handleMarkServed = (e: React.MouseEvent) => {
+  const handleMarkServed = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // For takeaway: mark as 'served' so it goes to billing
-    // For dine-in: mark as 'served'
-    updateOrderStatus(order.id, 'served');
+    setIsSubmitting(true);
+    
+    try {
+      // If the order was already paid upfront, handing it over means it's completely done
+      if (order.payment?.status === 'completed') {
+        await updateOrderStatus(order.id, 'collected');
+      } else {
+        await updateOrderStatus(order.id, 'served');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (compact) {
@@ -174,9 +185,10 @@ export function OrderCard({ order, onClick, showItems = false, compact = false }
           <Button 
             className="w-full bg-success hover:bg-success/90"
             onClick={handleMarkServed}
+            disabled={isSubmitting}
           >
-            <CheckCircle2 className="w-4 h-4 mr-2" />
-            {isTakeaway ? 'Order Handed Over' : 'Mark Served'}
+            {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+            {isSubmitting ? 'Processing...' : (isTakeaway ? 'Order Handed Over' : 'Mark Served')}
           </Button>
         )}
       </CardContent>
