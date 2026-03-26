@@ -8,6 +8,7 @@ import { OrderProvider } from "@/contexts/OrderContext";
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { ThemeProvider } from "@/components/theme-provider";
 
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -30,11 +31,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LoadingProvider>
-        <AuthProvider>
-          <OrderProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <AuthProvider>
+            <OrderProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/" element={
@@ -97,8 +99,9 @@ const App = () => (
             </BrowserRouter>
           </OrderProvider>
         </AuthProvider>
-      </LoadingProvider>
-    </TooltipProvider>
+      </ThemeProvider>
+    </LoadingProvider>
+  </TooltipProvider>
   </QueryClientProvider>
 );
 

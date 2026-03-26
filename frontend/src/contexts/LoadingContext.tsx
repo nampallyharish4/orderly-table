@@ -26,40 +26,9 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
 
   const isLoading = activeRequests.size > 0;
 
-  React.useEffect(() => {
-    const originalFetch = window.fetch;
-    window.fetch = async (...args) => {
-      const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request).url;
-      
-      // List of endpoints that should NOT trigger a global blocking loader
-      // e.g., background polling for real-time updates
-      const isBackgroundRequest = 
-        (args[1]?.method === 'GET' || !args[1]?.method) && 
-        (url.includes('/api/orders') || url.includes('/api/tables') || url.includes('/api/menu-items') || url.includes('/api/categories'));
-
-      if (!isBackgroundRequest) {
-        startLoading(url);
-      }
-
-      try {
-        const response = await originalFetch(...args);
-        return response;
-      } finally {
-        if (!isBackgroundRequest) {
-          stopLoading(url);
-        }
-      }
-    };
-
-    return () => {
-      window.fetch = originalFetch;
-    };
-  }, [startLoading, stopLoading]);
-
   return (
     <LoadingContext.Provider value={{ startLoading, stopLoading, isLoading }}>
       {children}
-      {isLoading && <FullScreenLoader />}
     </LoadingContext.Provider>
   );
 }

@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useToast } from '@/hooks/use-toast';
 import { MenuItem } from '@/types';
 import { Plus, Pencil, Search, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { getMenuItemImage } from '@/utils/menuImages';
 
 export default function MenuManagementPage() {
   const { menuItems, categories, refreshData } = useOrders();
@@ -271,82 +273,109 @@ export default function MenuManagementPage() {
         </div>
       </div>
 
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map(item => {
           const isAvailable = optimisticAvailability[item.id] ?? item.isAvailable;
           return (
-          <Card key={item.id} className={`overflow-hidden transition-all duration-200 border border-border group ${!isAvailable ? 'opacity-70 bg-muted/30 grayscale-[0.3]' : 'hover:border-primary/50 hover:shadow-md'}`}>
-            <CardContent className="p-0">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4">
-                
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  {item.imageUrl && (
-                    <div className="shrink-0 w-16 h-16 rounded-md overflow-hidden bg-muted">
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+            <Card key={item.id} className={`overflow-hidden transition-all duration-300 border-2 ${!isAvailable ? 'opacity-75 bg-muted/20 border-border group grayscale-[0.3]' : 'glass-card hover:border-primary/60 hover:shadow-glow group'}`}>
+              <CardContent className="p-4">
+                <div className="flex gap-5">
+                  {/* Image Section - Large & Rounded like the image */}
+                  <div className="relative shrink-0 w-28 h-28 rounded-2xl overflow-hidden bg-secondary shadow-lg border border-white/5">
+                    {(() => {
+                      const supabaseUrl = `https://oslhmctcqgszovthxjwx.supabase.co/storage/v1/object/public/menu-items/${item.id}.jpg`;
+                      const displayUrl = item.imageUrl || getMenuItemImage(item.name) || supabaseUrl;
+                      
+                      return (
+                        <img 
+                          src={displayUrl} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          onError={(e) => {
+                             e.currentTarget.style.display = 'none';
+                             const placeholder = e.currentTarget.nextElementSibling;
+                             if (placeholder) {
+                               (placeholder as HTMLElement).style.opacity = '1';
+                             }
+                          }}
+                        />
+                      );
+                    })()}
+                    
+                    {/* Placeholder shown only if Image fails or is not found */}
+                    <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-muted opacity-0 transition-opacity pointer-events-none">
+                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Plus className="w-6 h-6 text-primary/40" />
+                       </div>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">{item.name}</h3>
-                      <Badge variant={item.isVeg ? 'default' : 'secondary'} className={`text-[10px] px-1.5 h-5 ${item.isVeg ? 'bg-green-600/10 text-green-600 hover:bg-green-600/20' : 'bg-red-600/10 text-red-600 hover:bg-red-600/20'} border-transparent`}>
-                        {item.isVeg ? 'Veg' : 'Non-Veg'}
-                      </Badge>
-                      {!isAvailable && (
-                        <Badge variant="destructive" className="text-[10px] px-1.5 h-5 uppercase tracking-wide">Disabled</Badge>
-                      )}
+                    {!isAvailable && (
+                      <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px] flex items-center justify-center">
+                         <Badge variant="outline" className="text-[9px] uppercase font-bold tracking-tighter bg-background/50 border-white/10">Disabled</Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="flex-1 min-w-0 flex flex-col pt-1">
+                    <div className="flex items-start justify-between gap-2">
+                       <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center gap-2">
+                            {/* Custom Veg/Non-Veg icon from image */}
+                            <div className={`shrink-0 w-5 h-5 flex items-center justify-center border-2 rounded-sm ${item.isVeg ? "border-green-500/60" : "border-red-500/60"}`}>
+                              <div className={`w-2.5 h-2.5 rounded-full ${item.isVeg ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"}`} />
+                            </div>
+                            <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors truncate">
+                              {item.name}
+                            </h3>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.1em] opacity-80">
+                             {categories.find(c => c.id === item.categoryId)?.name || 'General'}
+                          </p>
+                       </div>
+                       
+                       <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={(e) => { e.stopPropagation(); openEditDialog(item); }} 
+                            className="h-8 w-8 hover:bg-primary/20 hover:text-primary rounded-full"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={(e) => { e.stopPropagation(); setItemToDelete(item); }} 
+                            disabled={deletingId === item.id}
+                            className="h-8 w-8 hover:bg-destructive/20 hover:text-destructive rounded-full"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate mb-2">{item.category}</p>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="font-bold text-lg text-primary">₹{item.price}</span>
-                      {item.preparationTime && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground flex items-center">
-                          ⏱ {item.preparationTime} min
-                        </span>
-                      )}
+
+                    <div className="mt-auto flex items-end justify-between">
+                       <div className="flex flex-col">
+                          <span className="text-2xl font-black text-primary tracking-tight font-mono-price flex items-baseline">
+                            <span className="text-sm font-bold mr-0.5 opacity-90">₹</span>
+                            {item.price}
+                          </span>
+                       </div>
+
+                       <div className="scale-90 origin-right transition-transform hover:scale-95">
+                         <CustomSwitch 
+                           checked={isAvailable} 
+                           onCheckedChange={() => toggleAvailability(item)}
+                           data-testid={`switch-availability-${item.id}`}
+                         />
+                       </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4 shrink-0 mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-border">
-                  
-                  {/* Premium Switch Section requested by user */}
-                  <div className="flex items-center gap-3">
-                    <CustomSwitch 
-                      checked={isAvailable} 
-                      onCheckedChange={() => toggleAvailability(item)}
-                      data-testid={`switch-availability-${item.id}`}
-                    />
-                  </div>
-                  
-                  {/* Actions Section */}
-                  <div className="flex gap-1.5">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => openEditDialog(item)} 
-                      data-testid={`button-edit-${item.id}`}
-                      className="h-9 w-9 bg-muted/50 hover:bg-primary hover:text-primary-foreground border-transparent transition-colors"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => setItemToDelete(item)} 
-                      disabled={deletingId === item.id}
-                      className="h-9 w-9 bg-muted/50 hover:bg-destructive hover:text-destructive-foreground border-transparent transition-colors"
-                      data-testid={`button-delete-${item.id}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  
-                </div>
-
-              </div>
-            </CardContent>
-          </Card>
-        )})}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {filteredItems.length === 0 && (

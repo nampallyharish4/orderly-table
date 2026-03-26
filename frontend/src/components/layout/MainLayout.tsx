@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { canAccessRoute, UserRole } from '@/types';
+import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
 
 interface NavItem {
   path: string;
@@ -136,20 +137,21 @@ export function MainLayout({ children }: MainLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex bg-orbs relative overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 xl:w-64 bg-sidebar border-r border-sidebar-border shrink-0">
+      <aside className="hidden lg:flex flex-col w-60 xl:w-64 glass border-r border-sidebar-border shrink-0 z-10">
         {/* Logo */}
         <div className="flex items-center gap-2 xl:gap-3 px-4 xl:px-6 py-4 xl:py-5 border-b border-sidebar-border">
           <div className="w-9 xl:w-10 h-9 xl:h-10 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/25">
             <Utensils className="w-4 xl:w-5 h-4 xl:h-5 text-white" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="font-bold text-base xl:text-lg truncate">
               <span className="text-gradient-primary">Kaveri</span>
             </h1>
             <p className="text-[10px] xl:text-xs text-muted-foreground truncate">Order Management</p>
           </div>
+          <AnimatedThemeToggler />
         </div>
 
         {/* Navigation */}
@@ -191,7 +193,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-border">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-md shadow-primary/20">
@@ -199,13 +201,16 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
             <span className="font-bold text-gradient-primary">Kaveri</span>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <AnimatedThemeToggler />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
