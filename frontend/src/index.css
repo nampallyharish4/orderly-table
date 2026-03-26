@@ -528,10 +528,396 @@
 }
 
 main > div {
-  animation: page-enter 0.3s ease-out;
+  animation: page-enter 0.4s ease-out;
 }
 
 ::view-transition-old(root), ::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;
 }
+
+/* ============================================
+   DYNAMIC ANIMATIONS & MICRO-INTERACTIONS
+   ============================================ */
+
+/* --- Staggered Card Entrance Animations --- */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Staggered children - grid cards auto-stagger */
+.grid > * {
+  animation: card-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.grid > *:nth-child(1) { animation-delay: 0.03s; }
+.grid > *:nth-child(2) { animation-delay: 0.08s; }
+.grid > *:nth-child(3) { animation-delay: 0.13s; }
+.grid > *:nth-child(4) { animation-delay: 0.18s; }
+.grid > *:nth-child(5) { animation-delay: 0.23s; }
+.grid > *:nth-child(6) { animation-delay: 0.28s; }
+.grid > *:nth-child(7) { animation-delay: 0.32s; }
+.grid > *:nth-child(8) { animation-delay: 0.36s; }
+.grid > *:nth-child(9) { animation-delay: 0.39s; }
+.grid > *:nth-child(10) { animation-delay: 0.42s; }
+.grid > *:nth-child(11) { animation-delay: 0.44s; }
+.grid > *:nth-child(12) { animation-delay: 0.46s; }
+.grid > *:nth-child(n+13) { animation-delay: 0.48s; }
+
+/* --- Animated Number Counter Effect (visual pulse on data change) --- */
+@keyframes number-bump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.15); }
+  60% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+.font-mono-price {
+  transition: color 0.3s ease;
+}
+
+/* --- Living Card Hover Interactions --- */
+@keyframes border-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Cards lift and glow on hover */
+[class*="stat-card-"] {
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+[class*="stat-card-"]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsla(0, 0%, 100%, 0.03),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+[class*="stat-card-"]:hover::after {
+  left: 100%;
+}
+
+[class*="stat-card-"]:hover {
+  transform: translateY(-3px);
+}
+
+/* --- Floating Animation for Decorative Elements --- */
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes gentle-bob {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(0.5deg); }
+  75% { transform: translateY(3px) rotate(-0.5deg); }
+}
+
+/* Icon containers float subtly */
+.group:hover [class*="rounded-xl"][class*="bg-gradient-"],
+.group:hover [class*="rounded-lg"][class*="bg-gradient-"] {
+  animation: gentle-float 2s ease-in-out infinite;
+}
+
+/* --- Breathing Glow for Active States --- */
+@keyframes breathing-glow {
+  0%, 100% { box-shadow: 0 0 8px -2px currentColor; opacity: 0.8; }
+  50% { box-shadow: 0 0 20px -2px currentColor; opacity: 1; }
+}
+
+.animate-pulse-subtle {
+  animation: breathing-glow 2.5s ease-in-out infinite;
+}
+
+/* --- Ripple Click Effect --- */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* --- Smooth Sidebar Link Transitions --- */
+nav a, [data-sidebar] a {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+nav a::before, [data-sidebar] a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 60%;
+  border-radius: 2px;
+  background: var(--gradient-primary);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+nav a:hover::before, [data-sidebar] a:hover::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+/* --- Toast / Notification Entrance --- */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+[data-sonner-toast], [data-radix-toast-viewport] > * {
+  animation: toast-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- Dialog / Modal Entrance --- */
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+[role="dialog"] {
+  animation: dialog-enter 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- Badge Pulse for Counts --- */
+@keyframes badge-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.rounded-full[class*="bg-primary"],
+.rounded-full[class*="bg-destructive"] {
+  transition: transform 0.2s ease;
+}
+
+/* --- Table Card Hover Lift --- */
+.table-available,
+.table-occupied,
+.table-reserved {
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.table-available:hover,
+.table-occupied:hover,
+.table-reserved:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+/* --- Menu Item Card Spring --- */
+.menu-card {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.menu-card:hover {
+  transform: translateY(-3px);
+}
+
+.menu-card:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+/* --- Smooth Scroll Behavior --- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* --- Loading Skeleton Shimmer --- */
+@keyframes skeleton-loading {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.08) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.8s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+/* --- Animated Gradient Text Shimmer --- */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.text-gradient-primary {
+  background-size: 200% auto;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* --- Order Card Ready Bounce --- */
+.order-card-ready {
+  animation: pulse-glow 2s ease-in-out infinite, gentle-bob 3s ease-in-out infinite;
+}
+
+/* --- Switch / Toggle Smooth --- */
+[role="switch"] {
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+[role="switch"][data-state="checked"] {
+  box-shadow: 0 0 12px -2px hsl(var(--primary) / 0.4);
+}
+
+/* --- Scrollbar Smooth Reveal --- */
+.touch-scroll::-webkit-scrollbar-thumb {
+  transition: background 0.3s ease;
+}
+
+/* --- Category Pill Slide-In --- */
+@keyframes pill-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* --- Hover Underline Effect for Links --- */
+h1 a, h2 a, h3 a {
+  position: relative;
+}
+
+h1 a::after, h2 a::after, h3 a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--gradient-primary);
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+h1 a:hover::after, h2 a:hover::after, h3 a:hover::after {
+  width: 100%;
+}
+
+/* --- Image Hover Zoom (Menu Item Images) --- */
+img {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- Focus Ring Animation --- */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  transition: outline-offset 0.2s ease;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
