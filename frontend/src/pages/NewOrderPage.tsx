@@ -294,54 +294,85 @@ export default function NewOrderPage() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search menu..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10 pr-12 text-sm"
-            data-testid="input-search-menu"
-          />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-             <Button
-                variant={isListening ? 'default' : 'ghost'}
-                size="icon"
-                className={`h-8 w-8 rounded-full ${isListening ? 'bg-red-500 animate-pulse text-white hover:bg-red-600' : 'text-indigo-400 hover:bg-indigo-500/10'}`}
-                onClick={handleVoiceOrder}
-                disabled={isAiLoading}
-                title="Voice Order"
-             >
-                {isAiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />)}
-             </Button>
+        {/* Search + Voice */}
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60" />
+            <Input
+              placeholder="Search dishes, categories..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-11 pr-4 h-12 text-sm sm:text-base rounded-2xl bg-secondary/50 border-border/50 focus:border-primary/40 focus:bg-background transition-all placeholder:text-muted-foreground/50"
+              data-testid="input-search-menu"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition-colors"
+              >
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            )}
           </div>
+          
+          {/* Voice Order Button - Prominent & Attractive */}
+          <button
+            onClick={handleVoiceOrder}
+            disabled={isAiLoading}
+            title="Voice Order — Speak your order"
+            className={`relative flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+              isListening 
+                ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30 scale-110' 
+                : isAiLoading
+                  ? 'bg-muted text-muted-foreground cursor-wait'
+                  : 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 hover:scale-105 active:scale-95'
+            }`}
+          >
+            {/* Pulsing ring when listening */}
+            {isListening && (
+              <>
+                <span className="absolute inset-0 rounded-2xl bg-red-500/40 animate-ping" />
+                <span className="absolute -inset-1 rounded-2xl border-2 border-red-400/50 animate-pulse" />
+              </>
+            )}
+            {isAiLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin relative z-10" />
+            ) : isListening ? (
+              <MicOff className="w-5 h-5 relative z-10" />
+            ) : (
+              <Mic className="w-5 h-5 relative z-10" />
+            )}
+          </button>
         </div>
 
-        {/* Categories */}
-        <div className="mb-3 sm:mb-4 -mx-2 sm:-mx-3 px-2 sm:px-3">
-          <div className="overflow-x-auto scrollbar-thin pb-2">
-            <div className="flex gap-1.5 sm:gap-2 min-w-max">
-              <Button
-                variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                size="sm"
+        {/* Categories - Pill Style */}
+        <div className="mb-3 sm:mb-4">
+          <div className="overflow-x-auto scrollbar-thin pb-2 -mx-1 px-1">
+            <div className="flex gap-2 min-w-max">
+              <button
                 onClick={() => setSelectedCategory('all')}
-                className="text-xs sm:text-sm flex-shrink-0"
                 data-testid="category-all"
+                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                  selectedCategory === 'all'
+                    ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-md shadow-primary/25'
+                    : 'bg-secondary/60 text-foreground/70 hover:bg-secondary hover:text-foreground'
+                }`}
               >
-                All
-              </Button>
+                🍽️ All Items
+              </button>
               {categories.filter(c => c.isActive).map(cat => (
-                <Button
+                <button
                   key={cat.id}
-                  variant={selectedCategory === cat.id ? 'default' : 'outline'}
-                  size="sm"
                   onClick={() => setSelectedCategory(cat.id)}
-                  className="whitespace-nowrap text-xs sm:text-sm flex-shrink-0"
                   data-testid={`category-${cat.id}`}
+                  className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                    selectedCategory === cat.id
+                      ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-md shadow-primary/25'
+                      : 'bg-secondary/60 text-foreground/70 hover:bg-secondary hover:text-foreground'
+                  }`}
                 >
                   {cat.name}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
