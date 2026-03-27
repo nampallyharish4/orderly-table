@@ -18,6 +18,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByStatusInOrderByCreatedAtDesc(Collection<String> statuses);
     List<Order> findByUpdatedAtAfterOrderByUpdatedAtDesc(OffsetDateTime lastUpdated);
     Optional<Order> findByVisibleId(String visibleId);
+    Optional<Order> findByOrderNumber(String orderNumber);
 
     void deleteByVisibleId(String visibleId);
 }

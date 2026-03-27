@@ -1,10 +1,13 @@
 package com.kaveri.pos.controller;
 
 import com.kaveri.pos.entity.Order;
+import com.kaveri.pos.entity.RestaurantTable;
 import com.kaveri.pos.repository.OrderRepository;
+import com.kaveri.pos.repository.TableRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
@@ -16,6 +19,9 @@ public class OrderController {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private TableRepository tableRepository;
 
     @GetMapping
     public ResponseEntity<List<Order>> getAllOrders(
@@ -55,66 +61,52 @@ public class OrderController {
     }
 
     @PostMapping
+    @Transactional
     @SuppressWarnings("unchecked")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> body) {
         try {
-            String visibleId = body.containsKey("id") && body.get("id") != null
-                    ? body.get("id").toString()
-                    : "order-" + System.currentTimeMillis();
+            String tableVisibleId = getString(body, "tableId");
+            boolean expressCheckout = body.containsKey("expressCheckout") && Boolean.TRUE.equals(body.get("expressCheckout"));
 
-            Optional<Order> existingOrder = orderRepository.findByVisibleId(visibleId);
+            Optional<Order> existingOrder = findExistingOrder(body);
             if (existingOrder.isPresent()) {
                 return ResponseEntity.ok(existingOrder.get());
             }
 
-            Integer tableDbId = null;
-            if (body.get("tableId") != null) {
-                String tableIdStr = body.get("tableId").toString();
-                if (tableIdStr.startsWith("table-")) {
-                    try { tableDbId = Integer.parseInt(tableIdStr.replace("table-", "")); } catch (NumberFormatException ignored) {}
-                } else {
-                    try { tableDbId = Integer.parseInt(tableIdStr); } catch (NumberFormatException ignored) {}
-                }
-            }
-
-            Order order = new Order();
-            order.setVisibleId(visibleId);
-            order.setOrderNumber(getString(body, "orderNumber"));
-            order.setOrderType(getString(body, "orderType"));
-            order.setTableDbId(tableDbId);
-            order.setTableNumber(getString(body, "tableNumber"));
-            order.setCustomerName(getString(body, "customerName"));
-            order.setCustomerPhone(getString(body, "customerPhone"));
-            order.setItems(body.get("items") != null ? (List<Map<String, Object>>) body.get("items") : new ArrayList<>());
-            order.setSubtotal(toDouble(body.get("subtotal")));
-            order.setTaxAmount(toDouble(body.get("taxAmount")));
-            order.setServiceCharge(toDouble(body.get("serviceCharge")));
-            order.setDiscountAmount(toDouble(body.get("discountAmount")));
-            order.setTotalAmount(toDouble(body.get("totalAmount")));
-            boolean expressCheckout = body.containsKey("expressCheckout") && Boolean.TRUE.equals(body.get("expressCheckout"));
-            
-            if (expressCheckout) {
-                order.setStatus("collected");
-                order.setPaymentMethod("cash");
-                order.setPaymentStatus("completed");
-                order.setCashAmount(order.getTotalAmount());
-                order.setPaidAt(OffsetDateTime.now());
-                order.setServedAt(OffsetDateTime.now());
-            } else {
-                order.setStatus(body.get("status") != null ? body.get("status").toString() : "new");
-            }
-            order.setNotes(getString(body, "notes"));
-            order.setCreatedBy(body.get("createdBy") != null ? body.get("createdBy").toString() : "system");
-            order.setCreatedAt(OffsetDateTime.now());
-            order.setUpdatedAt(OffsetDateTime.now());
-
+            Order order = buildOrder(body, expressCheckout);
             Order saved = orderRepository.save(order);
+            synchronizeTableForOrder(saved, tableVisibleId);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             Map<String, String> err = new HashMap<>();
             err.put("error", "Failed to create order");
             err.put("details", e.getMessage());
             return ResponseEntity.status(500).body(err);
+        }
+    }
+
+    @PostMapping("/checkout")
+    @Transactional
+    public ResponseEntity<?> createAndCollectCash(@RequestBody Map<String, Object> body) {
+        try {
+            String tableVisibleId = getString(body, "tableId");
+
+            Optional<Order> existingOrder = findExistingOrder(body);
+            if (existingOrder.isPresent()) {
+                return ResponseEntity.ok(existingOrder.get());
+            }
+
+            Order order = buildOrder(body, true);
+            Order saved = orderRepository.save(order);
+            synchronizeTableForOrder(saved, tableVisibleId);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Failed to complete order checkout",
+                    "details", e.getMessage()
+            ));
         }
     }
 
@@ -128,7 +120,7 @@ public class OrderController {
             }
             Order order = optOrder.get();
 
-            if (body.containsKey("status")) order.setStatus(body.get("status").toString());
+            if (body.containsKey("status")) setOrderStatuses(order, body.get("status").toString());
             if (body.containsKey("items")) order.setItems((List<Map<String, Object>>) body.get("items"));
             if (body.containsKey("paymentMethod") && body.get("paymentMethod") != null)
                 order.setPaymentMethod(body.get("paymentMethod").toString());
@@ -169,8 +161,114 @@ public class OrderController {
         return body.get(key) != null ? body.get(key).toString() : null;
     }
 
+    private Optional<Order> findExistingOrder(Map<String, Object> body) {
+        String visibleId = getString(body, "id");
+        if (visibleId != null && !visibleId.isBlank()) {
+            Optional<Order> existingById = orderRepository.findByVisibleId(visibleId);
+            if (existingById.isPresent()) {
+                return existingById;
+            }
+        }
+
+        String orderNumber = getString(body, "orderNumber");
+        if (orderNumber != null && !orderNumber.isBlank()) {
+            return orderRepository.findByOrderNumber(orderNumber);
+        }
+
+        return Optional.empty();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Order buildOrder(Map<String, Object> body, boolean collectCashNow) {
+        String visibleId = body.containsKey("id") && body.get("id") != null
+                ? body.get("id").toString()
+                : "order-" + System.currentTimeMillis();
+
+        Integer tableDbId = null;
+        if (body.get("tableId") != null) {
+            String tableIdStr = body.get("tableId").toString();
+            if (tableIdStr.startsWith("table-")) {
+                try {
+                    tableDbId = Integer.parseInt(tableIdStr.replace("table-", ""));
+                } catch (NumberFormatException ignored) {
+                }
+            } else {
+                try {
+                    tableDbId = Integer.parseInt(tableIdStr);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        Order order = new Order();
+        order.setVisibleId(visibleId);
+        order.setOrderNumber(getString(body, "orderNumber"));
+        order.setOrderType(getString(body, "orderType"));
+        order.setTableDbId(tableDbId);
+        order.setTableId(getString(body, "tableId"));
+        order.setTableNumber(getString(body, "tableNumber"));
+        order.setCustomerName(getString(body, "customerName"));
+        order.setCustomerPhone(getString(body, "customerPhone"));
+        order.setItems(body.get("items") != null ? (List<Map<String, Object>>) body.get("items") : new ArrayList<>());
+        order.setSubtotal(toDouble(body.get("subtotal")));
+        order.setTaxAmount(toDouble(body.get("taxAmount")));
+        order.setServiceCharge(toDouble(body.get("serviceCharge")));
+        order.setDiscountAmount(toDouble(body.get("discountAmount")));
+        order.setTotalAmount(toDouble(body.get("totalAmount")));
+        order.setNotes(getString(body, "notes"));
+        order.setCreatedBy(body.get("createdBy") != null ? body.get("createdBy").toString() : "system");
+
+        OffsetDateTime now = OffsetDateTime.now();
+        order.setCreatedAt(now);
+        order.setUpdatedAt(now);
+
+        if (collectCashNow) {
+            setOrderStatuses(order, "collected");
+            order.setPaymentMethod("cash");
+            order.setPaymentStatus("completed");
+            order.setCashAmount(order.getTotalAmount());
+            order.setPaidAt(now);
+            order.setServedAt(now);
+        } else {
+            setOrderStatuses(order, body.get("status") != null ? body.get("status").toString() : "new");
+        }
+
+        return order;
+    }
+
+    private void synchronizeTableForOrder(Order order, String tableVisibleId) {
+        if (tableVisibleId == null || tableVisibleId.isBlank()) {
+            return;
+        }
+
+        RestaurantTable table = tableRepository.findByVisibleId(tableVisibleId)
+                .orElseThrow(() -> new IllegalArgumentException("Table not found for id: " + tableVisibleId));
+
+        List<String> currentOrderIds = new ArrayList<>(
+                table.getCurrentOrderIds() != null ? table.getCurrentOrderIds() : List.of()
+        );
+
+        if ("collected".equals(order.getStatus())) {
+            currentOrderIds.remove(order.getVisibleId());
+            table.setStatus(currentOrderIds.isEmpty() ? "available" : "occupied");
+        } else {
+            if (!currentOrderIds.contains(order.getVisibleId())) {
+                currentOrderIds.add(order.getVisibleId());
+            }
+            table.setStatus("occupied");
+        }
+
+        table.setCurrentOrderIds(currentOrderIds);
+        tableRepository.save(table);
+    }
+
     private Double toDouble(Object val) {
         if (val == null) return 0.0;
         try { return Double.parseDouble(val.toString()); } catch (Exception e) { return 0.0; }
+    }
+
+    private void setOrderStatuses(Order order, String status) {
+        order.setStatus(status);
+        order.setOrderStatus(status);
     }
 }

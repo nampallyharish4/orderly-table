@@ -69,6 +69,9 @@ public class Order {
     @Column(name = "status", nullable = false)
     private String status = "new";
 
+    @Column(name = "order_status")
+    private String orderStatus = "new";
+
     @Column(name = "payment_method")
     private String paymentMethod;
 
@@ -144,6 +147,8 @@ public class Order {
     public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getOrderStatus() { return orderStatus; }
+    public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
     public String getPaymentStatus() { return paymentStatus; }

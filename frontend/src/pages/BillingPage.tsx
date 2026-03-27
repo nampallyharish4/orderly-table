@@ -1,37 +1,40 @@
-import { useState } from "react";
-import { useOrders } from "@/contexts/OrderContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Receipt, 
-  Banknote, 
+import { useState } from 'react';
+import { useOrders } from '@/contexts/OrderContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Receipt,
+  Banknote,
   Smartphone,
   Printer,
   Share2,
   IndianRupee,
   Split,
   Loader2,
-  Check
-} from "lucide-react";
-import { Order } from "@/types";
-import { toast } from "sonner";
+  Check,
+} from 'lucide-react';
+import { Order } from '@/types';
+import { toast } from 'sonner';
 
 const BillingPage = () => {
   const { orders, updateOrderStatus, processPayment, isLoading } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi' | 'split' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<
+    'cash' | 'upi' | 'split' | null
+  >(null);
   const [showSplitInput, setShowSplitInput] = useState(false);
   const [cashAmount, setCashAmount] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get orders that are ready for billing (any active order not yet completed payment)
   const billableOrders = orders.filter(
-    order => ['new', 'preparing', 'ready', 'served'].includes(order.status) &&
-             (!order.payment || order.payment.status !== 'completed')
+    (order) =>
+      ['new', 'preparing', 'ready', 'served'].includes(order.status) &&
+      (!order.payment || order.payment.status !== 'completed'),
   );
 
   const getTaxBreakdown = (order: Order) => {
@@ -42,7 +45,7 @@ const BillingPage = () => {
 
   const handlePayment = async (method: 'cash' | 'upi') => {
     if (!selectedOrder) return;
-    
+
     setIsSubmitting(true);
     try {
       if (selectedOrder.status === 'served') {
@@ -52,11 +55,13 @@ const BillingPage = () => {
       }
       setPaymentMethod(method);
       toast.success(`Payment received via ${method.toUpperCase()}`);
-      
+
       setSelectedOrder(null);
       setPaymentMethod(null);
       setShowSplitInput(false);
       setCashAmount('');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to process payment');
     } finally {
       setIsSubmitting(false);
     }
@@ -64,34 +69,46 @@ const BillingPage = () => {
 
   const handleSplitPayment = async () => {
     if (!selectedOrder) return;
-    
+
     const cashValue = parseFloat(cashAmount) || 0;
     const upiValue = selectedOrder.totalAmount - cashValue;
-    
+
     if (cashValue <= 0) {
       toast.error('Please enter a valid cash amount');
       return;
     }
-    
+
     if (cashValue >= selectedOrder.totalAmount) {
-      toast.error('Cash amount must be less than total. Use full Cash payment instead.');
+      toast.error(
+        'Cash amount must be less than total. Use full Cash payment instead.',
+      );
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       if (selectedOrder.status === 'served') {
-        await updateOrderStatus(selectedOrder.id, 'collected', 'split', cashValue, upiValue);
+        await updateOrderStatus(
+          selectedOrder.id,
+          'collected',
+          'split',
+          cashValue,
+          upiValue,
+        );
       } else {
         await processPayment(selectedOrder.id, 'split', cashValue, upiValue);
       }
       setPaymentMethod('split');
-      toast.success(`Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`);
-      
+      toast.success(
+        `Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`,
+      );
+
       setSelectedOrder(null);
       setPaymentMethod(null);
       setShowSplitInput(false);
       setCashAmount('');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to process split payment');
     } finally {
       setIsSubmitting(false);
     }
@@ -105,7 +122,7 @@ const BillingPage = () => {
 
   const printBill = (order: Order) => {
     const tax = getTaxBreakdown(order);
-    
+
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -178,26 +195,38 @@ const BillingPage = () => {
             <p>${new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</p>
           </div>
           <div class="divider"></div>
-          ${order.items.map(item => `
+          ${order.items
+            .map(
+              (item) => `
             <div class="row">
               <span class="label">${item.menuItemName} x${item.quantity}</span>
               <span class="value">${item.totalPrice.toFixed(0)}</span>
             </div>
-            ${item.addOns && item.addOns.length > 0 ? `
-              <div class="addons">+ ${item.addOns.map(a => a.name).join(', ')}</div>
-            ` : ''}
-          `).join('')}
+            ${
+              item.addOns && item.addOns.length > 0
+                ? `
+              <div class="addons">+ ${item.addOns.map((a) => a.name).join(', ')}</div>
+            `
+                : ''
+            }
+          `,
+            )
+            .join('')}
           <div class="divider"></div>
           <div class="row">
             <span class="label">Subtotal</span>
             <span class="value">${order.subtotal.toFixed(0)}</span>
           </div>
-          ${order.serviceCharge > 0 ? `
+          ${
+            order.serviceCharge > 0
+              ? `
           <div class="row">
             <span class="label">Service Charge</span>
             <span class="value">${order.serviceCharge.toFixed(0)}</span>
           </div>
-          ` : ''}
+          `
+              : ''
+          }
           <div class="row">
             <span class="label">CGST (2.5%)</span>
             <span class="value">${tax.cgst.toFixed(0)}</span>
@@ -206,12 +235,16 @@ const BillingPage = () => {
             <span class="label">SGST (2.5%)</span>
             <span class="value">${tax.sgst.toFixed(0)}</span>
           </div>
-          ${order.discountAmount > 0 ? `
+          ${
+            order.discountAmount > 0
+              ? `
           <div class="row">
             <span class="label">Discount</span>
             <span class="value">-${order.discountAmount.toFixed(0)}</span>
           </div>
-          ` : ''}
+          `
+              : ''
+          }
           <div class="divider"></div>
           <div class="row total-row">
             <span class="label">TOTAL</span>
@@ -226,7 +259,7 @@ const BillingPage = () => {
         </body>
       </html>
     `;
-    
+
     const printWindow = window.open('', '_blank', 'width=302,height=600');
     if (printWindow) {
       printWindow.document.write(printContent);
@@ -236,27 +269,32 @@ const BillingPage = () => {
         printWindow.print();
       }, 250);
     }
-    
-    toast.success("Bill sent to printer");
+
+    toast.success('Bill sent to printer');
   };
 
   const handlePrint = () => {
     if (selectedOrder) {
       printBill(selectedOrder);
     } else {
-      toast.error("Please select an order first");
+      toast.error('Please select an order first');
     }
   };
 
   const handleShare = () => {
-    toast.success("Bill shared via WhatsApp");
+    toast.success('Bill shared via WhatsApp');
   };
 
   if (isLoading && orders.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64" data-testid="billing-loading">
+      <div
+        className="flex items-center justify-center h-64"
+        data-testid="billing-loading"
+      >
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-muted-foreground">Loading billing data...</span>
+        <span className="ml-2 text-muted-foreground">
+          Loading billing data...
+        </span>
       </div>
     );
   }
@@ -266,7 +304,9 @@ const BillingPage = () => {
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Process payments and generate bills</p>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Process payments and generate bills
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -303,7 +343,9 @@ const BillingPage = () => {
                     <div>
                       <p className="font-semibold">#{order.orderNumber}</p>
                       <p className="text-sm text-muted-foreground">
-                        {order.orderType === 'dine-in' ? `Table ${order.tableNumber}` : 'Takeaway'}
+                        {order.orderType === 'dine-in'
+                          ? `Table ${order.tableNumber}`
+                          : 'Takeaway'}
                       </p>
                     </div>
                     <div className="text-right">
@@ -339,16 +381,22 @@ const BillingPage = () => {
                 {/* Order Info */}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Order #</span>
-                  <span className="font-medium">{selectedOrder.orderNumber}</span>
+                  <span className="font-medium">
+                    {selectedOrder.orderNumber}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Type</span>
-                  <span className="font-medium capitalize">{selectedOrder.orderType}</span>
+                  <span className="font-medium capitalize">
+                    {selectedOrder.orderType}
+                  </span>
                 </div>
                 {selectedOrder.customerName && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Customer</span>
-                    <span className="font-medium">{selectedOrder.customerName}</span>
+                    <span className="font-medium">
+                      {selectedOrder.customerName}
+                    </span>
                   </div>
                 )}
 
@@ -366,7 +414,7 @@ const BillingPage = () => {
                       </div>
                       {item.addOns && item.addOns.length > 0 && (
                         <div className="text-xs text-muted-foreground pl-2">
-                          + {item.addOns.map(a => a.name).join(', ')}
+                          + {item.addOns.map((a) => a.name).join(', ')}
                         </div>
                       )}
                     </div>
@@ -383,27 +431,39 @@ const BillingPage = () => {
                     <>
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Subtotal</span>
+                          <span className="text-muted-foreground">
+                            Subtotal
+                          </span>
                           <span>₹{selectedOrder.subtotal.toFixed(0)}</span>
                         </div>
                         {selectedOrder.serviceCharge > 0 && (
                           <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Service Charge</span>
-                            <span>₹{selectedOrder.serviceCharge.toFixed(0)}</span>
+                            <span className="text-muted-foreground">
+                              Service Charge
+                            </span>
+                            <span>
+                              ₹{selectedOrder.serviceCharge.toFixed(0)}
+                            </span>
                           </div>
                         )}
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">CGST (2.5%)</span>
+                          <span className="text-muted-foreground">
+                            CGST (2.5%)
+                          </span>
                           <span>₹{tax.cgst.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">SGST (2.5%)</span>
+                          <span className="text-muted-foreground">
+                            SGST (2.5%)
+                          </span>
                           <span>₹{tax.sgst.toFixed(2)}</span>
                         </div>
                         {selectedOrder.discountAmount > 0 && (
                           <div className="flex justify-between text-sm text-green-600">
                             <span>Discount</span>
-                            <span>-₹{selectedOrder.discountAmount.toFixed(0)}</span>
+                            <span>
+                              -₹{selectedOrder.discountAmount.toFixed(0)}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -412,7 +472,9 @@ const BillingPage = () => {
 
                       <div className="flex justify-between text-lg font-bold">
                         <span>Total</span>
-                        <span className="text-primary">₹{selectedOrder.totalAmount.toFixed(0)}</span>
+                        <span className="text-primary">
+                          ₹{selectedOrder.totalAmount.toFixed(0)}
+                        </span>
                       </div>
                     </>
                   );
@@ -422,7 +484,9 @@ const BillingPage = () => {
 
                 {/* Payment Methods */}
                 <div className="space-y-2 sm:space-y-3">
-                  <p className="text-xs sm:text-sm font-medium">Payment Method</p>
+                  <p className="text-xs sm:text-sm font-medium">
+                    Payment Method
+                  </p>
                   <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                     <Button
                       variant={paymentMethod === 'cash' ? 'default' : 'outline'}
@@ -431,7 +495,11 @@ const BillingPage = () => {
                       disabled={isSubmitting}
                       data-testid="button-pay-cash"
                     >
-                      {isSubmitting && paymentMethod === null ? <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" /> : <Banknote className="w-4 sm:w-5 h-4 sm:h-5" />}
+                      {isSubmitting && paymentMethod === null ? (
+                        <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" />
+                      ) : (
+                        <Banknote className="w-4 sm:w-5 h-4 sm:h-5" />
+                      )}
                       <span className="text-[10px] sm:text-xs">Cash</span>
                     </Button>
                     <Button
@@ -441,7 +509,11 @@ const BillingPage = () => {
                       disabled={isSubmitting}
                       data-testid="button-pay-upi"
                     >
-                      {isSubmitting && paymentMethod === null ? <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" /> : <Smartphone className="w-4 sm:w-5 h-4 sm:h-5" />}
+                      {isSubmitting && paymentMethod === null ? (
+                        <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" />
+                      ) : (
+                        <Smartphone className="w-4 sm:w-5 h-4 sm:h-5" />
+                      )}
                       <span className="text-[10px] sm:text-xs">UPI</span>
                     </Button>
                     <Button
@@ -460,9 +532,13 @@ const BillingPage = () => {
                 {showSplitInput && (
                   <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
                     <div className="space-y-2">
-                      <Label htmlFor="cashAmount" className="text-sm">Cash Amount</Label>
+                      <Label htmlFor="cashAmount" className="text-sm">
+                        Cash Amount
+                      </Label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                          ₹
+                        </span>
                         <Input
                           id="cashAmount"
                           type="number"
@@ -476,15 +552,26 @@ const BillingPage = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">UPI Balance</span>
-                      <span className="font-medium text-primary">₹{getUpiAmount().toFixed(0)}</span>
+                      <span className="font-medium text-primary">
+                        ₹{getUpiAmount().toFixed(0)}
+                      </span>
                     </div>
-                    <Button 
-                      className="w-full" 
+                    <Button
+                      className="w-full"
                       onClick={handleSplitPayment}
-                      disabled={!cashAmount || parseFloat(cashAmount) <= 0 || parseFloat(cashAmount) >= selectedOrder.totalAmount || isSubmitting}
+                      disabled={
+                        !cashAmount ||
+                        parseFloat(cashAmount) <= 0 ||
+                        parseFloat(cashAmount) >= selectedOrder.totalAmount ||
+                        isSubmitting
+                      }
                       data-testid="button-confirm-split"
                     >
-                      {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+                      {isSubmitting ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Check className="w-4 h-4 mr-2" />
+                      )}
                       {isSubmitting ? 'Processing...' : 'Confirm Split Payment'}
                     </Button>
                   </div>
@@ -492,11 +579,21 @@ const BillingPage = () => {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" className="flex-1" onClick={handlePrint} data-testid="button-print-bill">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handlePrint}
+                    data-testid="button-print-bill"
+                  >
                     <Printer className="w-4 h-4 mr-2" />
                     Print
                   </Button>
-                  <Button variant="outline" className="flex-1" onClick={handleShare} data-testid="button-share-bill">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleShare}
+                    data-testid="button-share-bill"
+                  >
                     <Share2 className="w-4 h-4 mr-2" />
                     Share
                   </Button>
