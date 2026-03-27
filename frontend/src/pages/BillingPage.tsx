@@ -71,6 +71,8 @@ const BillingPage = () => {
           ? updateOrderStatus(orderSnapshot.id, 'collected', method)
           : processPayment(orderSnapshot.id, method);
 
+      await paymentPromise;
+
       await sleep(PROCESSING_UI_MS);
       toast.success(`Payment received via ${method.toUpperCase()}`);
 
@@ -78,13 +80,9 @@ const BillingPage = () => {
       setPaymentMethod(null);
       setShowSplitInput(false);
       setCashAmount('');
-
-      paymentPromise.catch((error: any) => {
-        toast.error(error?.message || 'Payment sync failed. Please retry.');
-        setSelectedOrder(orderSnapshot);
-      });
     } catch (error: any) {
       toast.error(error?.message || 'Failed to process payment');
+      setSelectedOrder(orderSnapshot);
       setPaymentMethod(null);
     } finally {
       setIsSubmitting(false);
@@ -124,6 +122,8 @@ const BillingPage = () => {
             )
           : processPayment(orderSnapshot.id, 'split', cashValue, upiValue);
 
+      await paymentPromise;
+
       await sleep(PROCESSING_UI_MS);
       toast.success(
         `Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`,
@@ -133,15 +133,9 @@ const BillingPage = () => {
       setPaymentMethod(null);
       setShowSplitInput(false);
       setCashAmount('');
-
-      paymentPromise.catch((error: any) => {
-        toast.error(
-          error?.message || 'Split payment sync failed. Please retry.',
-        );
-        setSelectedOrder(orderSnapshot);
-      });
     } catch (error: any) {
       toast.error(error?.message || 'Failed to process split payment');
+      setSelectedOrder(orderSnapshot);
       setPaymentMethod(null);
     } finally {
       setIsSubmitting(false);
@@ -671,4 +665,3 @@ const BillingPage = () => {
 };
 
 export default BillingPage;
-

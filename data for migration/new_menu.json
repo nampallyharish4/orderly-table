@@ -1,123 +1,195 @@
 {
-  "restaurant": "Nagalakshmi Kaveri Family Dhaba",
-  "menu": [
-    {
-      "category": "Veg Rice",
-      "items": [
-        {"name": "Veg Meals", "single": 170, "full": null},
-        {"name": "Jeera Rice", "single": 160, "full": null},
-        {"name": "Veg Fried Rice", "single": 160, "full": null},
-        {"name": "Tomato Rice", "single": 170, "full": null},
-        {"name": "Pudina Rice", "single": 220, "full": null},
-        {"name": "Paneer Fried Rice", "single": 240, "full": null},
-        {"name": "Kaju Fried Rice", "single": 240, "full": null},
-        {"name": "Kaju Paneer Fried Rice", "single": 260, "full": null}
-      ]
-    },
-    {
-      "category": "Non Veg Rice",
-      "items": [
-        {"name": "Egg Fried Rice", "single": 190, "full": null},
-        {"name": "Chicken Fried Rice", "single": 210, "full": null}
-      ]
-    },
-    {
-      "category": "Tandoori Roti",
-      "items": [
-        {"name": "Tandoori Roti", "single": 20, "full": null},
-        {"name": "Butter Roti", "single": 25, "full": null},
-        {"name": "Plain Naan", "single": 35, "full": null},
-        {"name": "Butter Naan", "single": 40, "full": null},
-        {"name": "Garlic Naan", "single": 45, "full": null},
-        {"name": "Coriander Naan", "single": 45, "full": null}
-      ]
-    },
-    {
-      "category": "Tandoori Non Veg",
-      "items": [
-        {"name": "Tandoori Chicken", "single": 350, "full": 550},
-        {"name": "Tangdi Kabab", "single": 240, "full": 450},
-        {"name": "Chicken Tikka", "single": 300, "full": null}
-      ]
-    },
-    {
-      "category": "Indian Non Veg Curries",
-      "items": [
-        {"name": "Butter Chicken", "single": 260, "full": null},
-        {"name": "Chicken Masala (Bone)", "single": 210, "full": null},
-        {"name": "Chicken Tikka Masala", "single": 260, "full": null},
-        {"name": "Kadai Chicken", "single": 260, "full": null},
-        {"name": "Mutton Curry", "single": 150, "full": null},
-        {"name": "Egg Masala", "single": 150, "full": null},
-        {"name": "Egg Burji", "single": 150, "full": null}
-      ]
-    },
-    {
-      "category": "Veg Curries",
-      "items": [
-        {"name": "Tomato Curry", "single": 150, "full": null},
-        {"name": "Dal Fry", "single": 120, "full": null},
-        {"name": "Mixed Veg Curry", "single": 170, "full": null},
-        {"name": "Palak Paneer", "single": 200, "full": null},
-        {"name": "Paneer Butter Masala", "single": 200, "full": null},
-        {"name": "Kaju Tomato", "single": 250, "full": null},
-        {"name": "Kaju Paneer", "single": 280, "full": null},
-        {"name": "Mushroom Masala", "single": 280, "full": null},
-        {"name": "Kadai Paneer", "single": 250, "full": null}
-      ]
-    },
-    {
-      "category": "Non Veg Starters",
-      "items": [
-        {"name": "Chicken Manchuria", "single": 260, "full": null},
-        {"name": "Chicken 65", "single": 260, "full": null},
-        {"name": "Chicken Majestic", "single": 250, "full": null},
-        {"name": "Chicken 555", "single": 260, "full": null},
-        {"name": "Dragon Chicken", "single": 260, "full": null},
-        {"name": "Kaju Chicken", "single": 300, "full": null},
-        {"name": "Chicken Popcorn (100g)", "single": 260, "full": null},
-        {"name": "Chicken Fry", "single": 200, "full": null},
-        {"name": "Chilli Chicken", "single": 260, "full": null}
-      ]
-    },
-    {
-      "category": "Veg Biryani",
-      "items": [
-        {"name": "Veg Biryani", "single": 150, "full": 210},
-        {"name": "Paneer Biryani", "single": 220, "full": 320},
-        {"name": "Ulavacharu Biryani", "single": null, "full": 200},
-        {"name": "Biryani Rice", "single": 120, "full": null}
-      ]
-    },
-    {
-      "category": "Veg Starters",
-      "items": [
-        {"name": "Veg Manchuria", "single": 150, "full": null},
-        {"name": "Gobi Manchuria", "single": 160, "full": null},
-        {"name": "Paneer 65", "single": 280, "full": null}
-      ]
-    },
-    {
-      "category": "Non Veg Biryani",
-      "items": [
-        {"name": "Chicken Dum Biryani", "single": 160, "full": 240},
-        {"name": "Chicken Fry Biryani", "single": 170, "full": 250},
-        {"name": "Egg Biryani", "single": 160, "full": 320},
-        {"name": "Fish Biryani", "single": 200, "full": 320},
-        {"name": "Mutton Biryani", "single": 220, "full": 360},
-        {"name": "Boneless Chicken Biryani", "single": 220, "full": null},
-        {"name": "Boneless Mutton Biryani", "single": null, "full": null},
-        {"name": "Prawns Biryani", "single": 220, "full": 360}
-      ]
-    },
-    {
-      "category": "Family Packs",
-      "items": [
-        {"name": "Chicken Dum Biryani (Family Pack)", "single": null, "full": 600},
-        {"name": "Chicken Dum Biryani (Jumbo Pack)", "single": null, "full": 800},
-        {"name": "Chicken Fry Biryani (Family Pack)", "single": null, "full": 700},
-        {"name": "Chicken Fry Biryani (Jumbo Pack)", "single": null, "full": 850}
-      ]
-    }
-  ]
+  "restaurant_name": "NAGALAKSHMI KAVERI FAMILY DHABA",
+  "location": "Beside HP Petrol Pump Chinthapally, Nalgonda, 508250",
+  "menu": {
+    "veg_starters": [
+      { "item": "Veg Manchuria", "price": "Rs. 150" },
+      { "item": "Gobi Manchuria", "price": "Rs. 160" },
+      { "item": "Paneer Manchuria", "price": "Rs. 260" },
+      { "item": "Paneer Sticks", "price": "Rs. 260" },
+      { "item": "Paneer Majestics", "price": "Rs. 250" },
+      { "item": "Aloo 65", "price": "Rs. 160" },
+      { "item": "Spring Rolls", "price": "Rs. 160" },
+      { "item": "Paneer Tikka", "price": "Rs. 240" },
+      { "item": "Chilli Paneer", "price": "Rs. 240" },
+      { "item": "Aloo Spring Rolls", "price": "Rs. 160" },
+      { "item": "Mashroom Manchuria", "price": "Rs. 160" },
+      { "item": "Mashroom 65", "price": "Rs. 240" },
+      { "item": "Veg 65", "price": "Rs. 250" },
+      { "item": "Gobi 65", "price": "Rs. 180" }
+    ],
+    "non_veg_starters": [
+      { "item": "Chicken 65", "price": "Rs. 260" },
+      { "item": "Chicken Manchuria", "price": "Rs. 260" },
+      { "item": "Chilli Chicken", "price": "Rs. 260" },
+      { "item": "Pepper Chicken", "price": "Rs. 260" },
+      { "item": "Kaju Chicken", "price": "Rs. 300" },
+      { "item": "Dragon Chicken", "price": "Rs. 260" },
+      { "item": "Chicken 555", "price": "Rs. 260" },
+      { "item": "Barbecue Chicken Wings", "price": "Rs. 200" },
+      { "item": "Devil Chicken", "price": "Rs. 250" },
+      { "item": "Chicken Majestic", "price": "Rs. 250" },
+      { "item": "Chicken Spring Rolls", "price": "Rs. 200" },
+      { "item": "Chicken Fry", "price": "Rs. 200" },
+      { "item": "Chicken Ghee Roast", "price": "Rs. 280" },
+      { "item": "Fish Fry", "price": "Rs. 300" },
+      { "item": "Lemon Chicken", "price": "Rs. 250" },
+      { "item": "Chicken Pakoda (200g)", "price": "Rs. 200" },
+      { "item": "Chicken Popcorn", "price": "Rs. 260" },
+      { "item": "Prawns Fry", "price": "Rs. 330" }
+    ],
+    "indian_veg_curries": [
+      { "item": "Dal Fry", "half": "Rs. 120", "full": null },
+      { "item": "Dal Thadkha", "half": "Rs. 150", "full": null },
+      { "item": "Paneer Butter Masala", "half": "Rs. 200", "full": "Rs. 320" },
+      { "item": "Palak Paneer", "half": "Rs. 200", "full": "Rs. 320" },
+      { "item": "Kadai Paneer", "half": "Rs. 230", "full": "Rs. 350" },
+      { "item": "Kaju Tomato", "half": "Rs. 220", "full": "Rs. 380" },
+      { "item": "Paneer Tikka Masala", "half": "Rs. 250", "full": "Rs. 380" },
+      { "item": "Paneer Keema Masala", "half": "Rs. 220", "full": "Rs. 380" },
+      { "item": "Ginger Paneer Masala", "half": "Rs. 230", "full": "Rs. 360" },
+      { "item": "Capsicum Masala", "half": "Rs. 160", "full": "Rs. 300" },
+      { "item": "Aloo Palak", "half": "Rs. 150", "full": "Rs. 250" },
+      { "item": "Matar Palak", "half": "Rs. 160", "full": "Rs. 270" },
+      {
+        "item": "Kaju Paneer Butter Masala",
+        "half": "Rs. 230",
+        "full": "Rs. 350"
+      },
+      { "item": "Mixed Veg Curry", "half": "Rs. 220", "full": "Rs. 350" },
+      { "item": "Mashroom Masala", "half": "Rs. 200", "full": "Rs. 350" },
+      { "item": "Tomato Curry", "price": "Rs. 150" },
+      { "item": "Gobi Masala", "price": "Rs. 180" },
+      { "item": "Aloo Gobi Curry", "price": "Rs. 180" },
+      { "item": "Aloo Curry", "price": "Rs. 150" },
+      { "item": "Kadai Veg", "price": "Rs. 180" }
+    ],
+    "indian_non_veg_curries": [
+      { "item": "Chicken Masala", "half": "Rs. 210", "full": "Rs. 360" },
+      { "item": "Butter Chicken", "half": "Rs. 260", "full": "Rs. 420" },
+      { "item": "Chicken Tikka Masala", "half": "Rs. 270", "full": "Rs. 440" },
+      { "item": "Kadai Chicken", "half": "Rs. 270", "full": "Rs. 440" },
+      { "item": "Afgani Chicken", "half": "Rs. 270", "full": "Rs. 440" },
+      { "item": "Gongura Chicken", "half": "Rs. 270", "full": "Rs. 440" },
+      { "item": "Punjabi Chicken", "half": "Rs. 270", "full": "Rs. 440" },
+      { "item": "Mutton Curry", "price": "Rs. 500" },
+      { "item": "Egg Burji (2 eggs)", "price": "Rs. 160" },
+      { "item": "Egg Masala (2 eggs)", "price": "Rs. 150" },
+      { "item": "Kaju Chicken", "price": "Rs. 300" },
+      { "item": "Chicken Mogulai", "half": "Rs. 280", "full": "Rs. 400" },
+      { "item": "Mutton Keema Curry", "price": "Rs. 400" },
+      { "item": "Fish Curry", "half": "Rs. 280", "full": null },
+      { "item": "Prawns Curry", "half": "Rs. 300", "full": null }
+    ],
+    "tandoori_rotis": [
+      { "item": "Roti", "price": "Rs. 20" },
+      { "item": "Butter Roti", "price": "Rs. 25" },
+      { "item": "Plain Naan", "price": "Rs. 35" },
+      { "item": "Butter Naan", "price": "Rs. 40" },
+      { "item": "Rumali Roti", "price": "Rs. 35" },
+      { "item": "Garlic Naan", "price": "Rs. 45" },
+      { "item": "Coriander Naan", "price": "Rs. 45" },
+      { "item": "Pulka", "price": "Rs. 20" }
+    ],
+    "tandoori_non_veg": [
+      { "item": "Tandoori Chicken Half", "price": "Rs. 350" },
+      { "item": "Tandoori Chicken Full", "price": "Rs. 550" },
+      { "item": "Tangdi Kabab Half (2p)", "price": "Rs. 240" },
+      { "item": "Tangdi Kabab Full (4p)", "price": "Rs. 450" },
+      { "item": "Chicken Tikka (8p)", "price": "Rs. 300" },
+      { "item": "Chicken Lolipop (6p)", "price": "Rs. 240" },
+      { "item": "Chicken Tandoori Lolipop (6p)", "price": "Rs. 300" }
+    ],
+    "veg_biryanis": [
+      { "item": "Veg Biryani", "single": "Rs. 150", "full": "Rs. 200" },
+      { "item": "Paneer Biryani", "single": "Rs. 220", "full": "Rs. 320" },
+      { "item": "Biryani Rice", "single": "Rs. 120", "full": null },
+      { "item": "Kaju Biryani", "single": "Rs. 250", "full": "Rs. 420" },
+      { "item": "Kaju Paneer Biryani", "single": "Rs. 280", "full": "Rs. 420" },
+      { "item": "Mashroom Biryani", "single": "Rs. 180", "full": null }
+    ],
+    "non_veg_biryanis": [
+      {
+        "item": "Chicken Dum Biryani",
+        "single": "Rs. 160",
+        "full": "Rs. 240",
+        "family_pack": "Rs. 600",
+        "jumbo_pack": "Rs. 800"
+      },
+      {
+        "item": "Chicken Fry Biryani",
+        "single": "Rs. 170",
+        "full": "Rs. 250",
+        "family_pack": "Rs. 700",
+        "jumbo_pack": "Rs. 900"
+      },
+      { "item": "Fish Fry Biryani", "single": "Rs. 200", "full": "Rs. 320" },
+      { "item": "Mutton Biryani", "single": "Rs. 280", "full": "Rs. 390" },
+      { "item": "Egg Biryani", "single": "Rs. 160", "full": null },
+      {
+        "item": "Chicken Biryani - Boneless",
+        "single": "Rs. 220",
+        "full": "Rs. 320"
+      },
+      { "item": "Chicken Lolipop Biryani", "single": "Rs. 200", "full": null },
+      { "item": "Prawns Biryani", "single": "Rs. 220", "full": "Rs. 370" },
+      { "item": "Chicken Tangdi Biryani", "single": "Rs. 250", "full": null }
+    ],
+    "chinese_food_veg": [
+      { "item": "Veg Fried Rice", "price": "Rs. 160" },
+      { "item": "Jeera Rice", "price": "Rs. 170" },
+      { "item": "Kaju Fried Rice", "price": "Rs. 240" },
+      { "item": "Paneer Fried Rice", "price": "Rs. 220" },
+      { "item": "Tomato Rice", "price": "Rs. 160" },
+      { "item": "Pudina Rice", "price": "Rs. 170" },
+      { "item": "Curd Rice", "price": "Rs. 140" },
+      { "item": "Veg Manchurian Rice", "price": "Rs. 180" },
+      { "item": "Kaju Paneer Fried Rice", "price": "Rs. 250" },
+      { "item": "Mashroom Fried Rice", "price": "Rs. 190" }
+    ],
+    "chinese_food_non_veg": [
+      { "item": "Egg Fried Rice", "price": "Rs. 180" },
+      { "item": "Chicken Fried Rice", "price": "Rs. 200" }
+    ],
+    "combos": [
+      {
+        "item": "Naan Basket - Veg",
+        "price": "Rs. 310",
+        "details": "3 Naans + Any Veg Curry"
+      },
+      {
+        "item": "Roti Basket - Veg",
+        "price": "Rs. 300",
+        "details": "6 Rotis + Any Veg Curry"
+      },
+      {
+        "item": "Naan Basket - Non-Veg",
+        "price": "Rs. 360",
+        "details": "3 Naans + Any Chicken Curry"
+      },
+      {
+        "item": "Roti Basket - Non-Veg",
+        "price": "Rs. 350",
+        "details": "6 Rotis + Any Chicken Curry"
+      },
+      {
+        "item": "Family Biryani Combo - Non-Veg",
+        "price": "Rs. 830",
+        "details": "Family Pack + Chicken 65 + 4 Soft Drinks"
+      },
+      {
+        "item": "Jumbo Biryani Combo - Non-Veg",
+        "price": "Rs. 1300",
+        "details": "Jumbo Pack + Chicken 65 (2) + 6 Soft Drinks"
+      }
+    ],
+    "beverages": [
+      "AQUAFINA",
+      "Bisleri",
+      "Kinley",
+      "Coca-Cola",
+      "Sprite",
+      "Fanta"
+    ]
+  }
 }
