@@ -30,6 +30,7 @@ interface OrderContextType {
   categories: MenuCategory[];
   currentOrder: Partial<Order> | null;
   isLoading: boolean;
+  isOrderSyncing: (orderId: string) => boolean;
 
   createOrder: (orderType: OrderType, tableId?: string) => void;
   addItemToOrder: (
@@ -92,6 +93,9 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Partial<Order> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [syncingOrderIds, setSyncingOrderIds] = useState<Set<string>>(
+    new Set(),
+  );
   const { playReadySound } = useNotificationSound();
   const { user } = useAuth();
   const prevReadyCountRef = useRef<number>(0);
@@ -182,13 +186,20 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     // Initial load: Fetch everything
     fetchData(false);
 
-    // Auto-refresh using delta polling every 5 seconds
-    const intervalId = setInterval(() => {
+    // Auto-refresh orders/tables using delta polling every 10 seconds.
+    const dataIntervalId = setInterval(() => {
       fetchData(true);
-      fetchStaticData(); // Ensure menu items are refreshed occasionally
     }, 10000);
 
-    return () => clearInterval(intervalId);
+    // Static menu/category data changes less frequently; refresh once per minute.
+    const staticIntervalId = setInterval(() => {
+      fetchStaticData();
+    }, 60000);
+
+    return () => {
+      clearInterval(dataIntervalId);
+      clearInterval(staticIntervalId);
+    };
   }, [fetchData, fetchStaticData]);
 
   useEffect(() => {
@@ -364,6 +375,9 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       pickupTime?: Date,
       expressCheckout?: boolean,
     ): Promise<Order> => {
+      const traceEnabled = import.meta.env.DEV;
+      const startedAt = performance.now();
+
       if (!currentOrder?.items?.length) {
         throw new Error('No items in order');
       }
@@ -390,6 +404,29 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         createdBy: user?.name || 'Unknown',
       };
 
+      const optimisticOrderId = newOrder.id;
+      const submittingTableId = currentOrder.tableId;
+
+      // Optimistically show the new order immediately and reconcile once API responds.
+      setOrders((prev) => [newOrder, ...prev]);
+      if (submittingTableId) {
+        setTables((prev) =>
+          prev.map((t) =>
+            t.id === submittingTableId
+              ? {
+                  ...t,
+                  status: 'occupied',
+                  currentOrderIds: Array.from(
+                    new Set([...(t.currentOrderIds || []), optimisticOrderId]),
+                  ),
+                }
+              : t,
+          ),
+        );
+      }
+
+      const beforeRequestAt = performance.now();
+
       try {
         const endpoint = expressCheckout
           ? '/api/orders/checkout'
@@ -398,6 +435,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           ...newOrder,
           expressCheckout,
         });
+        const afterRequestAt = performance.now();
         const savedOrder = response.data;
         const parsedOrder = {
           ...savedOrder,
@@ -405,24 +443,41 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           updatedAt: new Date(savedOrder.updatedAt),
         };
 
-        setOrders((prev) => [parsedOrder, ...prev]);
+        setOrders((prev) => {
+          const withoutOptimistic = prev.filter(
+            (o) => o.id !== optimisticOrderId,
+          );
+          return [parsedOrder, ...withoutOptimistic];
+        });
 
         // Table state is orchestrated in backend transaction for order creation.
-        if (currentOrder.tableId) {
-          const activeStatuses = ['new', 'preparing', 'ready', 'served'];
-          const tableOrders = [parsedOrder, ...orders].filter(
-            (o) =>
-              o.tableNumber === parsedOrder.tableNumber &&
-              activeStatuses.includes(o.status),
-          );
-
+        if (submittingTableId) {
           setTables((prev) =>
             prev.map((t) =>
-              t.id === currentOrder.tableId
+              t.id === submittingTableId
                 ? {
                     ...t,
-                    status: tableOrders.length > 0 ? 'occupied' : 'available',
-                    currentOrderIds: tableOrders.map((o) => o.id),
+                    status:
+                      parsedOrder.status === 'collected' &&
+                      (t.currentOrderIds?.filter((id) => id !== parsedOrder.id)
+                        .length ?? 0) === 0
+                        ? 'available'
+                        : 'occupied',
+                    currentOrderIds:
+                      parsedOrder.status === 'collected'
+                        ? (t.currentOrderIds || [])
+                            .map((id) =>
+                              id === optimisticOrderId ? parsedOrder.id : id,
+                            )
+                            .filter((id) => id !== parsedOrder.id)
+                        : Array.from(
+                            new Set([
+                              ...(t.currentOrderIds || []).map((id) =>
+                                id === optimisticOrderId ? parsedOrder.id : id,
+                              ),
+                              parsedOrder.id,
+                            ]),
+                          ),
                   }
                 : t,
             ),
@@ -430,19 +485,57 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         }
 
         setCurrentOrder(null);
+
+        if (traceEnabled) {
+          const completedAt = performance.now();
+          const prepMs = Math.round(beforeRequestAt - startedAt);
+          const apiMs = Math.round(afterRequestAt - beforeRequestAt);
+          const stateMs = Math.round(completedAt - afterRequestAt);
+          const totalMs = Math.round(completedAt - startedAt);
+          console.info(
+            `[OrderSubmitTiming] total=${totalMs}ms prep=${prepMs}ms api=${apiMs}ms state=${stateMs}ms`,
+          );
+        }
+
         return parsedOrder;
       } catch (error) {
+        setOrders((prev) => prev.filter((o) => o.id !== optimisticOrderId));
+        if (submittingTableId) {
+          setTables((prev) =>
+            prev.map((t) => {
+              if (t.id !== submittingTableId) return t;
+              const nextOrderIds = (t.currentOrderIds || []).filter(
+                (id) => id !== optimisticOrderId,
+              );
+              return {
+                ...t,
+                status: nextOrderIds.length > 0 ? 'occupied' : 'available',
+                currentOrderIds: nextOrderIds,
+              };
+            }),
+          );
+        }
+        if (traceEnabled) {
+          const failedAt = performance.now();
+          const totalMs = Math.round(failedAt - startedAt);
+          console.info(`[OrderSubmitTiming] failed after ${totalMs}ms`);
+        }
         const errText = getApiErrorMessage(error, 'Failed to create order');
         console.error('Failed to submit order:', errText);
         throw new Error(errText);
       }
     },
-    [currentOrder, orders, user],
+    [currentOrder, user],
   );
 
   const cancelCurrentOrder = useCallback(() => {
     setCurrentOrder(null);
   }, []);
+
+  const isOrderSyncing = useCallback(
+    (orderId: string) => syncingOrderIds.has(orderId),
+    [syncingOrderIds],
+  );
 
   const updateOrderStatus = useCallback(
     async (
@@ -452,16 +545,25 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       cashAmount?: number,
       upiAmount?: number,
     ) => {
+      setSyncingOrderIds((prev) => {
+        const next = new Set(prev);
+        next.add(orderId);
+        return next;
+      });
+
+      const previousOrders = orders;
+      const previousTables = tables;
       const updates: any = { status };
+      const actionTime = new Date();
 
       if (status === 'served' || status === 'collected') {
-        updates.servedAt = new Date().toISOString();
+        updates.servedAt = actionTime.toISOString();
       }
 
       if (status === 'collected' && paymentMethod) {
         updates.paymentMethod = paymentMethod;
         updates.paymentStatus = 'completed';
-        updates.paidAt = new Date().toISOString();
+        updates.paidAt = actionTime.toISOString();
         if (
           paymentMethod === 'split' &&
           cashAmount !== undefined &&
@@ -472,88 +574,104 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      const optimisticOrders = previousOrders.map((order) => {
+        if (order.id !== orderId) return order;
+
+        const orderUpdates: Partial<Order> = {
+          status,
+          updatedAt: actionTime,
+        };
+
+        if (status === 'collected' && paymentMethod) {
+          orderUpdates.payment = {
+            id: `pay-${Date.now()}`,
+            orderId,
+            method: paymentMethod,
+            amount: order.totalAmount,
+            status: 'completed',
+            paidAt: actionTime,
+          };
+        }
+
+        if (status === 'served') {
+          orderUpdates.servedAt = actionTime;
+        }
+
+        return { ...order, ...orderUpdates };
+      });
+
+      setOrders(optimisticOrders);
+
+      let updatedTableId: string | null = null;
+      let updatedTablePayload: {
+        status: 'occupied' | 'available';
+        currentOrderIds: string[];
+      } | null = null;
+
+      if (status === 'collected') {
+        const updatedOrder = optimisticOrders.find((o) => o.id === orderId);
+        if (updatedOrder?.tableNumber) {
+          const table = previousTables.find(
+            (t) => t.tableNumber === updatedOrder.tableNumber,
+          );
+
+          if (table) {
+            const newOrderIds = table.currentOrderIds.filter(
+              (id) => id !== orderId,
+            );
+            const activeStatuses = ['new', 'preparing', 'ready', 'served'];
+            const remainingActiveOrders = optimisticOrders.filter(
+              (o) =>
+                o.id !== orderId &&
+                o.tableNumber === updatedOrder.tableNumber &&
+                activeStatuses.includes(o.status),
+            );
+            const newStatus: 'occupied' | 'available' =
+              remainingActiveOrders.length > 0 ? 'occupied' : 'available';
+
+            updatedTableId = table.id;
+            updatedTablePayload = {
+              status: newStatus,
+              currentOrderIds: newOrderIds,
+            };
+
+            const optimisticTables = previousTables.map((t) =>
+              t.id === table.id
+                ? {
+                    ...t,
+                    status: newStatus as TableStatus,
+                    currentOrderIds: newOrderIds,
+                  }
+                : t,
+            );
+            setTables(optimisticTables);
+          }
+        }
+      }
+
       try {
         await api.patch(`/api/orders/${orderId}`, updates);
 
-        setOrders((prev) =>
-          prev.map((order) => {
-            if (order.id !== orderId) return order;
-
-            const orderUpdates: Partial<Order> = {
-              status,
-              updatedAt: new Date(),
-            };
-
-            if (status === 'collected' && paymentMethod) {
-              orderUpdates.payment = {
-                id: `pay-${Date.now()}`,
-                orderId,
-                method: paymentMethod,
-                amount: order.totalAmount,
-                status: 'completed',
-                paidAt: new Date(),
-              };
-            }
-
-            if (status === 'served') {
-              orderUpdates.servedAt = new Date();
-            }
-
-            if (status === 'collected') {
-              if (order.tableNumber) {
-                const table = tables.find(
-                  (t) => t.tableNumber === order.tableNumber,
-                );
-                if (table) {
-                  const newOrderIds = table.currentOrderIds.filter(
-                    (id) => id !== orderId,
-                  );
-                  const activeStatuses = [
-                    'new',
-                    'preparing',
-                    'ready',
-                    'served',
-                  ];
-                  const remainingActiveOrders = orders.filter(
-                    (o) =>
-                      o.id !== orderId &&
-                      o.tableNumber === order.tableNumber &&
-                      activeStatuses.includes(o.status),
-                  );
-                  const newStatus =
-                    remainingActiveOrders.length > 0 ? 'occupied' : 'available';
-
-                  setTables((prevTables) =>
-                    prevTables.map((t) => {
-                      if (t.tableNumber !== order.tableNumber) return t;
-                      return {
-                        ...t,
-                        status: newStatus as TableStatus,
-                        currentOrderIds: newOrderIds,
-                      };
-                    }),
-                  );
-
-                  api
-                    .patch(`/api/tables/${table.id}`, {
-                      status: newStatus,
-                      currentOrderIds: newOrderIds,
-                    })
-                    .catch(console.error);
-                }
-              }
-            }
-
-            return { ...order, ...orderUpdates };
-          }),
-        );
+        if (updatedTableId && updatedTablePayload) {
+          api
+            .patch(`/api/tables/${updatedTableId}`, updatedTablePayload)
+            .catch(console.error);
+        }
       } catch (error) {
+        setOrders(previousOrders);
+        setTables(previousTables);
         const errText = getApiErrorMessage(
           error,
           'Failed to update order status',
         );
         console.error('Failed to update order:', errText);
         throw new Error(errText);
+      } finally {
+        setSyncingOrderIds((prev) => {
+          const next = new Set(prev);
+          next.delete(orderId);
+          return next;
+        });
       }
     },
     [tables, orders],
@@ -569,89 +687,15 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       const order = orders.find((o) => o.id === orderId);
       if (!order) return;
 
-      const updates: any = {
+      return updateOrderStatus(
+        orderId,
+        'collected',
         paymentMethod,
-        paymentStatus: 'completed',
-        paidAt: new Date().toISOString(),
-        status: 'collected', // Also update status to collected when payment is received
-      };
-
-      if (
-        paymentMethod === 'split' &&
-        cashAmount !== undefined &&
-        upiAmount !== undefined
-      ) {
-        updates.cashAmount = cashAmount;
-        updates.upiAmount = upiAmount;
-      }
-
-      try {
-        await api.patch(`/api/orders/${orderId}`, updates);
-
-        setOrders((prev) =>
-          prev.map((o) => {
-            if (o.id !== orderId) return o;
-
-            const orderUpdates: Partial<Order> = {
-              status: 'collected',
-              payment: {
-                id: `pay-${Date.now()}`,
-                orderId,
-                method: paymentMethod,
-                amount: o.totalAmount,
-                status: 'completed',
-                paidAt: new Date(),
-              },
-              updatedAt: new Date(),
-            };
-
-            // Handle table status update if this was a dine-in order
-            if (o.tableNumber) {
-              const table = tables.find((t) => t.tableNumber === o.tableNumber);
-              if (table) {
-                const newOrderIds = table.currentOrderIds.filter(
-                  (id) => id !== orderId,
-                );
-                const activeStatuses = ['new', 'preparing', 'ready', 'served'];
-                const remainingActiveOrders = orders.filter(
-                  (rem) =>
-                    rem.id !== orderId &&
-                    rem.tableNumber === o.tableNumber &&
-                    activeStatuses.includes(rem.status),
-                );
-                const newStatus =
-                  remainingActiveOrders.length > 0 ? 'occupied' : 'available';
-
-                setTables((prevTables) =>
-                  prevTables.map((t) => {
-                    if (t.tableNumber !== o.tableNumber) return t;
-                    return {
-                      ...t,
-                      status: newStatus as TableStatus,
-                      currentOrderIds: newOrderIds,
-                    };
-                  }),
-                );
-
-                api
-                  .patch(`/api/tables/${table.id}`, {
-                    status: newStatus,
-                    currentOrderIds: newOrderIds,
-                  })
-                  .catch(console.error);
-              }
-            }
-
-            return { ...o, ...orderUpdates };
-          }),
-        );
-      } catch (error) {
-        const errText = getApiErrorMessage(error, 'Failed to process payment');
-        console.error('Failed to process payment:', errText);
-        throw new Error(errText);
-      }
+        cashAmount,
+        upiAmount,
+      );
     },
-    [orders, tables],
+    [orders, updateOrderStatus],
   );
 
   const updateItemStatus = useCallback(
@@ -901,6 +945,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         categories,
         currentOrder,
         isLoading,
+        isOrderSyncing,
         createOrder,
         addItemToOrder,
         removeItemFromOrder,

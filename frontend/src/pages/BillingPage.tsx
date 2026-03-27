@@ -21,7 +21,13 @@ import { Order } from '@/types';
 import { toast } from 'sonner';
 
 const BillingPage = () => {
-  const { orders, updateOrderStatus, processPayment, isLoading } = useOrders();
+  const {
+    orders,
+    updateOrderStatus,
+    processPayment,
+    isLoading,
+    isOrderSyncing,
+  } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<
     'cash' | 'upi' | 'split' | null
@@ -29,6 +35,9 @@ const BillingPage = () => {
   const [showSplitInput, setShowSplitInput] = useState(false);
   const [cashAmount, setCashAmount] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const selectedOrderSyncing = selectedOrder
+    ? isOrderSyncing(selectedOrder.id)
+    : false;
 
   // Get orders that are ready for billing (any active order not yet completed payment)
   const billableOrders = orders.filter(
@@ -44,7 +53,7 @@ const BillingPage = () => {
   };
 
   const handlePayment = async (method: 'cash' | 'upi') => {
-    if (!selectedOrder || isSubmitting) return;
+    if (!selectedOrder || isSubmitting || selectedOrderSyncing) return;
 
     setPaymentMethod(method);
     setIsSubmitting(true);
@@ -69,7 +78,7 @@ const BillingPage = () => {
   };
 
   const handleSplitPayment = async () => {
-    if (!selectedOrder || isSubmitting) return;
+    if (!selectedOrder || isSubmitting || selectedOrderSyncing) return;
 
     const cashValue = parseFloat(cashAmount) || 0;
     const upiValue = selectedOrder.totalAmount - cashValue;
@@ -303,6 +312,22 @@ const BillingPage = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {(isSubmitting || selectedOrderSyncing) && (
+        <div className="fixed inset-0 z-[90] bg-background/60 backdrop-blur-sm flex items-center justify-center">
+          <Card className="p-6 sm:p-8 flex flex-col items-center gap-4 bg-card shadow-2xl border-primary/20 animate-in fade-in zoom-in-95">
+            <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-primary" />
+            <div className="text-center">
+              <h3 className="font-bold text-lg sm:text-xl">
+                Processing Payment...
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Finalizing billing details
+              </p>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-bold">Billing</h1>
@@ -494,10 +519,10 @@ const BillingPage = () => {
                       variant={paymentMethod === 'cash' ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('cash')}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || selectedOrderSyncing}
                       data-testid="button-pay-cash"
                     >
-                      {isSubmitting && paymentMethod === null ? (
+                      {isSubmitting && paymentMethod === 'cash' ? (
                         <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" />
                       ) : (
                         <Banknote className="w-4 sm:w-5 h-4 sm:h-5" />
@@ -508,10 +533,10 @@ const BillingPage = () => {
                       variant={paymentMethod === 'upi' ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => handlePayment('upi')}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || selectedOrderSyncing}
                       data-testid="button-pay-upi"
                     >
-                      {isSubmitting && paymentMethod === null ? (
+                      {isSubmitting && paymentMethod === 'upi' ? (
                         <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" />
                       ) : (
                         <Smartphone className="w-4 sm:w-5 h-4 sm:h-5" />
@@ -522,10 +547,14 @@ const BillingPage = () => {
                       variant={showSplitInput ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => setShowSplitInput(!showSplitInput)}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || selectedOrderSyncing}
                       data-testid="button-pay-split"
                     >
-                      <Split className="w-4 sm:w-5 h-4 sm:h-5" />
+                      {isSubmitting && paymentMethod === 'split' ? (
+                        <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" />
+                      ) : (
+                        <Split className="w-4 sm:w-5 h-4 sm:h-5" />
+                      )}
                       <span className="text-[10px] sm:text-xs">Split</span>
                     </Button>
                   </div>
@@ -566,7 +595,8 @@ const BillingPage = () => {
                         !cashAmount ||
                         parseFloat(cashAmount) <= 0 ||
                         parseFloat(cashAmount) >= selectedOrder.totalAmount ||
-                        isSubmitting
+                        isSubmitting ||
+                        selectedOrderSyncing
                       }
                       data-testid="button-confirm-split"
                     >

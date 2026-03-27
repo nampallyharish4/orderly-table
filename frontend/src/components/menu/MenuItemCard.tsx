@@ -3,6 +3,7 @@ import { MenuItem } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Clock } from 'lucide-react';
 import { getMenuItemImage } from '@/utils/menuImages';
+import { CachedMenuImage } from './CachedMenuImage';
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -12,7 +13,7 @@ interface MenuItemCardProps {
 
 export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
   const imageUrl = item.imageUrl || getMenuItemImage(item.name);
-  
+
   if (compact) {
     return (
       <button
@@ -23,15 +24,16 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
           'w-full rounded-xl text-left transition-all group',
           'hover:shadow-lg active:scale-[0.97]',
           'bg-card shadow-sm overflow-hidden',
-          !item.isAvailable && 'opacity-50 cursor-not-allowed grayscale-[0.3]'
+          !item.isAvailable && 'opacity-50 cursor-not-allowed grayscale-[0.3]',
         )}
       >
         {/* Image on top */}
         {imageUrl ? (
           <div className="w-full aspect-[16/10] overflow-hidden bg-secondary">
-            <img 
-              src={imageUrl} 
-              alt={item.name} 
+            <CachedMenuImage
+              src={imageUrl}
+              alt={item.name}
+              cacheKey={`${item.id || item.name}:${imageUrl}`}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
           </div>
@@ -52,10 +54,14 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
                 <div className="w-2 h-2 rounded-full bg-red-500" />
               </div>
             )}
-            <span className="font-bold text-sm sm:text-base text-foreground leading-tight truncate">{item.name}</span>
+            <span className="font-bold text-sm sm:text-base text-foreground leading-tight truncate">
+              {item.name}
+            </span>
           </div>
           {item.description && (
-            <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-1">{item.description}</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-1">
+              {item.description}
+            </p>
           )}
           <span className="font-mono-price text-base sm:text-lg font-extrabold text-primary block">
             ₹{item.price.toFixed(0)}
@@ -71,14 +77,15 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
       disabled={!item.isAvailable}
       className={cn(
         'menu-card w-full text-left group',
-        !item.isAvailable && 'opacity-50 cursor-not-allowed'
+        !item.isAvailable && 'opacity-50 cursor-not-allowed',
       )}
     >
       {imageUrl ? (
         <div className="aspect-video rounded-lg bg-secondary mb-3 overflow-hidden">
-          <img 
-            src={imageUrl} 
-            alt={item.name} 
+          <CachedMenuImage
+            src={imageUrl}
+            alt={item.name}
+            cacheKey={`${item.id || item.name}:${imageUrl}`}
             className="w-full h-full object-cover"
           />
         </div>

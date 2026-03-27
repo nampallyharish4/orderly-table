@@ -262,20 +262,42 @@ export default function NewOrderPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const withTimeout = useCallback(
+    async <T,>(promise: Promise<T>, timeoutMs = 20000): Promise<T> => {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Request timed out. Please try again.'));
+        }, timeoutMs);
+      });
+
+      try {
+        return await Promise.race([promise, timeoutPromise]);
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      }
+    },
+    [],
+  );
+
   const handleSubmit = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       if (isAddingToExisting) {
-        await addItemsToExistingOrder();
+        await withTimeout(addItemsToExistingOrder());
         toast.success('Items added to order!');
         navigate('/orders');
       } else {
-        const order = await submitOrder(
-          isTakeaway ? customerName : undefined,
-          isTakeaway ? customerPhone : undefined,
-          undefined,
-          false,
+        const order = await withTimeout(
+          submitOrder(
+            isTakeaway ? customerName : undefined,
+            isTakeaway ? customerPhone : undefined,
+            undefined,
+            false,
+          ),
         );
         toast.success(`Order ${order.orderNumber} placed successfully!`);
         navigate('/orders');
@@ -335,7 +357,7 @@ export default function NewOrderPage() {
             <div className="text-center">
               <h3 className="font-bold text-xl">Processing Order...</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Please do not refresh the page
+                Finalizing your order
               </p>
             </div>
           </Card>

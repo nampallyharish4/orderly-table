@@ -6,6 +6,14 @@ spring.datasource.url=jdbc:postgresql://${SUPABASE_DB_HOST:your-db-host}:5432/po
 spring.datasource.username=${SUPABASE_DB_USER:your-db-user}
 spring.datasource.password=${SUPABASE_DB_PASSWORD:your-db-password}
 spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.hikari.maximum-pool-size=8
+spring.datasource.hikari.minimum-idle=2
+spring.datasource.hikari.connection-timeout=20000
+spring.datasource.hikari.validation-timeout=5000
+spring.datasource.hikari.idle-timeout=120000
+spring.datasource.hikari.max-lifetime=240000
+spring.datasource.hikari.keepalive-time=30000
+spring.datasource.hikari.leak-detection-threshold=30000
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=false

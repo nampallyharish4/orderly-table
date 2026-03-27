@@ -4,6 +4,8 @@ import com.kaveri.pos.entity.Order;
 import com.kaveri.pos.entity.RestaurantTable;
 import com.kaveri.pos.repository.OrderRepository;
 import com.kaveri.pos.repository.TableRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     private OrderRepository orderRepository;
@@ -64,20 +68,47 @@ public class OrderController {
     @Transactional
     @SuppressWarnings("unchecked")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> body) {
+        long startedAt = System.nanoTime();
+        long dedupeEndedAt = startedAt;
+        long saveEndedAt = startedAt;
         try {
             String tableVisibleId = getString(body, "tableId");
             boolean expressCheckout = body.containsKey("expressCheckout") && Boolean.TRUE.equals(body.get("expressCheckout"));
 
             Optional<Order> existingOrder = findExistingOrder(body);
+            dedupeEndedAt = System.nanoTime();
             if (existingOrder.isPresent()) {
+                long totalMs = (System.nanoTime() - startedAt) / 1_000_000;
+                long dedupeMs = (dedupeEndedAt - startedAt) / 1_000_000;
+                log.info("[OrderCreateTiming] dedupe-hit total={}ms dedupe={}ms orderId={}",
+                        totalMs,
+                        dedupeMs,
+                        existingOrder.get().getVisibleId());
                 return ResponseEntity.ok(existingOrder.get());
             }
 
             Order order = buildOrder(body, expressCheckout);
             Order saved = orderRepository.save(order);
+            saveEndedAt = System.nanoTime();
             synchronizeTableForOrder(saved, tableVisibleId);
+
+            long completedAt = System.nanoTime();
+            long dedupeMs = (dedupeEndedAt - startedAt) / 1_000_000;
+            long saveMs = (saveEndedAt - dedupeEndedAt) / 1_000_000;
+            long tableSyncMs = (completedAt - saveEndedAt) / 1_000_000;
+            long totalMs = (completedAt - startedAt) / 1_000_000;
+            log.info("[OrderCreateTiming] total={}ms dedupe={}ms save={}ms tableSync={}ms orderId={} expressCheckout={}",
+                    totalMs,
+                    dedupeMs,
+                    saveMs,
+                    tableSyncMs,
+                    saved.getVisibleId(),
+                    expressCheckout);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
+            long failedAt = System.nanoTime();
+            long totalMs = (failedAt - startedAt) / 1_000_000;
+            log.warn("[OrderCreateTiming] failed total={}ms details={}", totalMs, e.getMessage());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             Map<String, String> err = new HashMap<>();
             err.put("error", "Failed to create order");
@@ -89,19 +120,45 @@ public class OrderController {
     @PostMapping("/checkout")
     @Transactional
     public ResponseEntity<?> createAndCollectCash(@RequestBody Map<String, Object> body) {
+        long startedAt = System.nanoTime();
+        long dedupeEndedAt = startedAt;
+        long saveEndedAt = startedAt;
         try {
             String tableVisibleId = getString(body, "tableId");
 
             Optional<Order> existingOrder = findExistingOrder(body);
+            dedupeEndedAt = System.nanoTime();
             if (existingOrder.isPresent()) {
+                long totalMs = (System.nanoTime() - startedAt) / 1_000_000;
+                long dedupeMs = (dedupeEndedAt - startedAt) / 1_000_000;
+                log.info("[OrderCheckoutTiming] dedupe-hit total={}ms dedupe={}ms orderId={}",
+                        totalMs,
+                        dedupeMs,
+                        existingOrder.get().getVisibleId());
                 return ResponseEntity.ok(existingOrder.get());
             }
 
             Order order = buildOrder(body, true);
             Order saved = orderRepository.save(order);
+            saveEndedAt = System.nanoTime();
             synchronizeTableForOrder(saved, tableVisibleId);
+
+            long completedAt = System.nanoTime();
+            long dedupeMs = (dedupeEndedAt - startedAt) / 1_000_000;
+            long saveMs = (saveEndedAt - dedupeEndedAt) / 1_000_000;
+            long tableSyncMs = (completedAt - saveEndedAt) / 1_000_000;
+            long totalMs = (completedAt - startedAt) / 1_000_000;
+            log.info("[OrderCheckoutTiming] total={}ms dedupe={}ms save={}ms tableSync={}ms orderId={}",
+                    totalMs,
+                    dedupeMs,
+                    saveMs,
+                    tableSyncMs,
+                    saved.getVisibleId());
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
+            long failedAt = System.nanoTime();
+            long totalMs = (failedAt - startedAt) / 1_000_000;
+            log.warn("[OrderCheckoutTiming] failed total={}ms details={}", totalMs, e.getMessage());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(500).body(Map.of(
                     "error", "Failed to complete order checkout",
@@ -168,6 +225,10 @@ public class OrderController {
             if (existingById.isPresent()) {
                 return existingById;
             }
+
+            // If client provides a stable request/order id, skip additional duplicate lookup
+            // to keep create latency low on the hot path.
+            return Optional.empty();
         }
 
         String orderNumber = getString(body, "orderNumber");

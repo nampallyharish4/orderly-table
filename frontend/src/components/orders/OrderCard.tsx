@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Order, hasPermission } from '@/types';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -25,18 +25,22 @@ interface OrderCardProps {
   compact?: boolean;
 }
 
-export function OrderCard({
+function OrderCardComponent({
   order,
   onClick,
   showItems = false,
   compact = false,
 }: OrderCardProps) {
-  const { updateOrderStatus } = useOrders();
+  const { updateOrderStatus, isOrderSyncing } = useOrders();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const timeAgo = formatDistanceToNow(order.createdAt, { addSuffix: true });
+  const timeAgo = useMemo(
+    () => formatDistanceToNow(order.createdAt, { addSuffix: true }),
+    [order.createdAt],
+  );
   const isReady = order.status === 'ready';
   const isTakeaway = order.orderType === 'takeaway';
+  const isSyncing = isOrderSyncing(order.id);
 
   const isCompleted = ['served', 'collected'].includes(order.status);
   const canPrint = user?.role && hasPermission(user.role, 'print_bill');
@@ -48,7 +52,7 @@ export function OrderCard({
 
   const handleMarkServed = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isSubmitting) return;
+    if (isSubmitting || isSyncing) return;
     setIsSubmitting(true);
 
     try {
@@ -173,6 +177,9 @@ export function OrderCard({
         </div>
         <div className="pt-2">
           <StatusBadge status={order.status} />
+          {isSyncing && (
+            <p className="mt-1 text-xs text-muted-foreground">Syncing...</p>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -233,14 +240,14 @@ export function OrderCard({
           <Button
             className="w-full bg-success hover:bg-success/90"
             onClick={handleMarkServed}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSyncing}
           >
             {isSubmitting ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
               <CheckCircle2 className="w-4 h-4 mr-2" />
             )}
-            {isSubmitting
+            {isSubmitting || isSyncing
               ? 'Processing...'
               : isTakeaway
                 ? 'Order Handed Over'
@@ -251,3 +258,34 @@ export function OrderCard({
     </Card>
   );
 }
+
+const getOrderRenderSignature = (order: Order): string => {
+  const updatedAt = order.updatedAt ? order.updatedAt.getTime() : 0;
+  const servedAt = order.servedAt ? order.servedAt.getTime() : 0;
+  const paymentState = order.payment?.status || 'none';
+  const itemsState = order.items
+    .map(
+      (item) => `${item.id}:${item.status}:${item.quantity}:${item.totalPrice}`,
+    )
+    .join('|');
+
+  return [
+    order.id,
+    order.status,
+    updatedAt,
+    servedAt,
+    order.totalAmount,
+    paymentState,
+    itemsState,
+  ].join('::');
+};
+
+export const OrderCard = memo(OrderCardComponent, (prevProps, nextProps) => {
+  if (prevProps.showItems !== nextProps.showItems) return false;
+  if (prevProps.compact !== nextProps.compact) return false;
+
+  return (
+    getOrderRenderSignature(prevProps.order) ===
+    getOrderRenderSignature(nextProps.order)
+  );
+});
