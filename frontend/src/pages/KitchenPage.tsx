@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useOrders } from '@/contexts/OrderContext';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,14 +30,16 @@ export default function KitchenPage() {
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const { playReadySound } = useNotificationSound();
 
-  // Get active kitchen orders
-  const kitchenOrders = orders
-    .filter(o => ['new', 'preparing', 'ready'].includes(o.status))
-    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  // Memoize kitchen orders to prevent flickering during state updates
+  const kitchenOrders = useMemo(() => {
+    return orders
+      .filter(o => ['new', 'preparing', 'ready'].includes(o.status))
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }, [orders]);
 
-  const newOrders = kitchenOrders.filter(o => o.status === 'new');
-  const preparingOrders = kitchenOrders.filter(o => o.status === 'preparing');
-  const readyOrders = kitchenOrders.filter(o => o.status === 'ready');
+  const newOrders = useMemo(() => kitchenOrders.filter(o => o.status === 'new'), [kitchenOrders]);
+  const preparingOrders = useMemo(() => kitchenOrders.filter(o => o.status === 'preparing'), [kitchenOrders]);
+  const readyOrders = useMemo(() => kitchenOrders.filter(o => o.status === 'ready'), [kitchenOrders]);
 
   const getOrderPriority = (order: Order): 'normal' | 'rush' | 'overdue' => {
     const minutes = differenceInMinutes(new Date(), order.createdAt);

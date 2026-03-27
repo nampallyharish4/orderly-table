@@ -62,6 +62,11 @@ public class OrderController {
                     ? body.get("id").toString()
                     : "order-" + System.currentTimeMillis();
 
+            Optional<Order> existingOrder = orderRepository.findByVisibleId(visibleId);
+            if (existingOrder.isPresent()) {
+                return ResponseEntity.ok(existingOrder.get());
+            }
+
             Integer tableDbId = null;
             if (body.get("tableId") != null) {
                 String tableIdStr = body.get("tableId").toString();
@@ -86,7 +91,18 @@ public class OrderController {
             order.setServiceCharge(toDouble(body.get("serviceCharge")));
             order.setDiscountAmount(toDouble(body.get("discountAmount")));
             order.setTotalAmount(toDouble(body.get("totalAmount")));
-            order.setStatus(body.get("status") != null ? body.get("status").toString() : "new");
+            boolean expressCheckout = body.containsKey("expressCheckout") && Boolean.TRUE.equals(body.get("expressCheckout"));
+            
+            if (expressCheckout) {
+                order.setStatus("collected");
+                order.setPaymentMethod("cash");
+                order.setPaymentStatus("completed");
+                order.setCashAmount(order.getTotalAmount());
+                order.setPaidAt(OffsetDateTime.now());
+                order.setServedAt(OffsetDateTime.now());
+            } else {
+                order.setStatus(body.get("status") != null ? body.get("status").toString() : "new");
+            }
             order.setNotes(getString(body, "notes"));
             order.setCreatedBy(body.get("createdBy") != null ? body.get("createdBy").toString() : "system");
             order.setCreatedAt(OffsetDateTime.now());

@@ -230,9 +230,11 @@ export default function NewOrderPage() {
       } else {
         const order = await submitOrder(
           isTakeaway ? customerName : undefined,
-          isTakeaway ? customerPhone : undefined
+          isTakeaway ? customerPhone : undefined,
+          undefined,
+          true // expressCheckout flag
         );
-        toast.success(`Order ${order.orderNumber} created!`);
+        toast.success(`Order ${order.orderNumber} placed & paid!`);
         navigate('/orders');
       }
     } catch (error) {
@@ -274,6 +276,18 @@ export default function NewOrderPage() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-0 lg:gap-6 min-h-[calc(100vh-120px)] lg:h-[calc(100vh-120px)] relative pb-20 lg:pb-0 overflow-hidden">
+      {/* Full Screen Loader Overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[100] bg-background/60 backdrop-blur-sm flex items-center justify-center">
+          <Card className="p-8 flex flex-col items-center gap-4 bg-card shadow-2xl border-primary/20 animate-in fade-in zoom-in-95">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <div className="text-center">
+              <h3 className="font-bold text-xl">Processing Order...</h3>
+              <p className="text-sm text-muted-foreground mt-1">Please do not refresh the page</p>
+            </div>
+          </Card>
+        </div>
+      )}
       {/* Menu Section */}
       <div className="flex-1 flex flex-col min-w-0 p-4 lg:p-0">
         {/* Header */}
@@ -517,8 +531,13 @@ export default function NewOrderPage() {
             disabled={!currentOrder.items?.length || isSubmitting}
             onClick={handleSubmit}
           >
-            {isSubmitting ? <Loader2 className="animate-spin" /> : (
-              <>{isAddingToExisting ? "Confirm Changes" : "Place Order"}</>
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="animate-spin w-5 h-5" />
+                Processing order...
+              </span>
+            ) : (
+              <>{isAddingToExisting ? "Confirm Changes" : "Place & Pay Cash"}</>
             )}
           </Button>
         </div>

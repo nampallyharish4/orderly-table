@@ -17,7 +17,7 @@ interface OrderContextType {
   addItemToOrder: (menuItem: MenuItem, quantity: number, notes?: string, addOnIds?: string[]) => void;
   removeItemFromOrder: (itemIndex: number) => void;
   updateItemQuantity: (itemIndex: number, quantity: number) => void;
-  submitOrder: (customerName?: string, customerPhone?: string, pickupTime?: Date) => Promise<Order>;
+  submitOrder: (customerName?: string, customerPhone?: string, pickupTime?: Date, expressCheckout?: boolean) => Promise<Order>;
   cancelCurrentOrder: () => void;
   
   updateOrderStatus: (orderId: string, status: OrderStatus, paymentMethod?: 'cash' | 'upi' | 'split', cashAmount?: number, upiAmount?: number) => Promise<void>;
@@ -142,7 +142,6 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     // Auto-refresh using delta polling every 5 seconds
     const intervalId = setInterval(() => {
       fetchData(true);
-      fetchStaticData(); // Also refresh menu items & categories
     }, 5000);
     
     return () => clearInterval(intervalId);
@@ -293,7 +292,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const submitOrder = useCallback(async (
     customerName?: string,
     customerPhone?: string,
-    pickupTime?: Date
+    pickupTime?: Date,
+    expressCheckout?: boolean
   ): Promise<Order> => {
     if (!currentOrder?.items?.length) {
       throw new Error('No items in order');
@@ -325,7 +325,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newOrder),
+        body: JSON.stringify({ ...newOrder, expressCheckout }),
       });
 
       if (!response.ok) {
@@ -341,7 +341,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
       setOrders(prev => [parsedOrder, ...prev]);
 
-      if (currentOrder.tableId) {
+      if (currentOrder.tableId && parsedOrder.status !== 'collected') {
         const table = tables.find(t => t.id === currentOrder.tableId);
         const newOrderIds = [...(table?.currentOrderIds || []), parsedOrder.id];
         
