@@ -142,7 +142,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     // Auto-refresh using delta polling every 5 seconds
     const intervalId = setInterval(() => {
       fetchData(true);
-    }, 5000);
+      fetchStaticData(); // Ensure menu items are refreshed occasionally
+    }, 10000);
     
     return () => clearInterval(intervalId);
   }, [fetchData, fetchStaticData]);

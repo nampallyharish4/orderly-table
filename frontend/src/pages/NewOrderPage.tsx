@@ -252,9 +252,15 @@ export default function NewOrderPage() {
 
   if (isLoading && menuItems.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-muted-foreground">Loading menu...</span>
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] gap-6 animate-in fade-in duration-700">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse scale-150" />
+          <Loader2 className="h-16 w-16 animate-spin text-primary relative z-10" />
+        </div>
+        <div className="text-center space-y-2 relative z-10">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Preparing your menu</h2>
+          <p className="text-muted-foreground animate-pulse">Sourcing the freshest ingredients...</p>
+        </div>
       </div>
     );
   }
@@ -331,30 +337,37 @@ export default function NewOrderPage() {
           </button>
         </div>
 
-        {/* Categories */}
-        <div className="mb-4 overflow-x-auto no-scrollbar">
-          <div className="flex gap-2 min-w-max pb-1">
+        {/* Categories Section */}
+        <div className="mb-4 overflow-x-auto no-scrollbar scroll-smooth">
+          <div className="flex gap-2 min-w-max pb-1 items-center">
             <button
               onClick={() => setSelectedCategory('all')}
               className={cn(
-                "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all",
-                selectedCategory === 'all' ? "bg-primary text-white" : "bg-secondary text-muted-foreground"
+                "px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300",
+                selectedCategory === 'all' 
+                  ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105" 
+                  : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}
             >
               All Items
             </button>
             {categories.filter(c => c.isActive).map(cat => {
-              const nameUpper = cat.name.toUpperCase();
-              const isNonVeg = nameUpper.includes('NON VEG') || nameUpper.includes('NON-VEG') || nameUpper.includes('NONVEG') || nameUpper.includes('CHICKEN') || nameUpper.includes('MUTTON') || nameUpper.includes('FISH') || nameUpper.includes('EGG');
+              const nameUpper = (cat.name || "").toUpperCase();
+              const isNonVeg = nameUpper.includes('NON-VEG') || nameUpper.includes('NON VEG') || nameUpper.includes('MUTTON') || nameUpper.includes('CHICKEN') || nameUpper.includes('FISH') || nameUpper.includes('EGG') || nameUpper.includes('MEAT');
+              const isVeg = (nameUpper.includes('VEG') || nameUpper.includes('PANEER') || nameUpper.includes('SALAD')) && !isNonVeg;
               const isSelected = selectedCategory === cat.id;
 
               const activeClass = isNonVeg 
-                ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md shadow-red-500/20 scale-105"
-                : "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md shadow-emerald-500/20 scale-105";
+                ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 scale-105"
+                : isVeg 
+                  ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/25 scale-105"
+                  : "bg-primary text-white shadow-lg shadow-primary/25 scale-105";
 
               const inactiveClass = isNonVeg
-                ? "bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20"
-                : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20";
+                ? "bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20 hover:bg-red-500/20"
+                : isVeg
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
+                  : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground";
 
               return (
                 <button
