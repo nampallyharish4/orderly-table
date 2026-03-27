@@ -25,9 +25,6 @@ import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 
 type KitchenOrderCardProps = {
   order: Order;
-  soundEnabled: boolean;
-  updatingOrderId: string | null;
-  updatingItemId: string | null;
   onStartPreparing: (order: Order) => Promise<void>;
   onItemReady: (orderId: string, itemId: string) => Promise<void>;
 };
@@ -41,8 +38,6 @@ const getOrderPriority = (order: Order): 'normal' | 'rush' | 'overdue' => {
 
 const KitchenOrderCard = memo(function KitchenOrderCard({
   order,
-  updatingOrderId,
-  updatingItemId,
   onStartPreparing,
   onItemReady,
 }: KitchenOrderCardProps) {
@@ -147,18 +142,13 @@ const KitchenOrderCard = memo(function KitchenOrderCard({
                   size="sm"
                   variant={item.status === 'preparing' ? 'default' : 'outline'}
                   onClick={() => onItemReady(order.id, item.id)}
-                  disabled={updatingItemId === item.id}
                   className={
                     item.status === 'preparing'
                       ? 'bg-success hover:bg-success/90'
                       : ''
                   }
                 >
-                  {updatingItemId === item.id ? (
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="w-4 h-4 mr-1" />
-                  )}
+                  <CheckCircle2 className="w-4 h-4 mr-1" />
                   {item.status === 'preparing' ? 'Done' : 'Start'}
                 </Button>
               )}
@@ -180,14 +170,9 @@ const KitchenOrderCard = memo(function KitchenOrderCard({
             <Button
               className="flex-1 bg-gradient-primary hover:opacity-90"
               onClick={() => onStartPreparing(order)}
-              disabled={updatingOrderId === order.id}
             >
-              {updatingOrderId === order.id ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <ChefHat className="w-4 h-4 mr-2" />
-              )}
-              {updatingOrderId === order.id ? 'Starting...' : 'Start Preparing'}
+              <ChefHat className="w-4 h-4 mr-2" />
+              Start Preparing
             </Button>
           )}
         </div>
@@ -197,16 +182,9 @@ const KitchenOrderCard = memo(function KitchenOrderCard({
 });
 
 export default function KitchenPage() {
-  const {
-    orders,
-    updateItemStatus,
-    updateOrderStatus,
-    startPreparingOrder,
-    isLoading,
-  } = useOrders();
+  const { orders, updateItemStatus, startPreparingOrder, isLoading } =
+    useOrders();
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
-  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const { playReadySound } = useNotificationSound();
 
   // Memoize kitchen orders to prevent flickering during state updates
@@ -231,26 +209,16 @@ export default function KitchenPage() {
 
   const handleStartPreparing = useCallback(
     async (order: Order) => {
-      setUpdatingOrderId(order.id);
-      try {
-        await startPreparingOrder(order.id);
-      } finally {
-        setUpdatingOrderId(null);
-      }
+      await startPreparingOrder(order.id);
     },
     [startPreparingOrder],
   );
 
   const handleItemReady = useCallback(
     async (orderId: string, itemId: string) => {
-      setUpdatingItemId(itemId);
-      try {
-        await updateItemStatus(orderId, itemId, 'ready');
-        if (soundEnabled) {
-          playReadySound();
-        }
-      } finally {
-        setUpdatingItemId(null);
+      await updateItemStatus(orderId, itemId, 'ready');
+      if (soundEnabled) {
+        playReadySound();
       }
     },
     [playReadySound, soundEnabled, updateItemStatus],
@@ -383,9 +351,6 @@ export default function KitchenPage() {
                 <KitchenOrderCard
                   key={order.id}
                   order={order}
-                  soundEnabled={soundEnabled}
-                  updatingOrderId={updatingOrderId}
-                  updatingItemId={updatingItemId}
                   onStartPreparing={handleStartPreparing}
                   onItemReady={handleItemReady}
                 />
@@ -399,9 +364,6 @@ export default function KitchenPage() {
                 <KitchenOrderCard
                   key={order.id}
                   order={order}
-                  soundEnabled={soundEnabled}
-                  updatingOrderId={updatingOrderId}
-                  updatingItemId={updatingItemId}
                   onStartPreparing={handleStartPreparing}
                   onItemReady={handleItemReady}
                 />
@@ -415,9 +377,6 @@ export default function KitchenPage() {
                 <KitchenOrderCard
                   key={order.id}
                   order={order}
-                  soundEnabled={soundEnabled}
-                  updatingOrderId={updatingOrderId}
-                  updatingItemId={updatingItemId}
                   onStartPreparing={handleStartPreparing}
                   onItemReady={handleItemReady}
                 />
@@ -431,9 +390,6 @@ export default function KitchenPage() {
                 <KitchenOrderCard
                   key={order.id}
                   order={order}
-                  soundEnabled={soundEnabled}
-                  updatingOrderId={updatingOrderId}
-                  updatingItemId={updatingItemId}
                   onStartPreparing={handleStartPreparing}
                   onItemReady={handleItemReady}
                 />

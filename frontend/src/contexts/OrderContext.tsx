@@ -723,24 +723,26 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         newOrderStatus = 'preparing';
       }
 
+      const previousOrders = orders;
+      setOrders((prev) =>
+        prev.map((o) => {
+          if (o.id !== orderId) return o;
+          return {
+            ...o,
+            items: updatedItems,
+            status: newOrderStatus,
+            updatedAt: new Date(),
+          };
+        }),
+      );
+
       try {
         await api.patch(`/api/orders/${orderId}`, {
           items: updatedItems,
           status: newOrderStatus,
         });
-
-        setOrders((prev) =>
-          prev.map((o) => {
-            if (o.id !== orderId) return o;
-            return {
-              ...o,
-              items: updatedItems,
-              status: newOrderStatus,
-              updatedAt: new Date(),
-            };
-          }),
-        );
       } catch (error) {
+        setOrders(previousOrders);
         console.error('Failed to update item status:', error);
       }
     },
@@ -758,24 +760,26 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           : item,
       );
 
+      const previousOrders = orders;
+      setOrders((prev) =>
+        prev.map((o) => {
+          if (o.id !== orderId) return o;
+          return {
+            ...o,
+            items: updatedItems,
+            status: 'preparing',
+            updatedAt: new Date(),
+          };
+        }),
+      );
+
       try {
         await api.patch(`/api/orders/${orderId}`, {
           items: updatedItems,
           status: 'preparing',
         });
-
-        setOrders((prev) =>
-          prev.map((o) => {
-            if (o.id !== orderId) return o;
-            return {
-              ...o,
-              items: updatedItems,
-              status: 'preparing',
-              updatedAt: new Date(),
-            };
-          }),
-        );
       } catch (error) {
+        setOrders(previousOrders);
         console.error('Failed to start preparing order:', error);
       }
     },

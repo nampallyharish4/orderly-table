@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useOrders } from '@/contexts/OrderContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { Order } from '@/types';
 import { toast } from 'sonner';
+
+const PROCESSING_UI_MS = 1000;
 
 const BillingPage = () => {
   const {
@@ -52,23 +54,35 @@ const BillingPage = () => {
     return { cgst, sgst, total: order.taxAmount };
   };
 
+  const sleep = (ms: number) =>
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, ms);
+    });
+
   const handlePayment = async (method: 'cash' | 'upi') => {
     if (!selectedOrder || isSubmitting || selectedOrderSyncing) return;
 
+    const orderSnapshot = selectedOrder;
     setPaymentMethod(method);
     setIsSubmitting(true);
     try {
-      if (selectedOrder.status === 'served') {
-        await updateOrderStatus(selectedOrder.id, 'collected', method);
-      } else {
-        await processPayment(selectedOrder.id, method);
-      }
+      const paymentPromise =
+        orderSnapshot.status === 'served'
+          ? updateOrderStatus(orderSnapshot.id, 'collected', method)
+          : processPayment(orderSnapshot.id, method);
+
+      await sleep(PROCESSING_UI_MS);
       toast.success(`Payment received via ${method.toUpperCase()}`);
 
       setSelectedOrder(null);
       setPaymentMethod(null);
       setShowSplitInput(false);
       setCashAmount('');
+
+      paymentPromise.catch((error: any) => {
+        toast.error(error?.message || 'Payment sync failed. Please retry.');
+        setSelectedOrder(orderSnapshot);
+      });
     } catch (error: any) {
       toast.error(error?.message || 'Failed to process payment');
       setPaymentMethod(null);
@@ -80,6 +94,7 @@ const BillingPage = () => {
   const handleSplitPayment = async () => {
     if (!selectedOrder || isSubmitting || selectedOrderSyncing) return;
 
+    const orderSnapshot = selectedOrder;
     const cashValue = parseFloat(cashAmount) || 0;
     const upiValue = selectedOrder.totalAmount - cashValue;
 
@@ -98,17 +113,18 @@ const BillingPage = () => {
     setPaymentMethod('split');
     setIsSubmitting(true);
     try {
-      if (selectedOrder.status === 'served') {
-        await updateOrderStatus(
-          selectedOrder.id,
-          'collected',
-          'split',
-          cashValue,
-          upiValue,
-        );
-      } else {
-        await processPayment(selectedOrder.id, 'split', cashValue, upiValue);
-      }
+      const paymentPromise =
+        orderSnapshot.status === 'served'
+          ? updateOrderStatus(
+              orderSnapshot.id,
+              'collected',
+              'split',
+              cashValue,
+              upiValue,
+            )
+          : processPayment(orderSnapshot.id, 'split', cashValue, upiValue);
+
+      await sleep(PROCESSING_UI_MS);
       toast.success(
         `Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`,
       );
@@ -117,6 +133,13 @@ const BillingPage = () => {
       setPaymentMethod(null);
       setShowSplitInput(false);
       setCashAmount('');
+
+      paymentPromise.catch((error: any) => {
+        toast.error(
+          error?.message || 'Split payment sync failed. Please retry.',
+        );
+        setSelectedOrder(orderSnapshot);
+      });
     } catch (error: any) {
       toast.error(error?.message || 'Failed to process split payment');
       setPaymentMethod(null);
@@ -312,7 +335,7 @@ const BillingPage = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {(isSubmitting || selectedOrderSyncing) && (
+      {isSubmitting && (
         <div className="fixed inset-0 z-[90] bg-background/60 backdrop-blur-sm flex items-center justify-center">
           <Card className="p-6 sm:p-8 flex flex-col items-center gap-4 bg-card shadow-2xl border-primary/20 animate-in fade-in zoom-in-95">
             <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-primary" />
@@ -435,7 +458,7 @@ const BillingPage = () => {
                     <div key={item.id} className="space-y-0.5">
                       <div className="flex justify-between text-sm">
                         <span>
-                          {item.menuItemName} × {item.quantity}
+                          {item.menuItemName} ├ù {item.quantity}
                         </span>
                         <span>₹{item.totalPrice.toFixed(0)}</span>
                       </div>
@@ -648,3 +671,4 @@ const BillingPage = () => {
 };
 
 export default BillingPage;
+

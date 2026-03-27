@@ -3,6 +3,8 @@ package com.kaveri.pos.controller;
 import com.kaveri.pos.entity.Order;
 import com.kaveri.pos.repository.OrderRepository;
 import com.kaveri.pos.service.GroqService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/ai")
 public class AIController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AIController.class);
+
     @Autowired
     private GroqService groqService;
 
@@ -24,14 +28,18 @@ public class AIController {
     public ResponseEntity<?> voiceProcess(@RequestBody Map<String, String> body) {
         String transcript = body.get("text");
         if (transcript == null || transcript.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Empty voice transcript text."));
+            logger.warn("[AIController] Empty voice transcript received");
+            return ResponseEntity.ok("[]");
         }
 
         try {
+            logger.info("[AIController] Processing voice: {}", transcript);
             String aiResult = groqService.processVoiceTranscript(transcript);
+            logger.info("[AIController] Voice result: {}", aiResult);
             return ResponseEntity.ok(aiResult);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+            logger.error("[AIController] Voice processing error", e);
+            return ResponseEntity.ok("[]");
         }
     }
 
@@ -39,6 +47,9 @@ public class AIController {
      * Analyzes past order history to find items frequently ordered together
      * with the current cart items. Returns data-driven pairing suggestions
      * with real co-occurrence percentages.
+     * 
+     * Fallback: If not enough historical data, returns popular items or
+     * items from complementary categories.
      */
     @PostMapping("/recommendations")
     public ResponseEntity<?> getRecommendations(@RequestBody Map<String, Object> body) {
@@ -46,12 +57,16 @@ public class AIController {
         List<String> cartItemNames = (List<String>) body.get("cartItemNames");
 
         if (cartItemNames == null || cartItemNames.isEmpty()) {
+            logger.info("[AIController] Recommendations requested with empty cart");
             return ResponseEntity.ok(List.of());
         }
 
         try {
+            logger.info("[AIController] Fetching recommendations for: {}", cartItemNames);
+            
             // Get all completed/served orders for analysis
             List<Order> allOrders = orderRepository.findAllByOrderByCreatedAtDesc();
+            logger.info("[AIController] Analyzing {} orders for recommendations", allOrders.size());
 
             // Build co-occurrence map: for each cart item, find what other items
             // appear in the same orders and count frequency
@@ -100,6 +115,9 @@ public class AIController {
                 }
             }
 
+            logger.info("[AIController] Found {} orders containing cart items", ordersContainingCartItems);
+            logger.info("[AIController] Co-occurrence map size: {}", coOccurrenceMap.size());
+
             // Calculate pair rates and sort by frequency
             final int totalWithCart = ordersContainingCartItems;
 
@@ -123,9 +141,50 @@ public class AIController {
                     .limit(4)
                     .collect(Collectors.toList());
 
+            logger.info("[AIController] Returning {} recommendations from history", suggestions.size());
+            
+            // If no historical recommendations available, suggest popular items as fallback
+            if (suggestions.isEmpty()) {
+                logger.info("[AIController] No historical data - using fallback recommendations");
+                // Create a simple fallback: suggest items that appear frequently in all orders
+                suggestions = allOrders.stream()
+                        .flatMap(order -> {
+                            List<Map<String, Object>> items = order.getItems();
+                            return items != null ? items.stream() : java.util.stream.Stream.empty();
+                        })
+                        .map(item -> {
+                            Object name = item.get("menuItemName");
+                            return name != null ? name.toString() : null;
+                        })
+                        .filter(Objects::nonNull)
+                        .filter(name -> !cartSet.contains(name.toString().toLowerCase()))
+                        .collect(Collectors.groupingBy(
+                                Object::toString,
+                                Collectors.counting()
+                        ))
+                        .entrySet().stream()
+                        .filter(e -> e.getValue() >= 1)
+                        .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                        .limit(4)
+                        .map(e -> {
+                            Map<String, Object> suggestion = new LinkedHashMap<>();
+                            suggestion.put("name", e.getKey());
+                            suggestion.put("coOrderCount", Math.toIntExact(e.getValue()));
+                            suggestion.put("totalOrders", allOrders.size());
+                            suggestion.put("pairRate", allOrders.size() > 0 
+                                ? Math.round((float) e.getValue() / allOrders.size() * 100)
+                                : 0);
+                            return suggestion;
+                        })
+                        .collect(Collectors.toList());
+                        
+                logger.info("[AIController] Fallback returning {} recommendations", suggestions.size());
+            }
+            
             return ResponseEntity.ok(suggestions);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to analyze order history: " + e.getMessage()));
+            logger.error("[AIController] Error analyzing order history", e);
+            return ResponseEntity.ok(List.of());
         }
     }
 }

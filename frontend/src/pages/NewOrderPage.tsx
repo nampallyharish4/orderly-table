@@ -97,28 +97,94 @@ export default function NewOrderPage() {
       setIsRecommendLoading(true);
       const itemNames = currentOrder.items.map((i) => i.menuItemName);
 
+      console.log('[RECOMMENDATIONS] Requesting suggestions for:', itemNames);
+      console.log(
+        '[RECOMMENDATIONS] Available menu items count:',
+        menuItems.length,
+      );
+
       const response = await fetch(`${API_BASE_URL}/api/ai/recommendations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cartItemNames: itemNames }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        console.error(
+          '[RECOMMENDATIONS] API error:',
+          response.status,
+          response.statusText,
+        );
+        setRecommendations([]);
+        return;
+      }
 
-      if (Array.isArray(data)) {
+      const data = await response.json();
+      console.log('[RECOMMENDATIONS] Raw API response:', data);
+
+      if (Array.isArray(data) && data.length > 0) {
+        console.log(
+          '[RECOMMENDATIONS] Processing',
+          data.length,
+          'recommendations',
+        );
+
         // Filter to only items available on the menu
         const validRecs = data.filter((rec: PairingSuggestion) => {
-          const menuMatch = menuItems.find(
-            (m) =>
-              m.name.toLowerCase() === rec.name?.toLowerCase() && m.isAvailable,
+          // Try exact match first
+          const exactMatch = menuItems.find(
+            (m) => m.name.toLowerCase() === rec.name?.toLowerCase(),
           );
-          return menuMatch;
+
+          // If exact match, check availability
+          if (exactMatch) {
+            const isValid = exactMatch.isAvailable;
+            console.log(
+              '[RECOMMENDATIONS]',
+              rec.name,
+              '-> exact match, available:',
+              isValid,
+            );
+            return isValid;
+          }
+
+          // Fallback: try partial match (in case there are minor differences)
+          const partialMatch = menuItems.find(
+            (m) =>
+              m.name.toLowerCase().includes(rec.name?.toLowerCase() || '') ||
+              rec.name?.toLowerCase().includes(m.name.toLowerCase()),
+          );
+
+          if (partialMatch) {
+            const isValid = partialMatch.isAvailable;
+            console.log(
+              '[RECOMMENDATIONS]',
+              rec.name,
+              '-> partial match to',
+              partialMatch.name,
+              ', available:',
+              isValid,
+            );
+            return isValid;
+          }
+
+          console.log('[RECOMMENDATIONS]', rec.name, '-> NO MATCH in menu');
+          return false;
         });
+
+        console.log(
+          '[RECOMMENDATIONS] Valid recs after filter:',
+          validRecs.length,
+        );
         setRecommendations(validRecs.slice(0, 4));
+      } else {
+        console.log('[RECOMMENDATIONS] No data or empty array from API');
+        setRecommendations([]);
       }
       setLastRecommendedCart(currentCartKey);
     } catch (err) {
-      console.error('Recommendation Error:', err);
+      console.error('[RECOMMENDATIONS] Fetch error:', err);
+      setRecommendations([]);
     } finally {
       setIsRecommendLoading(false);
     }
@@ -143,7 +209,7 @@ export default function NewOrderPage() {
         clearTimeout(recommendDebounceRef.current);
       }
     };
-  }, [cartItemNames]);
+  }, [cartItemNames, lastRecommendedCart, fetchRecommendations]);
 
   const handleAddRecommendation = (recName: string) => {
     const menuItem = menuItems.find(
@@ -291,16 +357,26 @@ export default function NewOrderPage() {
         toast.success('Items added to order!');
         navigate('/orders');
       } else {
-        const order = await withTimeout(
-          submitOrder(
-            isTakeaway ? customerName : undefined,
-            isTakeaway ? customerPhone : undefined,
-            undefined,
-            false,
-          ),
+        // Place instantly in UI and continue server reconciliation in background.
+        const submitPromise = submitOrder(
+          isTakeaway ? customerName : undefined,
+          isTakeaway ? customerPhone : undefined,
+          undefined,
+          false,
         );
-        toast.success(`Order ${order.orderNumber} placed successfully!`);
+
+        toast.success('Order placed instantly. Syncing in background...');
         navigate('/orders');
+
+        submitPromise
+          .then((order) => {
+            toast.success(`Order ${order.orderNumber} synced successfully!`);
+          })
+          .catch((error: any) => {
+            toast.error(
+              error?.message || 'Order sync failed. Please retry if needed.',
+            );
+          });
       }
     } catch (error: any) {
       toast.error(error?.message || 'Failed to create order');

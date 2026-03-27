@@ -74,7 +74,7 @@ public class GroqService {
 
     public String processVoiceTranscript(String text) {
         if (apiKey == null || apiKey.isEmpty()) {
-            return "Error: Groq API Key is not configured.";
+            return "[]";
         }
 
         try {
@@ -103,11 +103,12 @@ public class GroqService {
             
             // Basic clean up in case AI adds markdown wrappers
             if (rawJsonResult.startsWith("```json")) rawJsonResult = rawJsonResult.replace("```json", "");
+            if (rawJsonResult.startsWith("```")) rawJsonResult = rawJsonResult.substring(3);
             if (rawJsonResult.endsWith("```")) rawJsonResult = rawJsonResult.substring(0, rawJsonResult.length() - 3);
             
             return rawJsonResult.trim();
         } catch (Exception e) {
-            return "Error: AI processing failed - " + e.getMessage();
+            return "[]";
         }
     }
 }
