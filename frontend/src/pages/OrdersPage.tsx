@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOrders } from '@/contexts/OrderContext';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { OrderCard } from '@/components/orders/OrderCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,16 +8,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { OrderStatus } from '@/types';
-import { Plus, Search, Package, Utensils, Filter, Loader2 } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Package,
+  Utensils,
+  Filter,
+  Loader2,
+  X,
+} from 'lucide-react';
 
 export default function OrdersPage() {
   const { orders, createOrder, isLoading } = useOrders();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'dine-in' | 'takeaway'>(
     'all',
   );
+  const [orderConfirmation, setOrderConfirmation] = useState<string>(() => {
+    return (
+      (location.state as { orderConfirmation?: string } | null)
+        ?.orderConfirmation || ''
+    );
+  });
+
+  useEffect(() => {
+    const incoming = (location.state as { orderConfirmation?: string } | null)
+      ?.orderConfirmation;
+    if (!incoming) return;
+
+    setOrderConfirmation(incoming);
+
+    // Clear one-time navigation state so confirmation is not shown on refresh/back.
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.pathname, location.state, navigate]);
 
   // Filter orders
   const filteredOrders = useMemo(
@@ -85,6 +111,21 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
+      {orderConfirmation && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-700 dark:text-emerald-300 animate-in fade-in slide-in-from-top-1 duration-200">
+          <span>{orderConfirmation}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 rounded-md text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300"
+            onClick={() => setOrderConfirmation('')}
+            aria-label="Dismiss confirmation"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

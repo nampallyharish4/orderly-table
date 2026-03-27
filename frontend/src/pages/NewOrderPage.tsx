@@ -61,6 +61,10 @@ export default function NewOrderPage() {
   const [isListening, setIsListening] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
+  const [cartConfirmation, setCartConfirmation] = useState('');
+  const cartConfirmationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   // AI Recommendations state
   const [recommendations, setRecommendations] = useState<PairingSuggestion[]>(
@@ -217,6 +221,14 @@ export default function NewOrderPage() {
     );
     if (menuItem) {
       addItemToOrder(menuItem, 1);
+      setCartConfirmation(`${menuItem.name} added to cart`);
+      if (cartConfirmationTimerRef.current) {
+        clearTimeout(cartConfirmationTimerRef.current);
+      }
+      cartConfirmationTimerRef.current = setTimeout(() => {
+        setCartConfirmation('');
+        cartConfirmationTimerRef.current = null;
+      }, 1800);
       setRecommendations((prev) =>
         prev.filter((r) => r.name.toLowerCase() !== recName.toLowerCase()),
       );
@@ -322,8 +334,24 @@ export default function NewOrderPage() {
     currentOrder?.items?.reduce((sum, item) => sum + item.totalPrice, 0) || 0;
   const total = subtotal;
 
+  useEffect(() => {
+    return () => {
+      if (cartConfirmationTimerRef.current) {
+        clearTimeout(cartConfirmationTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleAddItem = (item: MenuItem) => {
     addItemToOrder(item, 1);
+    setCartConfirmation(`${item.name} added to cart`);
+    if (cartConfirmationTimerRef.current) {
+      clearTimeout(cartConfirmationTimerRef.current);
+    }
+    cartConfirmationTimerRef.current = setTimeout(() => {
+      setCartConfirmation('');
+      cartConfirmationTimerRef.current = null;
+    }, 1800);
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -355,7 +383,9 @@ export default function NewOrderPage() {
       if (isAddingToExisting) {
         await withTimeout(addItemsToExistingOrder());
         toast.success('Items added to order!');
-        navigate('/orders');
+        navigate('/orders', {
+          state: { orderConfirmation: 'Order updated successfully' },
+        });
       } else {
         // Place instantly in UI and continue server reconciliation in background.
         const submitPromise = submitOrder(
@@ -365,13 +395,12 @@ export default function NewOrderPage() {
           false,
         );
 
-        toast.success('Order placed instantly. Syncing in background...');
-        navigate('/orders');
+        navigate('/orders', {
+          state: { orderConfirmation: 'Order placed successfully' },
+        });
 
         submitPromise
-          .then((order) => {
-            toast.success(`Order ${order.orderNumber} synced successfully!`);
-          })
+          .then(() => {})
           .catch((error: any) => {
             toast.error(
               error?.message || 'Order sync failed. Please retry if needed.',
@@ -493,6 +522,12 @@ export default function NewOrderPage() {
             )}
           </button>
         </div>
+
+        {cartConfirmation && (
+          <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300 animate-in fade-in slide-in-from-top-1 duration-200">
+            {cartConfirmation}
+          </div>
+        )}
 
         {/* Categories Section */}
         <div className="mb-4 overflow-x-auto no-scrollbar scroll-smooth">
