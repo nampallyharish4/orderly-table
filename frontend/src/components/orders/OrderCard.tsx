@@ -48,6 +48,7 @@ export function OrderCard({
 
   const handleMarkServed = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {

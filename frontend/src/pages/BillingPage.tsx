@@ -44,8 +44,9 @@ const BillingPage = () => {
   };
 
   const handlePayment = async (method: 'cash' | 'upi') => {
-    if (!selectedOrder) return;
+    if (!selectedOrder || isSubmitting) return;
 
+    setPaymentMethod(method);
     setIsSubmitting(true);
     try {
       if (selectedOrder.status === 'served') {
@@ -53,7 +54,6 @@ const BillingPage = () => {
       } else {
         await processPayment(selectedOrder.id, method);
       }
-      setPaymentMethod(method);
       toast.success(`Payment received via ${method.toUpperCase()}`);
 
       setSelectedOrder(null);
@@ -62,13 +62,14 @@ const BillingPage = () => {
       setCashAmount('');
     } catch (error: any) {
       toast.error(error?.message || 'Failed to process payment');
+      setPaymentMethod(null);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleSplitPayment = async () => {
-    if (!selectedOrder) return;
+    if (!selectedOrder || isSubmitting) return;
 
     const cashValue = parseFloat(cashAmount) || 0;
     const upiValue = selectedOrder.totalAmount - cashValue;
@@ -85,6 +86,7 @@ const BillingPage = () => {
       return;
     }
 
+    setPaymentMethod('split');
     setIsSubmitting(true);
     try {
       if (selectedOrder.status === 'served') {
@@ -98,7 +100,6 @@ const BillingPage = () => {
       } else {
         await processPayment(selectedOrder.id, 'split', cashValue, upiValue);
       }
-      setPaymentMethod('split');
       toast.success(
         `Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`,
       );
@@ -109,6 +110,7 @@ const BillingPage = () => {
       setCashAmount('');
     } catch (error: any) {
       toast.error(error?.message || 'Failed to process split payment');
+      setPaymentMethod(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -520,6 +522,7 @@ const BillingPage = () => {
                       variant={showSplitInput ? 'default' : 'outline'}
                       className="flex flex-col gap-0.5 sm:gap-1 h-auto py-2 sm:py-3"
                       onClick={() => setShowSplitInput(!showSplitInput)}
+                      disabled={isSubmitting}
                       data-testid="button-pay-split"
                     >
                       <Split className="w-4 sm:w-5 h-4 sm:h-5" />
