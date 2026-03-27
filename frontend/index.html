@@ -1,19 +1,43 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" suppressHydrationWarning>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
     <title>Kaveri Family Restaurant</title>
-    <meta name="description" content="Restaurant POS System for Kaveri Family Restaurant - Table management, orders, kitchen display and billing" />
+    <meta
+      name="description"
+      content="Restaurant POS System for Kaveri Family Restaurant - Table management, orders, kitchen display and billing"
+    />
     <meta name="author" content="Kaveri Family Restaurant" />
 
     <meta property="og:title" content="Kaveri Family Restaurant" />
-    <meta property="og:description" content="Restaurant POS System - Table management, orders, kitchen display and billing" />
+    <meta
+      property="og:description"
+      content="Restaurant POS System - Table management, orders, kitchen display and billing"
+    />
     <meta property="og:type" content="website" />
 
     <meta name="twitter:card" content="summary_large_image" />
+
+    <script>
+      // Initialize theme immediately to prevent FOUC (Flash of Unstyled Content)
+      // This runs before React loads, so theme is applied instantly
+      (function () {
+        const theme = localStorage.getItem('theme') || 'dark';
+        const html = document.documentElement;
+
+        if (theme === 'dark') {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
+        }
+
+        // Prevent system theme detection delay
+        html.style.colorScheme = theme;
+      })();
+    </script>
   </head>
 
   <body>
