@@ -20,6 +20,7 @@ import ReportsPage from './pages/ReportsPage';
 import UsersPage from './pages/UsersPage';
 import SettingsPage from './pages/SettingsPage';
 import MenuManagementPage from './pages/MenuManagementPage';
+import ReservationsPage from './pages/ReservationsPage';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -131,6 +132,16 @@ const App = () => (
                       <ProtectedRoute>
                         <MainLayout>
                           <MenuManagementPage />
+                        </MainLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/reservations"
+                    element={
+                      <ProtectedRoute>
+                        <MainLayout>
+                          <ReservationsPage />
                         </MainLayout>
                       </ProtectedRoute>
                     }

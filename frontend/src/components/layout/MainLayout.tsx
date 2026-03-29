@@ -35,6 +35,7 @@ import {
   X,
   UtensilsCrossed,
   ShoppingCart,
+  CalendarDays,
 } from 'lucide-react';
 import { useState } from 'react';
 import { canAccessRoute, UserRole } from '@/types';
@@ -48,19 +49,70 @@ interface NavItem {
 }
 
 const allNavItems: NavItem[] = [
-  { path: '/', label: 'Dashboard', icon: LayoutGrid, color: 'from-amber-500 to-orange-500' },
-  { path: '/tables', label: 'Tables', icon: Utensils, color: 'from-emerald-500 to-teal-500' },
-  { path: '/orders', label: 'Orders', icon: ClipboardList, color: 'from-sky-500 to-blue-500' },
-  { path: '/kitchen', label: 'Kitchen', icon: ChefHat, color: 'from-amber-500 to-yellow-500' },
-  { path: '/billing', label: 'Billing', icon: Receipt, color: 'from-violet-500 to-purple-500' },
-  { path: '/reports', label: 'Reports', icon: BarChart3, color: 'from-cyan-500 to-teal-500' },
-  { path: '/menu', label: 'Menu', icon: UtensilsCrossed, color: 'from-rose-500 to-pink-500' },
-  { path: '/users', label: 'Users', icon: Users, color: 'from-indigo-500 to-violet-500' },
-  { path: '/settings', label: 'Settings', icon: Settings, color: 'from-slate-500 to-gray-500' },
+  {
+    path: '/',
+    label: 'Dashboard',
+    icon: LayoutGrid,
+    color: 'from-amber-500 to-orange-500',
+  },
+  {
+    path: '/tables',
+    label: 'Tables',
+    icon: Utensils,
+    color: 'from-emerald-500 to-teal-500',
+  },
+  {
+    path: '/orders',
+    label: 'Orders',
+    icon: ClipboardList,
+    color: 'from-sky-500 to-blue-500',
+  },
+  {
+    path: '/reservations',
+    label: 'Reservations',
+    icon: CalendarDays,
+    color: 'from-fuchsia-500 to-pink-500',
+  },
+  {
+    path: '/kitchen',
+    label: 'Kitchen',
+    icon: ChefHat,
+    color: 'from-amber-500 to-yellow-500',
+  },
+  {
+    path: '/billing',
+    label: 'Billing',
+    icon: Receipt,
+    color: 'from-violet-500 to-purple-500',
+  },
+  {
+    path: '/reports',
+    label: 'Reports',
+    icon: BarChart3,
+    color: 'from-cyan-500 to-teal-500',
+  },
+  {
+    path: '/menu',
+    label: 'Menu',
+    icon: UtensilsCrossed,
+    color: 'from-rose-500 to-pink-500',
+  },
+  {
+    path: '/users',
+    label: 'Users',
+    icon: Users,
+    color: 'from-indigo-500 to-violet-500',
+  },
+  {
+    path: '/settings',
+    label: 'Settings',
+    icon: Settings,
+    color: 'from-slate-500 to-gray-500',
+  },
 ];
 
 function getNavItemsForRole(role: UserRole): NavItem[] {
-  return allNavItems.filter(item => canAccessRoute(role, item.path));
+  return allNavItems.filter((item) => canAccessRoute(role, item.path));
 }
 
 interface MainLayoutProps {
@@ -81,15 +133,17 @@ export function MainLayout({ children }: MainLayoutProps) {
   const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = location.pathname === item.path;
     const Icon = item.icon;
-    
+
     // Calculate badge count
     let badgeCount = 0;
     if (item.path === '/orders') {
-      badgeCount = orders.filter(o => !['collected', 'cancelled'].includes(o.status)).length;
+      badgeCount = orders.filter(
+        (o) => !['collected', 'cancelled'].includes(o.status),
+      ).length;
     } else if (item.path === '/kitchen') {
-      badgeCount = orders.filter(o => o.status === 'new').length;
+      badgeCount = orders.filter((o) => o.status === 'new').length;
     } else if (item.path === '/billing') {
-      badgeCount = orders.filter(o => o.status === 'served').length;
+      badgeCount = orders.filter((o) => o.status === 'served').length;
     }
 
     return (
@@ -100,7 +154,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           'flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group',
           isActive
             ? `bg-gradient-to-r ${item.color} text-white shadow-lg`
-            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80'
+            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80',
         )}
       >
         <div className="flex items-center gap-3">
@@ -113,14 +167,16 @@ export function MainLayout({ children }: MainLayoutProps) {
           )}
           <span>{item.label}</span>
         </div>
-        
+
         {badgeCount > 0 && (
-          <span className={cn(
-            "flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold",
-            isActive 
-              ? "bg-white/25 text-white" 
-              : "bg-primary text-primary-foreground"
-          )}>
+          <span
+            className={cn(
+              'flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold',
+              isActive
+                ? 'bg-white/25 text-white'
+                : 'bg-primary text-primary-foreground',
+            )}
+          >
             {badgeCount > 99 ? '99+' : badgeCount}
           </span>
         )}
@@ -130,10 +186,14 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
-      case 'admin': return 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400';
-      case 'waiter': return 'bg-gradient-to-r from-sky-500/20 to-blue-500/20 text-sky-400';
-      case 'cashier': return 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400';
-      case 'kitchen': return 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-yellow-400';
+      case 'admin':
+        return 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400';
+      case 'waiter':
+        return 'bg-gradient-to-r from-sky-500/20 to-blue-500/20 text-sky-400';
+      case 'cashier':
+        return 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400';
+      case 'kitchen':
+        return 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-yellow-400';
     }
   };
 
@@ -150,14 +210,16 @@ export function MainLayout({ children }: MainLayoutProps) {
             <h1 className="font-bold text-base xl:text-lg truncate">
               <span className="text-gradient-primary">Kaveri</span>
             </h1>
-            <p className="text-[10px] xl:text-xs text-muted-foreground truncate">Order Management</p>
+            <p className="text-[10px] xl:text-xs text-muted-foreground truncate">
+              Order Management
+            </p>
           </div>
           <AnimatedThemeToggler />
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 p-3 xl:p-4 space-y-1 overflow-y-auto touch-scroll">
-          {navItems.map(item => (
+          {navItems.map((item) => (
             <NavLink key={item.path} item={item} />
           ))}
         </nav>
@@ -171,8 +233,15 @@ export function MainLayout({ children }: MainLayoutProps) {
                   <User className="w-4 xl:w-5 h-4 xl:h-5 text-primary" />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-xs xl:text-sm font-medium truncate">{user.name}</p>
-                  <span className={cn('text-[10px] xl:text-xs px-1.5 xl:px-2 py-0.5 rounded-full capitalize font-medium', getRoleBadgeColor(user.role))}>
+                  <p className="text-xs xl:text-sm font-medium truncate">
+                    {user.name}
+                  </p>
+                  <span
+                    className={cn(
+                      'text-[10px] xl:text-xs px-1.5 xl:px-2 py-0.5 rounded-full capitalize font-medium',
+                      getRoleBadgeColor(user.role),
+                    )}
+                  >
                     {user.role}
                   </span>
                 </div>
@@ -181,8 +250,8 @@ export function MainLayout({ children }: MainLayoutProps) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => setIsLogoutDialogOpen(true)} 
+              <DropdownMenuItem
+                onClick={() => setIsLogoutDialogOpen(true)}
                 className="text-destructive focus:text-destructive cursor-pointer px-3 py-2.5 rounded-lg transition-colors hover:bg-destructive/10"
               >
                 <LogOut className="w-4 h-4 mr-2" />
@@ -203,26 +272,33 @@ export function MainLayout({ children }: MainLayoutProps) {
             <span className="font-bold text-gradient-primary">Kaveri</span>
           </div>
           <div className="flex items-center gap-2">
-            {location.pathname === '/orders/new' && (currentOrder?.items?.length || 0) > 0 && (
-              <Button
-                variant="outline"
-                size="icon"
-                className="relative rounded-xl border-primary/20 bg-primary/5 hover:bg-primary/10 mr-1"
-                onClick={() => document.getElementById('mobile-cart-button')?.click()}
-              >
-                <ShoppingCart className="w-5 h-5 text-primary" />
-                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white min-w-[18px] h-[18px] px-1 rounded-full text-[10px] flex items-center justify-center font-bold shadow-sm shadow-red-500/20">
-                  {currentOrder?.items?.length}
-                </span>
-              </Button>
-            )}
+            {location.pathname === '/orders/new' &&
+              (currentOrder?.items?.length || 0) > 0 && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="relative rounded-xl border-primary/20 bg-primary/5 hover:bg-primary/10 mr-1"
+                  onClick={() =>
+                    document.getElementById('mobile-cart-button')?.click()
+                  }
+                >
+                  <ShoppingCart className="w-5 h-5 text-primary" />
+                  <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white min-w-[18px] h-[18px] px-1 rounded-full text-[10px] flex items-center justify-center font-bold shadow-sm shadow-red-500/20">
+                    {currentOrder?.items?.length}
+                  </span>
+                </Button>
+              )}
             <AnimatedThemeToggler />
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </Button>
           </div>
         </div>
@@ -230,7 +306,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border p-4 space-y-1 animate-slide-in-up shadow-xl">
-            {navItems.map(item => (
+            {navItems.map((item) => (
               <NavLink key={item.path} item={item} />
             ))}
             <button
@@ -263,7 +339,8 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
             <DialogTitle className="text-xl font-bold">Sign Out</DialogTitle>
             <DialogDescription className="text-base text-muted-foreground">
-              Are you sure you want to sign out? You will need to log in again to access your account.
+              Are you sure you want to sign out? You will need to log in again
+              to access your account.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-2">

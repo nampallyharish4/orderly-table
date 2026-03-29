@@ -54,7 +54,13 @@ export interface Table {
 }
 
 export type OrderType = 'dine-in' | 'takeaway';
-export type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'collected' | 'cancelled';
+export type OrderStatus =
+  | 'new'
+  | 'preparing'
+  | 'ready'
+  | 'served'
+  | 'collected'
+  | 'cancelled';
 export type OrderItemStatus = 'pending' | 'preparing' | 'ready';
 
 export interface OrderItemAddOn {
@@ -166,12 +172,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'view_kitchen',
     'print_bill',
   ],
-  waiter: [
-    'create_orders',
-    'manage_orders',
-    'view_tables',
-    'view_menu',
-  ],
+  waiter: ['create_orders', 'manage_orders', 'view_tables', 'view_menu'],
   cashier: [
     'create_orders',
     'manage_orders',
@@ -180,10 +181,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'view_tables',
     'print_bill',
   ],
-  kitchen: [
-    'view_kitchen',
-    'update_order_status',
-  ],
+  kitchen: ['view_kitchen', 'update_order_status'],
 };
 
 export function hasPermission(role: UserRole, permission: string): boolean {
@@ -197,6 +195,7 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
     '/menu': ['admin'],
     '/orders': ['admin', 'waiter', 'cashier'],
     '/orders/new': ['admin', 'waiter', 'cashier'],
+    '/reservations': ['admin', 'waiter', 'cashier'],
     '/kitchen': ['admin', 'kitchen'],
     '/billing': ['admin', 'cashier'],
     '/reports': ['admin'],
