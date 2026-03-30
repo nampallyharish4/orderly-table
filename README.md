@@ -1,65 +1,146 @@
-# Orderly Table - Restaurant POS System
+# Orderly Table
 
-A modern Point of Sale (POS) system built for restaurant management, with a premium UI and dedicated backend.
+Orderly Table is a restaurant POS and operations app with a React frontend and Spring Boot backend.
 
-## Architecture
+## Tech Stack
 
-- **Frontend**: React (Vite) + TypeScript + TailwindCSS + shadcn/ui
-- **Backend**: Spring Boot 3 + PostgreSQL (Supabase)
+- Frontend: React + TypeScript + Vite + Tailwind + shadcn/ui
+- Backend: Spring Boot 3 (Java 17) + JPA
+- Database: PostgreSQL (configured for Supabase)
 
-## Deployment Instructions
+## Repository Layout
 
-### Backend (Render)
+- `frontend/`: Vite React application
+- `backend/`: Spring Boot API service
+- `data for migration/`: SQL and JSON files for menu/table/user migration tasks
 
-1. Connect your Github repository to [Render](https://render.com/).
-2. Create a new **Web Service**.
-3. Set **Root Directory** to `backend`.
-4. Render will automatically detect the `Dockerfile`.
-5. Add the following **Environment Variables**:
-   - `PORT`: `8080` (or any value, the app will adapt)
-   - `SUPABASE_DB_HOST`: Your Supabase database host
-   - `SUPABASE_DB_USER`: Your Supabase database user
-   - `SUPABASE_DB_PASSWORD`: Your Supabase database password
+## Prerequisites
 
-### Frontend (Vercel)
+- Node.js 18+
+- npm 9+
+- Java 17
+- Maven 3.9+
+- PostgreSQL-compatible database (Supabase recommended)
 
-1. Connect your Github repository to [Vercel](https://vercel.com/).
-2. Initialize a new project and select the **root** of the repository.
-3. Vercel will detect the Vite project in `frontend/`.
-4. Set **Root Directory** to `frontend`.
-5. In **vercel.json** (already provided), ensure the API proxy points to your Render backend URL:
-   ```json
-   {
-     "rewrites": [
-       {
-         "source": "/api/(.*)",
-         "destination": "https://your-render-app-name.onrender.com/api/$1"
-       }
-     ]
-   }
-   ```
-   *Replace `your-render-app-name` with your actual Render service URL.*
+## Local Development
 
-## Development
+### 1. Configure backend environment
+
+Create `backend/.env` with the following values:
+
+```env
+PORT=8081
+SUPABASE_DB_HOST=your-db-host
+SUPABASE_DB_PORT=6543
+SUPABASE_DB_USER=your-db-user
+SUPABASE_DB_PASSWORD=your-db-password
+
+# Optional AI settings
+GROQ_API_KEY=
+GROQ_API_URL=https://api.groq.com/openai/v1/chat/completions
+GROQ_API_MODEL=llama-3.1-8b-instant
+```
+
+Notes:
+
+- If `PORT` is not set, backend defaults to `8081`.
+- `SUPABASE_DB_PORT` defaults to `6543` when omitted.
+
+### 2. Run backend
+
+From repository root:
+
+```bat
+start-backend.bat
+```
+
+Or manually:
 
 ```sh
-# Root project
+cd backend
+mvn spring-boot:run
+```
+
+### 3. Run frontend
+
+```sh
 cd frontend
 npm install
 npm run dev
-
-# For backend
-cd backend
-mvn clean compile spring-boot:run
 ```
+
+Frontend dev server runs on `http://localhost:5000`.
+
+In development, `/api` requests are proxied to `http://localhost:8081` via Vite config.
+
+### 4. Run both services on Windows
+
+From repository root:
+
+```bat
+start-app.bat
+```
+
+## Frontend Environment
+
+Optional: create `frontend/.env`.
+
+```env
+VITE_API_URL=
+```
+
+- Leave empty to use relative API paths (for same-origin/proxy setups).
+- Set to a full backend URL (for example `https://your-api-domain`) when deploying frontend and backend separately.
+
+## Useful Commands
+
+### Frontend
+
+```sh
+cd frontend
+npm run dev
+npm run build
+npm run test
+npm run lint
+```
+
+### Backend
+
+```sh
+cd backend
+mvn clean test
+mvn spring-boot:run
+```
+
+## Deployment
+
+### Backend on Render
+
+1. Create a Web Service from this repository.
+2. Set Root Directory to `backend`.
+3. Use the included `backend/Dockerfile`.
+4. Configure env vars:
+   - `PORT`
+   - `SUPABASE_DB_HOST`
+   - `SUPABASE_DB_PORT` (optional, defaults to `6543`)
+   - `SUPABASE_DB_USER`
+   - `SUPABASE_DB_PASSWORD`
+   - `GROQ_API_KEY` (optional)
+
+### Frontend on Vercel
+
+1. Import repository in Vercel.
+2. Set Root Directory to `frontend`.
+3. Keep `frontend/vercel.json` rewrite updated to your backend URL if using path proxying.
+4. Alternatively set `VITE_API_URL` in Vercel environment variables.
 
 ## Features
 
-- **Table Management**: Real-time occupation status with staff tracking.
-- **Premium UI**: Custom-designed switches, animated loading states, and modern typography.
-- **Menu Management**: Dynamic categories/items with image support.
-- **Global Loading**: Global progress indicators for all async operations.
-- **Order Flow**: Multi-table order handling with kitchen status updates.
+- Table management and occupancy tracking
+- Menu and category management
+- Order lifecycle workflow
+- Kitchen and billing related pages
+- Role-aware/authenticated UI flows
 
 ## License
 
