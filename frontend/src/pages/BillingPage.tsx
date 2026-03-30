@@ -19,8 +19,17 @@ import {
 } from 'lucide-react';
 import { Order } from '@/types';
 import { toast } from 'sonner';
+import { useRestaurantSettings } from '@/contexts/RestaurantSettingsContext';
 
 const PROCESSING_UI_MS = 1000;
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const BillingPage = () => {
   const {
@@ -30,6 +39,7 @@ const BillingPage = () => {
     isLoading,
     isOrderSyncing,
   } = useOrders();
+  const { settings } = useRestaurantSettings();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<
     'cash' | 'upi' | 'split' | null
@@ -150,6 +160,12 @@ const BillingPage = () => {
 
   const printBill = (order: Order) => {
     const tax = getTaxBreakdown(order);
+    const restaurantName = escapeHtml(
+      settings.restaurantName?.trim() || 'Restaurant',
+    );
+    const restaurantAddress = escapeHtml(settings.address?.trim() || '');
+    const restaurantPhone = escapeHtml(settings.phone?.trim() || '');
+    const restaurantEmail = escapeHtml(settings.email?.trim() || '');
 
     const printContent = `
       <!DOCTYPE html>
@@ -216,7 +232,10 @@ const BillingPage = () => {
         </head>
         <body>
           <div class="header">
-            <h1>KAVERI FAMILY RESTAURANT</h1>
+            <h1>${restaurantName.toUpperCase()}</h1>
+            ${restaurantAddress ? `<p>${restaurantAddress}</p>` : ''}
+            ${restaurantPhone ? `<p>Ph: ${restaurantPhone}</p>` : ''}
+            ${restaurantEmail ? `<p>${restaurantEmail}</p>` : ''}
             <p>--------------------------------</p>
             <p>Order: ${order.orderNumber}</p>
             <p>${order.orderType === 'dine-in' && order.tableNumber ? `Table: ${order.tableNumber}` : 'Takeaway'}</p>

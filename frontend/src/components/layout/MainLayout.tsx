@@ -40,6 +40,7 @@ import {
 import { useState } from 'react';
 import { canAccessRoute, UserRole } from '@/types';
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
+import { useRestaurantSettings } from '@/contexts/RestaurantSettingsContext';
 
 interface NavItem {
   path: string;
@@ -121,12 +122,15 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const { user, logout } = useAuth();
+  const { settings } = useRestaurantSettings();
   const { orders, currentOrder } = useOrders();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   if (!user) return null;
+
+  const restaurantName = settings.restaurantName?.trim() || 'Restaurant';
 
   const navItems = getNavItemsForRole(user.role);
 
@@ -207,10 +211,10 @@ export function MainLayout({ children }: MainLayoutProps) {
             <Utensils className="w-4 xl:w-5 h-4 xl:h-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="font-bold text-base xl:text-lg truncate">
-              <span className="text-gradient-primary">Kaveri</span>
+            <h1 className="font-bold text-base xl:text-lg text-gradient-primary whitespace-normal break-words leading-tight">
+              {restaurantName}
             </h1>
-            <p className="text-[10px] xl:text-xs text-muted-foreground truncate">
+            <p className="text-[10px] xl:text-xs text-muted-foreground whitespace-normal leading-tight mt-0.5">
               Order Management
             </p>
           </div>
@@ -265,11 +269,18 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-border">
         <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-md shadow-primary/20">
               <Utensils className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-gradient-primary">Kaveri</span>
+            <div className="max-w-[55vw] min-w-0">
+              <p className="font-bold text-gradient-primary text-sm leading-tight whitespace-normal break-words">
+                {restaurantName}
+              </p>
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                Order Management
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {location.pathname === '/orders/new' &&

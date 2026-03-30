@@ -16,6 +16,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { printBill } from '@/utils/printBill';
 import { useOrders } from '@/contexts/OrderContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRestaurantSettings } from '@/contexts/RestaurantSettingsContext';
 import { toast } from 'sonner';
 
 interface OrderCardProps {
@@ -33,6 +34,7 @@ function OrderCardComponent({
 }: OrderCardProps) {
   const { updateOrderStatus, isOrderSyncing } = useOrders();
   const { user } = useAuth();
+  const { settings } = useRestaurantSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const timeAgo = useMemo(
     () => formatDistanceToNow(order.createdAt, { addSuffix: true }),
@@ -47,7 +49,12 @@ function OrderCardComponent({
 
   const handlePrint = (e: React.MouseEvent) => {
     e.stopPropagation();
-    printBill(order);
+    printBill(order, {
+      restaurantName: settings.restaurantName,
+      address: settings.address,
+      phone: settings.phone,
+      email: settings.email,
+    });
   };
 
   const handleMarkServed = async (e: React.MouseEvent) => {

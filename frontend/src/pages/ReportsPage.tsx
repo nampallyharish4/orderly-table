@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  BarChart3, 
-  DollarSign, 
-  ShoppingCart, 
+import {
+  BarChart3,
+  DollarSign,
+  ShoppingCart,
   Clock,
   Download,
   Calendar,
@@ -13,7 +13,7 @@ import {
   Banknote,
   Smartphone,
   Users,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -22,8 +22,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useOrders } from '@/contexts/OrderContext';
+import { useRestaurantSettings } from '@/contexts/RestaurantSettingsContext';
 import { toast } from 'sonner';
-import { format, startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter } from 'date-fns';
+import {
+  format,
+  startOfDay,
+  startOfWeek,
+  startOfMonth,
+  startOfYear,
+  isAfter,
+} from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -39,6 +47,7 @@ const dateRangeLabels: Record<DateRange, string> = {
 
 export default function ReportsPage() {
   const { orders, isLoading } = useOrders();
+  const { settings } = useRestaurantSettings();
   const [dateRange, setDateRange] = useState<DateRange>('month');
 
   const getDateRangeStart = (range: DateRange): Date | null => {
@@ -60,91 +69,136 @@ export default function ReportsPage() {
   const filterByDateRange = (orderDate: Date) => {
     const rangeStart = getDateRangeStart(dateRange);
     if (!rangeStart) return true;
-    return isAfter(new Date(orderDate), rangeStart) || new Date(orderDate).getTime() === rangeStart.getTime();
+    return (
+      isAfter(new Date(orderDate), rangeStart) ||
+      new Date(orderDate).getTime() === rangeStart.getTime()
+    );
   };
 
-  const filteredOrders = orders.filter(o => filterByDateRange(o.createdAt));
-  const completedOrders = filteredOrders.filter(o => o.status === 'served' || o.status === 'collected');
-  const pendingOrders = filteredOrders.filter(o => o.status === 'new' || o.status === 'preparing' || o.status === 'ready');
-  const cancelledOrders = filteredOrders.filter(o => o.status === 'cancelled');
+  const filteredOrders = orders.filter((o) => filterByDateRange(o.createdAt));
+  const completedOrders = filteredOrders.filter(
+    (o) => o.status === 'served' || o.status === 'collected',
+  );
+  const pendingOrders = filteredOrders.filter(
+    (o) =>
+      o.status === 'new' || o.status === 'preparing' || o.status === 'ready',
+  );
+  const cancelledOrders = filteredOrders.filter(
+    (o) => o.status === 'cancelled',
+  );
 
-  const totalRevenue = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-  const avgOrderValue = completedOrders.length > 0 ? totalRevenue / completedOrders.length : 0;
-  
+  const totalRevenue = completedOrders.reduce(
+    (sum, o) => sum + o.totalAmount,
+    0,
+  );
+  const avgOrderValue =
+    completedOrders.length > 0 ? totalRevenue / completedOrders.length : 0;
+
   // Calculate cash and UPI revenue including split payments
-  const paidOrders = completedOrders.filter(o => o.payment?.method);
-  
+  const paidOrders = completedOrders.filter((o) => o.payment?.method);
+
   const cashRevenue = paidOrders.reduce((sum, o) => {
     if (o.payment?.method === 'cash') return sum + o.totalAmount;
-    if (o.payment?.method === 'split' && o.payment?.cashAmount) return sum + o.payment.cashAmount;
+    if (o.payment?.method === 'split' && o.payment?.cashAmount)
+      return sum + o.payment.cashAmount;
     return sum;
   }, 0);
-  
+
   const upiRevenue = paidOrders.reduce((sum, o) => {
     if (o.payment?.method === 'upi') return sum + o.totalAmount;
-    if (o.payment?.method === 'split' && o.payment?.upiAmount) return sum + o.payment.upiAmount;
+    if (o.payment?.method === 'split' && o.payment?.upiAmount)
+      return sum + o.payment.upiAmount;
     return sum;
   }, 0);
-  
+
   // Count orders that have cash component (full cash or split with cash)
-  const cashOrderCount = paidOrders.filter(o => 
-    o.payment?.method === 'cash' || 
-    (o.payment?.method === 'split' && o.payment?.cashAmount && o.payment.cashAmount > 0)
+  const cashOrderCount = paidOrders.filter(
+    (o) =>
+      o.payment?.method === 'cash' ||
+      (o.payment?.method === 'split' &&
+        o.payment?.cashAmount &&
+        o.payment.cashAmount > 0),
   ).length;
-  
+
   // Count orders that have UPI component (full UPI or split with UPI)
-  const upiOrderCount = paidOrders.filter(o => 
-    o.payment?.method === 'upi' || 
-    (o.payment?.method === 'split' && o.payment?.upiAmount && o.payment.upiAmount > 0)
+  const upiOrderCount = paidOrders.filter(
+    (o) =>
+      o.payment?.method === 'upi' ||
+      (o.payment?.method === 'split' &&
+        o.payment?.upiAmount &&
+        o.payment.upiAmount > 0),
   ).length;
 
   const exportToPDF = () => {
-    const dineInOrders = filteredOrders.filter(o => o.orderType === 'dine-in');
-    const takeawayOrders = filteredOrders.filter(o => o.orderType === 'takeaway');
-    
+    const restaurantName = settings.restaurantName?.trim() || 'Restaurant';
+    const fileSafeRestaurantName = restaurantName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const dineInOrders = filteredOrders.filter(
+      (o) => o.orderType === 'dine-in',
+    );
+    const takeawayOrders = filteredOrders.filter(
+      (o) => o.orderType === 'takeaway',
+    );
+
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const reportDate = format(new Date(), 'dd MMM yyyy');
     const periodLabel = dateRangeLabels[dateRange];
-    
-    const addOrdersTable = (orders: typeof filteredOrders, title: string, startY: number) => {
+
+    const addOrdersTable = (
+      orders: typeof filteredOrders,
+      title: string,
+      startY: number,
+    ) => {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text(title, 14, startY);
-      
+
       const orderTotal = orders.reduce((sum, o) => sum + o.totalAmount, 0);
       const cashTotal = orders.reduce((sum, o) => {
         if (o.payment?.method === 'cash') return sum + o.totalAmount;
-        if (o.payment?.method === 'split' && o.payment?.cashAmount) return sum + o.payment.cashAmount;
+        if (o.payment?.method === 'split' && o.payment?.cashAmount)
+          return sum + o.payment.cashAmount;
         return sum;
       }, 0);
       const upiTotal = orders.reduce((sum, o) => {
         if (o.payment?.method === 'upi') return sum + o.totalAmount;
-        if (o.payment?.method === 'split' && o.payment?.upiAmount) return sum + o.payment.upiAmount;
+        if (o.payment?.method === 'split' && o.payment?.upiAmount)
+          return sum + o.payment.upiAmount;
         return sum;
       }, 0);
-      
+
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Total Orders: ${orders.length} | Total: Rs.${orderTotal.toLocaleString()} | Cash: Rs.${cashTotal.toLocaleString()} | UPI: Rs.${upiTotal.toLocaleString()}`, 14, startY + 6);
-      
-      const tableData = orders.map(order => [
+      doc.text(
+        `Total Orders: ${orders.length} | Total: Rs.${orderTotal.toLocaleString()} | Cash: Rs.${cashTotal.toLocaleString()} | UPI: Rs.${upiTotal.toLocaleString()}`,
+        14,
+        startY + 6,
+      );
+
+      const tableData = orders.map((order) => [
         order.orderNumber,
         format(new Date(order.createdAt), 'dd/MM HH:mm'),
         order.tableNumber || '-',
-        order.items.map(i => `${i.menuItemName} x${i.quantity}`).join(', '),
-        order.payment?.method === 'split' 
+        order.items.map((i) => `${i.menuItemName} x${i.quantity}`).join(', '),
+        order.payment?.method === 'split'
           ? `Split (C:${order.payment.cashAmount} U:${order.payment.upiAmount})`
-          : (order.payment?.method || 'Pending'),
+          : order.payment?.method || 'Pending',
         `Rs.${order.totalAmount.toLocaleString()}`,
       ]);
-      
+
       autoTable(doc, {
         startY: startY + 10,
         head: [['Order #', 'Date/Time', 'Table', 'Items', 'Payment', 'Total']],
         body: tableData,
         styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [245, 158, 11], textColor: [0, 0, 0], fontStyle: 'bold' },
+        headStyles: {
+          fillColor: [245, 158, 11],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold',
+        },
         columnStyles: {
           0: { cellWidth: 30 },
           1: { cellWidth: 22 },
@@ -156,50 +210,60 @@ export default function ReportsPage() {
         alternateRowStyles: { fillColor: [250, 250, 250] },
       });
     };
-    
+
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('Kaveri Family Restaurant', pageWidth / 2, 20, { align: 'center' });
-    
+    doc.text(restaurantName, pageWidth / 2, 20, { align: 'center' });
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Sales Report - ${periodLabel}`, pageWidth / 2, 28, { align: 'center' });
-    doc.text(`Generated on: ${reportDate}`, pageWidth / 2, 34, { align: 'center' });
-    
+    doc.text(`Sales Report - ${periodLabel}`, pageWidth / 2, 28, {
+      align: 'center',
+    });
+    doc.text(`Generated on: ${reportDate}`, pageWidth / 2, 34, {
+      align: 'center',
+    });
+
     doc.setDrawColor(245, 158, 11);
     doc.setLineWidth(0.5);
     doc.line(14, 40, pageWidth - 14, 40);
-    
+
     if (dineInOrders.length > 0) {
       addOrdersTable(dineInOrders, 'Dine-In Orders', 48);
     } else {
       doc.setFontSize(12);
       doc.text('Dine-In Orders: No orders found', 14, 48);
     }
-    
+
     doc.addPage();
-    
+
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('Kaveri Family Restaurant', pageWidth / 2, 20, { align: 'center' });
-    
+    doc.text(restaurantName, pageWidth / 2, 20, { align: 'center' });
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Sales Report - ${periodLabel}`, pageWidth / 2, 28, { align: 'center' });
-    doc.text(`Generated on: ${reportDate}`, pageWidth / 2, 34, { align: 'center' });
-    
+    doc.text(`Sales Report - ${periodLabel}`, pageWidth / 2, 28, {
+      align: 'center',
+    });
+    doc.text(`Generated on: ${reportDate}`, pageWidth / 2, 34, {
+      align: 'center',
+    });
+
     doc.setDrawColor(245, 158, 11);
     doc.setLineWidth(0.5);
     doc.line(14, 40, pageWidth - 14, 40);
-    
+
     if (takeawayOrders.length > 0) {
       addOrdersTable(takeawayOrders, 'Takeaway Orders', 48);
     } else {
       doc.setFontSize(12);
       doc.text('Takeaway Orders: No orders found', 14, 48);
     }
-    
-    doc.save(`kaveri-report-${periodLabel.toLowerCase().replace(' ', '-')}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+
+    doc.save(
+      `${fileSafeRestaurantName || 'restaurant'}-report-${periodLabel.toLowerCase().replace(' ', '-')}-${format(new Date(), 'yyyy-MM-dd')}.pdf`,
+    );
     toast.success('PDF report downloaded successfully');
   };
 
@@ -243,18 +307,25 @@ export default function ReportsPage() {
   ];
 
   const getTopItems = () => {
-    const itemCounts: Record<string, { name: string; orders: number; revenue: number }> = {};
-    
-    filteredOrders.forEach(order => {
-      order.items?.forEach(item => {
+    const itemCounts: Record<
+      string,
+      { name: string; orders: number; revenue: number }
+    > = {};
+
+    filteredOrders.forEach((order) => {
+      order.items?.forEach((item) => {
         if (!itemCounts[item.menuItemId]) {
-          itemCounts[item.menuItemId] = { name: item.menuItemName, orders: 0, revenue: 0 };
+          itemCounts[item.menuItemId] = {
+            name: item.menuItemName,
+            orders: 0,
+            revenue: 0,
+          };
         }
         itemCounts[item.menuItemId].orders += item.quantity;
         itemCounts[item.menuItemId].revenue += item.totalPrice;
       });
     });
-    
+
     return Object.values(itemCounts)
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
@@ -264,7 +335,10 @@ export default function ReportsPage() {
 
   if (isLoading && orders.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64" data-testid="reports-loading">
+      <div
+        className="flex items-center justify-center h-64"
+        data-testid="reports-loading"
+      >
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2 text-muted-foreground">Loading reports...</span>
       </div>
@@ -276,12 +350,18 @@ export default function ReportsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Reports</h1>
-          <p className="text-sm text-muted-foreground">View sales and performance analytics</p>
+          <p className="text-sm text-muted-foreground">
+            View sales and performance analytics
+          </p>
         </div>
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" data-testid="button-date-range">
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="button-date-range"
+              >
                 <Calendar className="w-4 h-4 mr-2" />
                 {dateRangeLabels[dateRange]}
                 <ChevronDown className="w-3 h-3 ml-1" />
@@ -299,7 +379,12 @@ export default function ReportsPage() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm" onClick={exportToPDF} data-testid="button-export">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportToPDF}
+            data-testid="button-export"
+          >
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
@@ -317,7 +402,9 @@ export default function ReportsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.subtitle}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stat.subtitle}
+              </p>
             </CardContent>
           </Card>
         ))}
@@ -326,12 +413,18 @@ export default function ReportsPage() {
       <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Top Selling Items</CardTitle>
+            <CardTitle className="text-base sm:text-lg">
+              Top Selling Items
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {topItems.map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-0" data-testid={`top-item-${index}`}>
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-2 border-b border-border last:border-0"
+                  data-testid={`top-item-${index}`}
+                >
                   <div className="flex items-center gap-3">
                     <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-medium">
                       {index + 1}
@@ -339,8 +432,12 @@ export default function ReportsPage() {
                     <span className="font-medium text-sm">{item.name}</span>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-sm font-semibold">₹{item.revenue.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">{item.orders} orders</p>
+                    <p className="font-mono text-sm font-semibold">
+                      ₹{item.revenue.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.orders} orders
+                    </p>
                   </div>
                 </div>
               ))}
@@ -350,7 +447,9 @@ export default function ReportsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Order Summary</CardTitle>
+            <CardTitle className="text-base sm:text-lg">
+              Order Summary
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -361,10 +460,15 @@ export default function ReportsPage() {
                   </div>
                   <div>
                     <p className="font-medium">Completed Orders</p>
-                    <p className="text-xs text-muted-foreground">Successfully delivered</p>
+                    <p className="text-xs text-muted-foreground">
+                      Successfully delivered
+                    </p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="bg-green-500/10 text-green-500">
+                <Badge
+                  variant="secondary"
+                  className="bg-green-500/10 text-green-500"
+                >
                   {completedOrders.length}
                 </Badge>
               </div>
@@ -378,7 +482,10 @@ export default function ReportsPage() {
                     <p className="text-xs text-muted-foreground">In progress</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+                <Badge
+                  variant="secondary"
+                  className="bg-blue-500/10 text-blue-500"
+                >
                   {pendingOrders.length}
                 </Badge>
               </div>
@@ -392,7 +499,10 @@ export default function ReportsPage() {
                     <p className="text-xs text-muted-foreground">Refunded</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="bg-red-500/10 text-red-500">
+                <Badge
+                  variant="secondary"
+                  className="bg-red-500/10 text-red-500"
+                >
                   {cancelledOrders.length}
                 </Badge>
               </div>

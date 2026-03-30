@@ -1,12 +1,34 @@
 import { Order } from '@/types';
 import { format } from 'date-fns';
 
-export function printBill(order: Order) {
+interface RestaurantPrintDetails {
+  restaurantName?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+}
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+export function printBill(order: Order, restaurant?: RestaurantPrintDetails) {
   const printWindow = window.open('', '_blank', 'width=400,height=600');
   if (!printWindow) {
     alert('Please allow popups to print the bill');
     return;
   }
+
+  const restaurantName = escapeHtml(
+    restaurant?.restaurantName?.trim() || 'Restaurant',
+  );
+  const restaurantAddress = escapeHtml(restaurant?.address?.trim() || '');
+  const restaurantPhone = escapeHtml(restaurant?.phone?.trim() || '');
+  const restaurantEmail = escapeHtml(restaurant?.email?.trim() || '');
 
   const billContent = `
     <!DOCTYPE html>
@@ -151,8 +173,10 @@ export function printBill(order: Order) {
     </head>
     <body>
       <div class="header">
-        <h1>NAGALAKSHMI KAVERI</h1>
-        <p>Family Dhaba</p>
+        <h1>${restaurantName}</h1>
+        ${restaurantAddress ? `<p>${restaurantAddress}</p>` : ''}
+        ${restaurantPhone ? `<p>Ph: ${restaurantPhone}</p>` : ''}
+        ${restaurantEmail ? `<p>${restaurantEmail}</p>` : ''}
       </div>
       
       <div class="order-info">
@@ -169,13 +193,17 @@ export function printBill(order: Order) {
           <span class="item-qty">Qty</span>
           <span class="item-price">Amount</span>
         </div>
-        ${order.items.map(item => `
+        ${order.items
+          .map(
+            (item) => `
           <div class="item">
             <span class="item-name">${item.menuItemName}</span>
             <span class="item-qty">${item.quantity}</span>
             <span class="item-price">₹${item.totalPrice.toFixed(0)}</span>
           </div>
-        `).join('')}
+        `,
+          )
+          .join('')}
       </div>
       
       <div class="total">
@@ -186,8 +214,8 @@ export function printBill(order: Order) {
       <div class="paid-stamp-container">
         <div class="paid-stamp">
           <div class="stamp-outer-text">
-            <span class="stamp-top">★ Nagalaxmi Kaveri Family Dhaba ★</span>
-            <span class="stamp-bottom">★ Chinthapally ★</span>
+            <span class="stamp-top">★ ${restaurantName} ★</span>
+            ${restaurantAddress ? `<span class="stamp-bottom">★ ${restaurantAddress} ★</span>` : ''}
           </div>
           <span class="paid-stamp-text">PAID</span>
         </div>

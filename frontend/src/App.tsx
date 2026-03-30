@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { OrderProvider } from '@/contexts/OrderContext';
 import { LoadingProvider } from '@/contexts/LoadingContext';
+import { RestaurantSettingsProvider } from '@/contexts/RestaurantSettingsContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -31,136 +32,138 @@ const App = () => (
     <TooltipProvider>
       <LoadingProvider>
         <ThemeProvider>
-          <AuthProvider>
-            <OrderProvider>
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <DashboardPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/tables"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <TablesPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/orders"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <OrdersPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/orders/:id"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <OrderDetailPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/orders/new"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <NewOrderPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/kitchen"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <KitchenPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/billing"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <BillingPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/reports"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <ReportsPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/users"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <UsersPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/menu"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <MenuManagementPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/reservations"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <ReservationsPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <ProtectedRoute>
-                        <MainLayout>
-                          <SettingsPage />
-                        </MainLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </OrderProvider>
-          </AuthProvider>
+          <RestaurantSettingsProvider>
+            <AuthProvider>
+              <OrderProvider>
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route
+                      path="/"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <DashboardPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/tables"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <TablesPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/orders"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <OrdersPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/orders/:id"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <OrderDetailPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/orders/new"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <NewOrderPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/kitchen"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <KitchenPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/billing"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <BillingPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/reports"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <ReportsPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/users"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <UsersPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/menu"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <MenuManagementPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/reservations"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <ReservationsPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute>
+                          <MainLayout>
+                            <SettingsPage />
+                          </MainLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </OrderProvider>
+            </AuthProvider>
+          </RestaurantSettingsProvider>
         </ThemeProvider>
       </LoadingProvider>
     </TooltipProvider>
