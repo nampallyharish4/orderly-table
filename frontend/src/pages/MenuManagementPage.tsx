@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '@/config';
 import { useOrders } from '@/contexts/OrderContext';
 import {
@@ -33,6 +33,10 @@ import { MenuItem } from '@/types';
 import { Plus, Pencil, Search, Trash2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getMenuItemImage } from '@/utils/menuImages';
+import {
+  buildSupabaseMenuRenderUrl,
+  getOptimizedMenuImageUrl,
+} from '@/utils/menuImageOptimization';
 
 export default function MenuManagementPage() {
   const { menuItems, categories, refreshData, isLoading } = useOrders();
@@ -47,6 +51,10 @@ export default function MenuManagementPage() {
   const [optimisticAvailability, setOptimisticAvailability] = useState<
     Record<string, boolean>
   >({});
+  const [loadedMenuImageIds, setLoadedMenuImageIds] = useState<
+    Record<string, boolean>
+  >({});
+  const prefetchedImageUrlsRef = useRef<Set<string>>(new Set());
 
   const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
@@ -76,6 +84,34 @@ export default function MenuManagementPage() {
     }
     return true;
   });
+
+  useEffect(() => {
+    const aboveTheFoldImageUrls = filteredItems.slice(0, 12).flatMap((item) => {
+      const fallbackSupabaseUrl = buildSupabaseMenuRenderUrl(
+        `${item.id}.jpg`,
+        224,
+        224,
+        65,
+      );
+      const mappedImage = getMenuItemImage(item.name);
+      const sourceUrl = item.imageUrl || mappedImage || fallbackSupabaseUrl;
+      const optimizedUrl = getOptimizedMenuImageUrl(sourceUrl, 224, 224, 65);
+      const previewUrl = getOptimizedMenuImageUrl(sourceUrl, 24, 24, 25);
+
+      return previewUrl && previewUrl !== optimizedUrl
+        ? [previewUrl, optimizedUrl]
+        : [optimizedUrl];
+    });
+
+    aboveTheFoldImageUrls.forEach((url) => {
+      if (!url || prefetchedImageUrlsRef.current.has(url)) return;
+
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = url;
+      prefetchedImageUrlsRef.current.add(url);
+    });
+  }, [filteredItems]);
 
   const openEditDialog = (item: MenuItem) => {
     setEditingItem(item);
@@ -371,7 +407,7 @@ export default function MenuManagementPage() {
 
       <div className="h-[65vh] overflow-y-auto pr-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredItems.map((item) => {
+          {filteredItems.map((item, index) => {
             const isAvailable =
               optimisticAvailability[item.id] ?? item.isAvailable;
             return (
@@ -384,27 +420,73 @@ export default function MenuManagementPage() {
                     {/* Image Section - Large & Rounded like the image */}
                     <div className="relative shrink-0 w-28 h-28 rounded-2xl overflow-hidden bg-secondary shadow-lg border border-white/5">
                       {(() => {
-                        const supabaseUrl = `https://oslhmctcqgszovthxjwx.supabase.co/storage/v1/object/public/menu-items/${item.id}.jpg`;
-                        const displayUrl =
+                        const supabaseUrl = buildSupabaseMenuRenderUrl(
+                          `${item.id}.jpg`,
+                          224,
+                          224,
+                          65,
+                        );
+                        const displayUrl = getOptimizedMenuImageUrl(
                           item.imageUrl ||
-                          getMenuItemImage(item.name) ||
-                          supabaseUrl;
+                            getMenuItemImage(item.name) ||
+                            supabaseUrl,
+                          224,
+                          224,
+                          65,
+                        );
+                        const tinyPreviewUrl = getOptimizedMenuImageUrl(
+                          item.imageUrl ||
+                            getMenuItemImage(item.name) ||
+                            supabaseUrl,
+                          24,
+                          24,
+                          25,
+                        );
+                        const isImageLoaded =
+                          loadedMenuImageIds[item.id] === true;
 
                         return (
-                          <img
-                            src={displayUrl}
-                            alt={item.name}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              const placeholder =
-                                e.currentTarget.nextElementSibling;
-                              if (placeholder) {
-                                (placeholder as HTMLElement).style.opacity =
-                                  '1';
-                              }
-                            }}
-                          />
+                          <>
+                            {tinyPreviewUrl && (
+                              <div
+                                className={cn(
+                                  'absolute inset-0 bg-center bg-cover blur-sm scale-105 transition-opacity duration-200',
+                                  isImageLoaded ? 'opacity-0' : 'opacity-100',
+                                )}
+                                style={{
+                                  backgroundImage: `url(${tinyPreviewUrl})`,
+                                }}
+                                aria-hidden="true"
+                              />
+                            )}
+                            <img
+                              src={displayUrl}
+                              alt={item.name}
+                              className={cn(
+                                'w-full h-full object-cover transition-all duration-300 group-hover:scale-110',
+                                isImageLoaded ? 'opacity-100' : 'opacity-0',
+                              )}
+                              loading={index < 9 ? 'eager' : 'lazy'}
+                              fetchPriority={index < 9 ? 'high' : 'auto'}
+                              decoding="async"
+                              onLoad={() => {
+                                setLoadedMenuImageIds((prev) =>
+                                  prev[item.id]
+                                    ? prev
+                                    : { ...prev, [item.id]: true },
+                                );
+                              }}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const placeholder =
+                                  e.currentTarget.nextElementSibling;
+                                if (placeholder) {
+                                  (placeholder as HTMLElement).style.opacity =
+                                    '1';
+                                }
+                              }}
+                            />
+                          </>
                         );
                       })()}
 

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MenuItem, OrderItem } from '@/types';
@@ -31,6 +31,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { getMenuItemImage } from '@/utils/menuImages';
+import {
+  buildSupabaseMenuRenderUrl,
+  getOptimizedMenuImageUrl,
+} from '@/utils/menuImageOptimization';
 
 interface PairingSuggestion {
   name: string;
@@ -75,6 +80,7 @@ export default function NewOrderPage() {
   const recommendDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const prefetchedMenuImageUrlsRef = useRef<Set<string>>(new Set());
 
   // Get current cart item names for comparison
   const cartItemNames = useMemo(() => {
@@ -330,6 +336,36 @@ export default function NewOrderPage() {
     });
   }, [menuItems, selectedCategory, searchQuery]);
 
+  useEffect(() => {
+    const firstViewportImageUrls = filteredItems
+      .slice(0, 12)
+      .flatMap((item) => {
+        const fallbackSupabaseUrl = buildSupabaseMenuRenderUrl(
+          `${item.id}.jpg`,
+          480,
+          300,
+          60,
+        );
+        const sourceUrl =
+          item.imageUrl || getMenuItemImage(item.name) || fallbackSupabaseUrl;
+        const optimizedUrl = getOptimizedMenuImageUrl(sourceUrl, 480, 300, 60);
+        const previewUrl = getOptimizedMenuImageUrl(sourceUrl, 24, 24, 25);
+
+        return previewUrl && previewUrl !== optimizedUrl
+          ? [previewUrl, optimizedUrl]
+          : [optimizedUrl];
+      });
+
+    firstViewportImageUrls.forEach((url) => {
+      if (!url || prefetchedMenuImageUrlsRef.current.has(url)) return;
+
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = url;
+      prefetchedMenuImageUrlsRef.current.add(url);
+    });
+  }, [filteredItems]);
+
   const subtotal =
     currentOrder?.items?.reduce((sum, item) => sum + item.totalPrice, 0) || 0;
   const total = subtotal;
@@ -530,8 +566,8 @@ export default function NewOrderPage() {
         )}
 
         {/* Categories Section */}
-        <div className="mb-4 overflow-x-auto no-scrollbar scroll-smooth">
-          <div className="flex gap-2 min-w-max pb-1 items-center">
+        <ScrollArea className="mb-4 w-full whitespace-nowrap">
+          <div className="flex gap-2 min-w-max pb-1 items-center pr-2">
             <button
               onClick={() => setSelectedCategory('all')}
               className={cn(
@@ -588,7 +624,8 @@ export default function NewOrderPage() {
                 );
               })}
           </div>
-        </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
 
         {/* Menu Items */}
         <ScrollArea className="flex-1 -mx-2 px-2">

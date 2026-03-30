@@ -34,6 +34,11 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
               src={imageUrl}
               alt={item.name}
               cacheKey={`${item.id || item.name}:${imageUrl}`}
+              width={480}
+              height={300}
+              quality={60}
+              loading="lazy"
+              fetchPriority="auto"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
           </div>
@@ -86,6 +91,11 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
             src={imageUrl}
             alt={item.name}
             cacheKey={`${item.id || item.name}:${imageUrl}`}
+            width={640}
+            height={360}
+            quality={60}
+            loading="lazy"
+            fetchPriority="auto"
             className="w-full h-full object-cover"
           />
         </div>

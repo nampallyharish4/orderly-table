@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { getOptimizedMenuImageUrl } from '@/utils/menuImageOptimization';
 
 const CACHE_VERSION = import.meta.env.VITE_MENU_IMAGE_CACHE_VERSION || 'v1';
 const IMAGE_CACHE_NAME = `orderly-menu-images-${CACHE_VERSION}`;
@@ -127,6 +128,11 @@ interface CachedMenuImageProps {
   alt: string;
   className?: string;
   cacheKey?: string;
+  width?: number;
+  height?: number;
+  quality?: number;
+  loading?: 'eager' | 'lazy';
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
 
 export function CachedMenuImage({
@@ -134,13 +140,35 @@ export function CachedMenuImage({
   alt,
   className,
   cacheKey,
+  width = 360,
+  height = 360,
+  quality = 65,
+  loading = 'lazy',
+  fetchPriority = 'auto',
 }: CachedMenuImageProps) {
-  const stableKey = useMemo(() => cacheKey || src, [cacheKey, src]);
-  const [resolvedSrc, setResolvedSrc] = useState<string>(src);
+  const optimizedSrc = useMemo(
+    () => getOptimizedMenuImageUrl(src, width, height, quality),
+    [src, width, height, quality],
+  );
+  const previewSrc = useMemo(
+    () => getOptimizedMenuImageUrl(src, 24, 24, 25),
+    [src],
+  );
+  const stableKey = useMemo(
+    () => cacheKey || `${optimizedSrc}:${width}x${height}:q${quality}`,
+    [cacheKey, optimizedSrc, width, height, quality],
+  );
+  const [resolvedSrc, setResolvedSrc] = useState<string>(
+    previewSrc || optimizedSrc,
+  );
+  const [isLoaded, setIsLoaded] = useState<boolean>(
+    !previewSrc || previewSrc === optimizedSrc,
+  );
 
   useEffect(() => {
     let mounted = true;
-    setResolvedSrc(src);
+    setResolvedSrc(previewSrc || optimizedSrc);
+    setIsLoaded(!previewSrc || previewSrc === optimizedSrc);
 
     if (typeof window === 'undefined' || !('caches' in window)) {
       return;
@@ -150,18 +178,31 @@ export function CachedMenuImage({
       // Best-effort cleanup only.
     });
 
-    resolveCachedObjectUrl(stableKey, src).then((cachedObjectUrl) => {
+    resolveCachedObjectUrl(stableKey, optimizedSrc).then((cachedObjectUrl) => {
       if (mounted && cachedObjectUrl) {
         setResolvedSrc(cachedObjectUrl);
+        setIsLoaded(true);
       }
     });
 
     return () => {
       mounted = false;
     };
-  }, [src, stableKey]);
+  }, [previewSrc, optimizedSrc, stableKey]);
 
   return (
-    <img src={resolvedSrc} alt={alt} className={className} loading="lazy" />
+    <img
+      src={resolvedSrc}
+      alt={alt}
+      className={`${className || ''} transition-opacity duration-200 ${isLoaded ? 'opacity-100' : 'opacity-0'}`.trim()}
+      loading={loading}
+      fetchPriority={fetchPriority}
+      decoding="async"
+      onLoad={() => setIsLoaded(true)}
+      onError={() => {
+        setResolvedSrc(optimizedSrc);
+        setIsLoaded(true);
+      }}
+    />
   );
 }
