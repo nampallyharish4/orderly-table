@@ -505,7 +505,7 @@ export default function NewOrderPage() {
         </div>
       )}
       {/* Menu Section */}
-      <div className="flex-1 flex flex-col min-w-0 p-4 lg:p-0">
+      <div className="flex-1 flex flex-col min-w-0 p-4 pb-24 lg:pb-0 lg:p-0">
         {/* Header */}
         <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
           <Button
@@ -646,6 +646,30 @@ export default function NewOrderPage() {
       <div className="hidden lg:flex w-80 xl:w-96 flex-col border border-border/50 bg-card rounded-[2.5rem] shadow-glow-primary/10 overflow-hidden sticky top-6 h-[calc(100vh-140px)] animate-slide-in-right">
         <OrderSummaryContent />
       </div>
+
+      {/* Mobile Cart Entry Bar */}
+      {!showMobileCart && (
+        <div className="fixed bottom-3 left-3 right-3 z-50 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setShowMobileCart(true)}
+            className="w-full h-14 rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/30 flex items-center justify-between px-4"
+          >
+            <span className="font-bold">View Cart</span>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="secondary"
+                className="rounded-full bg-white/15 text-primary-foreground border-white/20"
+              >
+                {currentOrder?.items?.length || 0}
+              </Badge>
+              <span className="font-mono-price text-base font-extrabold">
+                ₹{total.toFixed(0)}
+              </span>
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Mobile Cart Full Screen View */}
       <div
