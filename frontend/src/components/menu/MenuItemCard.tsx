@@ -49,7 +49,7 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
         )}
         {/* Content below image */}
         <div className="p-2.5 sm:p-3 space-y-1.5">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-start gap-1.5">
             {item.isVeg ? (
               <div className="w-4 h-4 rounded border-2 border-green-500 flex items-center justify-center flex-shrink-0">
                 <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -59,7 +59,7 @@ export function MenuItemCard({ item, onClick, compact }: MenuItemCardProps) {
                 <div className="w-2 h-2 rounded-full bg-red-500" />
               </div>
             )}
-            <span className="font-bold text-sm sm:text-base text-foreground leading-tight truncate">
+            <span className="font-bold text-[13px] sm:text-sm md:text-base text-foreground leading-snug whitespace-normal break-words">
               {item.name}
             </span>
           </div>
