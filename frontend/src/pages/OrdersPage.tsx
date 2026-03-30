@@ -3,20 +3,12 @@ import { useOrders } from '@/contexts/OrderContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { OrderCard } from '@/components/orders/OrderCard';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { OrderStatus } from '@/types';
-import {
-  Plus,
-  Search,
-  Package,
-  Utensils,
-  Filter,
-  Loader2,
-  X,
-} from 'lucide-react';
+import { Plus, Search, Package, Utensils, Loader2, X } from 'lucide-react';
 
 export default function OrdersPage() {
   const { orders, createOrder, isLoading } = useOrders();
@@ -49,6 +41,9 @@ export default function OrdersPage() {
   const filteredOrders = useMemo(
     () =>
       orders.filter((order) => {
+        const normalize = (value: unknown) =>
+          typeof value === 'string' ? value.toLowerCase() : '';
+
         if (statusFilter !== 'all' && order.status !== statusFilter)
           return false;
         if (typeFilter !== 'all' && order.orderType !== typeFilter)
@@ -56,9 +51,9 @@ export default function OrdersPage() {
         if (searchQuery) {
           const query = searchQuery.toLowerCase();
           return (
-            order.orderNumber.toLowerCase().includes(query) ||
-            order.tableNumber?.toLowerCase().includes(query) ||
-            order.customerName?.toLowerCase().includes(query)
+            normalize(order.orderNumber).includes(query) ||
+            normalize(order.tableNumber).includes(query) ||
+            normalize(order.customerName).includes(query)
           );
         }
         return true;
@@ -333,7 +328,12 @@ export default function OrdersPage() {
           ) : (
             <div className="space-y-3">
               {completedOrders.map((order) => (
-                <OrderCard key={order.id} order={order} compact />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  compact
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                />
               ))}
             </div>
           )}
@@ -349,7 +349,12 @@ export default function OrdersPage() {
           ) : (
             <div className="space-y-3">
               {cancelledOrders.map((order) => (
-                <OrderCard key={order.id} order={order} compact />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  compact
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                />
               ))}
             </div>
           )}

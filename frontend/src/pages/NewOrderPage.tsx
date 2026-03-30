@@ -644,7 +644,7 @@ export default function NewOrderPage() {
 
       {/* Order Summary - Desktop Side Panel */}
       <div className="hidden lg:flex w-80 xl:w-96 flex-col border border-border/50 bg-card rounded-[2.5rem] shadow-glow-primary/10 overflow-hidden sticky top-6 h-[calc(100vh-140px)] animate-slide-in-right">
-        <OrderSummaryContent />
+        {renderOrderSummaryContent()}
       </div>
 
       {/* Mobile Cart Entry Bar */}
@@ -702,7 +702,7 @@ export default function NewOrderPage() {
             </Button>
           </div>
           <ScrollArea className="flex-1">
-            <OrderSummaryContent isMobile />
+            {renderOrderSummaryContent(true)}
           </ScrollArea>
         </div>
       </div>
@@ -716,8 +716,8 @@ export default function NewOrderPage() {
     </div>
   );
 
-  // Extracted Component for Cart Content
-  function OrderSummaryContent({ isMobile = false }: { isMobile?: boolean }) {
+  // Render cart content without creating a nested component type each render.
+  function renderOrderSummaryContent(isMobile = false) {
     if (!currentOrder) return null;
     return (
       <div className="flex flex-col h-full relative">
