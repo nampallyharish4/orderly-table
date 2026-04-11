@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { API_BASE_URL } from '@/config';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,23 +39,8 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 4000);
 
-    void fetch(`${API_BASE_URL}/api/health`, {
-      method: 'GET',
-      cache: 'no-store',
-      signal: controller.signal,
-    }).catch(() => {
-      // Ignore background warm-up failure.
-    });
 
-    return () => {
-      window.clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

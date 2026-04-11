@@ -183,7 +183,17 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const { isAuthenticated } = useAuth();
+
   useEffect(() => {
+    // Skip all data fetching until the user is logged in.
+    // This avoids hammering the backend from the login page and
+    // frees up scarce DB connections for the actual login request.
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
+
     fetchStaticData();
     // Initial load: Fetch everything
     fetchData(false);
@@ -202,7 +212,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       clearInterval(dataIntervalId);
       clearInterval(staticIntervalId);
     };
-  }, [fetchData, fetchStaticData]);
+  }, [fetchData, fetchStaticData, isAuthenticated]);
 
   useEffect(() => {
     const readyCount = orders.filter((o) => o.status === 'ready').length;

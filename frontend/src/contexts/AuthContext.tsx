@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   ReactNode,
 } from 'react';
 import { User, UserRole, AuthState } from '@/types';
@@ -57,17 +58,22 @@ const loadStoredAuthState = (): AuthState => {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(() => loadStoredAuthState());
 
+  // Keep a ref to the warm-up promise so login can await it before its first attempt.
+  const warmupRef = useRef<Promise<void> | null>(null);
+
   useEffect(() => {
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 4000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
 
-    void fetch(`${API_BASE_URL}/api/health`, {
+    warmupRef.current = fetch(`${API_BASE_URL}/api/health`, {
       method: 'GET',
       cache: 'no-store',
       signal: controller.signal,
-    }).catch(() => {
-      // Ignore warm-up failures; login call will handle real errors.
-    });
+    })
+      .then(() => {})
+      .catch(() => {
+        // Ignore warm-up failures; login call will handle real errors.
+      });
 
     return () => {
       window.clearTimeout(timeoutId);
@@ -79,29 +85,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string): Promise<boolean> => {
       setState((prev) => ({ ...prev, isLoading: true }));
 
-      try {
-        const controller = new AbortController();
-        const timeoutId = window.setTimeout(() => controller.abort(), 15000);
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          signal: controller.signal,
-        });
-        window.clearTimeout(timeoutId);
+      // Wait for the warm-up ping to finish (success or fail) so the backend
+      // is as ready as possible before we hit the login endpoint.
+      if (warmupRef.current) {
+        await warmupRef.current;
+      }
 
-        if (response.ok) {
-          const user = await response.json();
-          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-          setState({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
+      const MAX_RETRIES = 2;
+      const TIMEOUT_MS = 8000;
+      const body = JSON.stringify({ email, password });
+
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = window.setTimeout(() => controller.abort(), TIMEOUT_MS);
+          const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body,
+            signal: controller.signal,
           });
-          return true;
+          window.clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const user = await response.json();
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+            setState({
+              user,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return true;
+          }
+
+          // Non-retryable HTTP error (401, 400, etc.) — stop immediately.
+          break;
+        } catch (error) {
+          // Network / timeout error — retry if attempts remain.
+          if (attempt === MAX_RETRIES) {
+            console.error('Login error after retries:', error);
+          }
         }
-      } catch (error) {
-        console.error('Login error:', error);
       }
 
       setState((prev) => ({ ...prev, isLoading: false }));
