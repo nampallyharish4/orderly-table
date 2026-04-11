@@ -205,11 +205,20 @@ export default function NewOrderPage() {
 
   // Voice Recognition Logic
   const handleVoiceOrder = () => {
+    // Prevent starting a new recognition session while one is already active
+    if (isListening || isAiLoading) return;
+
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      toast.error('Voice recognition not supported in this browser.');
+      toast.error('Voice recognition is not supported in this browser. Use Chrome or Edge.');
+      return;
+    }
+
+    // Check if we're on a secure context (HTTPS or localhost) — required by the API
+    if (!window.isSecureContext) {
+      toast.error('Voice input requires HTTPS. Please use a secure connection.');
       return;
     }
 
@@ -217,17 +226,50 @@ export default function NewOrderPage() {
     recognition.lang = 'en-IN';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+    recognition.continuous = false;
 
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = (e: any) => {
-      console.error('Speech Recognition Error', e);
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast.info('🎤 Listening... Speak your order now.', { duration: 3000 });
+    };
+
+    recognition.onend = () => {
       setIsListening(false);
-      toast.error('Voice listening error. Try again.');
+    };
+
+    recognition.onerror = (e: any) => {
+      console.error('Speech Recognition Error:', e.error, e);
+      setIsListening(false);
+
+      switch (e.error) {
+        case 'not-allowed':
+        case 'service-not-allowed':
+          toast.error('Microphone access denied. Please allow microphone permission in your browser settings.');
+          break;
+        case 'no-speech':
+          toast.warning('No speech detected. Please try again and speak clearly into the microphone.');
+          break;
+        case 'audio-capture':
+          toast.error('No microphone found. Please connect a microphone and try again.');
+          break;
+        case 'network':
+          toast.error('Network error during voice recognition. Check your internet connection.');
+          break;
+        case 'aborted':
+          // User or system cancelled — no need for an error toast
+          break;
+        default:
+          toast.error(`Voice error: ${e.error || 'Unknown'}. Please try again.`);
+      }
     };
 
     recognition.onresult = async (event: any) => {
-      const transcript = event.results[0][0].transcript;
+      const transcript = event.results[0]?.[0]?.transcript;
+      if (!transcript || !transcript.trim()) {
+        toast.warning('Could not understand. Please speak more clearly.');
+        return;
+      }
+
       toast.info(`Heard: "${transcript}"`, { duration: 3000 });
 
       try {
@@ -238,47 +280,68 @@ export default function NewOrderPage() {
           body: JSON.stringify({ text: transcript }),
         });
 
+        if (!response.ok) {
+          console.error('Voice API responded with status:', response.status);
+          if (response.status === 401) {
+            toast.error('Session expired. Please log in again.');
+          } else {
+            toast.error('Voice processing failed. Please try again.');
+          }
+          return;
+        }
+
         const rawData = await response.json();
         const itemsToProcess =
           typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
 
-        if (Array.isArray(itemsToProcess) && itemsToProcess.length > 0) {
-          let foundCount = 0;
-          itemsToProcess.forEach((voiceItem) => {
-            const vName = voiceItem.name?.toLowerCase().trim();
-            if (!vName) return;
+        if (!Array.isArray(itemsToProcess) || itemsToProcess.length === 0) {
+          toast.warning(
+            'AI could not identify menu items from your speech. Try saying dish names like "2 Butter Naan and 1 Paneer Butter Masala".',
+          );
+          return;
+        }
 
-            const menuItem = menuItems.find((m) => {
-              const mName = m.name.toLowerCase().trim();
-              return (
-                mName === vName ||
-                mName.includes(vName) ||
-                vName.includes(mName)
-              );
-            });
+        let foundCount = 0;
+        itemsToProcess.forEach((voiceItem) => {
+          const vName = voiceItem.name?.toLowerCase().trim();
+          if (!vName) return;
 
-            if (menuItem) {
-              addItemToOrder(menuItem, Number(voiceItem.quantity) || 1);
-              toast.success(`AI Added: ${menuItem.name}`, { icon: '🤖' });
-              foundCount++;
-            }
+          const menuItem = menuItems.find((m) => {
+            const mName = m.name.toLowerCase().trim();
+            return (
+              mName === vName ||
+              mName.includes(vName) ||
+              vName.includes(mName)
+            );
           });
 
-          if (foundCount === 0) {
-            toast.warning(
-              `No items from your speech matched our menu. Try saying specific dish names!`,
-            );
+          if (menuItem) {
+            addItemToOrder(menuItem, Number(voiceItem.quantity) || 1);
+            toast.success(`AI Added: ${menuItem.name} × ${Number(voiceItem.quantity) || 1}`, { icon: '🤖' });
+            foundCount++;
           }
+        });
+
+        if (foundCount === 0) {
+          toast.warning(
+            `No items from your speech matched our menu. Try saying specific dish names!`,
+          );
         }
       } catch (err) {
         console.error('Voice AI Error:', err);
-        toast.error('AI was unable to process this. Try again?');
+        toast.error('AI was unable to process this. Please try again.');
       } finally {
         setIsAiLoading(false);
       }
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error('Failed to start speech recognition:', err);
+      setIsListening(false);
+      toast.error('Failed to start voice recognition. Please check microphone permissions.');
+    }
   };
 
   const isTakeaway = currentOrder?.orderType === 'takeaway';

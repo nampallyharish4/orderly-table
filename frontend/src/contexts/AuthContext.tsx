@@ -64,14 +64,13 @@ const loadStoredAuthState = (): AuthState => {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(() => loadStoredAuthState());
 
-  // Keep a ref to the warm-up promise so login can await it before its first attempt.
+  // Keep a ref to the warm-up promise so login can race against it.
   const warmupRef = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
-
-    warmupRef.current = fetch(`${API_BASE_URL}/api/health`, {
+    // Use the lightweight /ping endpoint — doesn't touch the database, just wakes the JVM.
+    warmupRef.current = fetch(`${API_BASE_URL}/api/health/ping`, {
       method: 'GET',
       cache: 'no-store',
       signal: controller.signal,
@@ -82,7 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
     return () => {
-      window.clearTimeout(timeoutId);
       controller.abort();
     };
   }, []);
@@ -91,14 +89,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string): Promise<boolean> => {
       setState((prev) => ({ ...prev, isLoading: true }));
 
-      // Wait for the warm-up ping to finish (success or fail) so the backend
-      // is as ready as possible before we hit the login endpoint.
+      // Race the warm-up against a short timeout — if the ping hasn't
+      // finished in 1.5s, proceed with login anyway rather than blocking.
       if (warmupRef.current) {
-        await warmupRef.current;
+        await Promise.race([
+          warmupRef.current,
+          new Promise<void>((resolve) => setTimeout(resolve, 1500)),
+        ]);
       }
 
       const MAX_RETRIES = 2;
-      const TIMEOUT_MS = 8000;
+      // 15s per attempt — Supabase free-tier cold-starts can take 10-15s.
+      const TIMEOUT_MS = 15000;
       const body = JSON.stringify({ email, password });
 
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -133,7 +135,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           break;
         } catch (error) {
           // Network / timeout error — retry if attempts remain.
-          if (attempt === MAX_RETRIES) {
+          if (attempt < MAX_RETRIES) {
+            // Brief backoff: 1s, then 2s
+            await new Promise((r) => setTimeout(r, (attempt + 1) * 1000));
+          } else {
             console.error('Login error after retries:', error);
           }
         }

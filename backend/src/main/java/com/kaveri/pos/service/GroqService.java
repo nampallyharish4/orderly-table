@@ -2,6 +2,8 @@ package com.kaveri.pos.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -72,8 +74,11 @@ public class GroqService {
         }
     }
 
+    private static final Logger logger = LoggerFactory.getLogger(GroqService.class);
+
     public String processVoiceTranscript(String text) {
         if (apiKey == null || apiKey.isEmpty()) {
+            logger.warn("[GroqService] GROQ_API_KEY is not configured. Voice processing will return empty results.");
             return "[]";
         }
 
@@ -96,6 +101,7 @@ public class GroqService {
             requestBody.put("temperature", 0.1);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            logger.info("[GroqService] Sending voice transcript to Groq API (model: {})", modelName);
             String response = restTemplate.postForObject(apiUrl, entity, String.class);
 
             JsonNode root = objectMapper.readTree(response);
@@ -106,8 +112,10 @@ public class GroqService {
             if (rawJsonResult.startsWith("```")) rawJsonResult = rawJsonResult.substring(3);
             if (rawJsonResult.endsWith("```")) rawJsonResult = rawJsonResult.substring(0, rawJsonResult.length() - 3);
             
+            logger.info("[GroqService] Voice processing result: {}", rawJsonResult.trim());
             return rawJsonResult.trim();
         } catch (Exception e) {
+            logger.error("[GroqService] Voice processing failed: {}", e.getMessage(), e);
             return "[]";
         }
     }

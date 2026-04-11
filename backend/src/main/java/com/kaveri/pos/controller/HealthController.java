@@ -24,6 +24,15 @@ public class HealthController {
     private String groqApiKey;
 
     /**
+     * Lightweight ping — wakes the JVM/container without touching the database.
+     * Used by the frontend warm-up to minimize perceived login latency.
+     */
+    @GetMapping("/ping")
+    public ResponseEntity<Map<String, Object>> ping() {
+        return ResponseEntity.ok(Map.of("status", "ok", "timestamp", System.currentTimeMillis()));
+    }
+
+    /**
      * Returns health status of all critical services
      */
     @GetMapping
