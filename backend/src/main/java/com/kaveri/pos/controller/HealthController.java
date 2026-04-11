@@ -76,7 +76,7 @@ public class HealthController {
             }
 
             // Test query to check connection and query execution
-            Integer result = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
+            jdbcTemplate.queryForObject("SELECT 1", Integer.class);
 
             long responseTime = System.currentTimeMillis() - startTime;
             dbHealth.put("status", "healthy");

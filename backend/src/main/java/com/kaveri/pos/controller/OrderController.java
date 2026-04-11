@@ -66,7 +66,6 @@ public class OrderController {
 
     @PostMapping
     @Transactional
-    @SuppressWarnings("unchecked")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> body) {
         long startedAt = System.nanoTime();
         long dedupeEndedAt = startedAt;
