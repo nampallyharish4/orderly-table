@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useOrders } from '@/contexts/OrderContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,8 @@ import {
   Split,
   Loader2,
   Check,
+  CheckCircle2,
+  X,
 } from 'lucide-react';
 import { Order } from '@/types';
 import { toast } from 'sonner';
@@ -51,6 +53,26 @@ const BillingPage = () => {
     ? isOrderSyncing(selectedOrder.id)
     : false;
 
+  // Success modal state
+  const [successModal, setSuccessModal] = useState<{
+    show: boolean;
+    order: Order | null;
+    method: 'cash' | 'upi' | 'split' | null;
+    cashAmount?: number;
+    upiAmount?: number;
+  }>({ show: false, order: null, method: null });
+
+  const dismissSuccessModal = useCallback(() => {
+    setSuccessModal({ show: false, order: null, method: null });
+  }, []);
+
+  // Auto-dismiss success modal after 6 seconds
+  useEffect(() => {
+    if (!successModal.show) return;
+    const timer = setTimeout(dismissSuccessModal, 6000);
+    return () => clearTimeout(timer);
+  }, [successModal.show, dismissSuccessModal]);
+
   // Get orders that are ready for billing (any active order not yet completed payment)
   const billableOrders = orders.filter(
     (order) =>
@@ -84,7 +106,13 @@ const BillingPage = () => {
       await paymentPromise;
 
       await sleep(PROCESSING_UI_MS);
-      toast.success(`Payment received via ${method.toUpperCase()}`);
+
+      // Show success modal
+      setSuccessModal({
+        show: true,
+        order: orderSnapshot,
+        method: method,
+      });
 
       setSelectedOrder(null);
       setPaymentMethod(null);
@@ -135,9 +163,15 @@ const BillingPage = () => {
       await paymentPromise;
 
       await sleep(PROCESSING_UI_MS);
-      toast.success(
-        `Payment received: ₹${cashValue.toFixed(0)} Cash + ₹${upiValue.toFixed(0)} UPI`,
-      );
+
+      // Show success modal with split details
+      setSuccessModal({
+        show: true,
+        order: orderSnapshot,
+        method: 'split',
+        cashAmount: cashValue,
+        upiAmount: upiValue,
+      });
 
       setSelectedOrder(null);
       setPaymentMethod(null);
@@ -348,6 +382,7 @@ const BillingPage = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Processing overlay */}
       {isSubmitting && (
         <div className="fixed inset-0 z-[90] bg-background/60 backdrop-blur-sm flex items-center justify-center">
           <Card className="p-6 sm:p-8 flex flex-col items-center gap-4 bg-card shadow-2xl border-primary/20 animate-in fade-in zoom-in-95">
@@ -361,6 +396,134 @@ const BillingPage = () => {
               </p>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* Payment Success Modal */}
+      {successModal.show && successModal.order && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={dismissSuccessModal}
+        >
+          <div
+            className="bg-card border border-border/40 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Success Header */}
+            <div
+              className="relative px-6 pt-8 pb-6 text-center"
+              style={{
+                background: 'linear-gradient(135deg, hsl(142 70% 45% / 0.12), hsl(142 70% 45% / 0.04))',
+              }}
+            >
+              <button
+                onClick={dismissSuccessModal}
+                className="absolute top-3 right-3 p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Animated checkmark */}
+              <div
+                className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-500"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(142 70% 45%), hsl(142 60% 38%))',
+                  boxShadow: '0 8px 24px -4px hsl(142 70% 45% / 0.4)',
+                }}
+              >
+                <CheckCircle2 className="w-9 h-9 text-white" strokeWidth={2.5} />
+              </div>
+
+              <h2 className="text-xl font-bold text-foreground">Payment Successful!</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Order #{successModal.order.orderNumber} completed
+              </p>
+            </div>
+
+            {/* Payment Details */}
+            <div className="px-6 py-5 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Amount Paid</span>
+                <span className="text-2xl font-extrabold text-foreground font-mono-price">
+                  ₹{successModal.order.totalAmount.toFixed(0)}
+                </span>
+              </div>
+
+              <Separator />
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Method</span>
+                <Badge
+                  variant="outline"
+                  className="text-xs font-semibold px-2.5 py-1 gap-1.5"
+                >
+                  {successModal.method === 'cash' && <Banknote className="w-3.5 h-3.5" />}
+                  {successModal.method === 'upi' && <Smartphone className="w-3.5 h-3.5" />}
+                  {successModal.method === 'split' && <Split className="w-3.5 h-3.5" />}
+                  {successModal.method === 'cash' && 'Cash'}
+                  {successModal.method === 'upi' && 'UPI'}
+                  {successModal.method === 'split' && 'Split'}
+                </Badge>
+              </div>
+
+              {successModal.method === 'split' && successModal.cashAmount != null && successModal.upiAmount != null && (
+                <>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Banknote className="w-3.5 h-3.5" /> Cash
+                    </span>
+                    <span className="font-semibold">₹{successModal.cashAmount.toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5" /> UPI
+                    </span>
+                    <span className="font-semibold">₹{successModal.upiAmount.toFixed(0)}</span>
+                  </div>
+                </>
+              )}
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Order Type</span>
+                <span className="text-sm font-medium capitalize">
+                  {successModal.order.orderType === 'dine-in' && successModal.order.tableNumber
+                    ? `Dine-in · Table ${successModal.order.tableNumber}`
+                    : 'Takeaway'}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Items</span>
+                <span className="text-sm font-medium">
+                  {successModal.order.items.length} item{successModal.order.items.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="px-6 pb-6 flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  if (successModal.order) printBill(successModal.order);
+                }}
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Print Bill
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={dismissSuccessModal}
+                style={{
+                  background: 'linear-gradient(135deg, hsl(142 70% 45%), hsl(142 60% 38%))',
+                }}
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Done
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

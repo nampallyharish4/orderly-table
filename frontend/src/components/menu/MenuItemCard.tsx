@@ -103,7 +103,7 @@ export const MenuItemCard = memo(function MenuItemCard({
           </span>
 
           {/* Name */}
-          <p className="font-bold text-sm sm:text-base text-foreground leading-snug line-clamp-2">
+          <p className="font-bold text-xs sm:text-sm text-foreground leading-snug line-clamp-2">
             {item.name}
           </p>
 
@@ -235,7 +235,7 @@ export const MenuItemCard = memo(function MenuItemCard({
               <div className="w-1.5 h-1.5 rounded-full bg-destructive" />
             </div>
           )}
-          <h3 className="font-bold text-base sm:text-lg">{item.name}</h3>
+          <h3 className="font-bold text-sm sm:text-base">{item.name}</h3>
         </div>
       </div>
 
