@@ -39,7 +39,6 @@ import {
   ChevronLeft,
   ChevronDown,
   ChevronRight,
-  Search,
   Home,
 } from 'lucide-react';
 import { canAccessRoute, UserRole } from '@/types';
@@ -135,18 +134,14 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* ===== DESKTOP SIDEBAR ===== */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col shrink-0 z-20 transition-all duration-300 ease-in-out h-screen sticky top-0',
+          'hidden lg:flex flex-col shrink-0 z-20 transition-all duration-300 ease-in-out h-screen sticky top-0 sidebar-glass',
           sidebarCollapsed ? 'w-[68px]' : 'w-64 xl:w-72',
         )}
-        style={{
-          background: 'hsl(20 20% 10%)',
-          borderRight: '1px solid hsl(20 15% 16%)',
-        }}
       >
         {/* Sidebar Header */}
         <div
-          className="flex items-center gap-3 px-4 py-4 border-b"
-          style={{ borderColor: 'hsl(20 15% 16%)' }}
+          className="flex items-center gap-3 px-4 py-4 border-b border-sidebar-border"
+          style={{ borderColor: 'hsl(var(--sidebar-border))' }}
         >
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -161,7 +156,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <div className="flex-1 min-w-0">
               <h1
                 className="font-bold text-sm leading-tight truncate"
-                style={{ color: 'hsl(30 15% 92%)' }}
+                style={{ color: 'hsl(var(--sidebar-foreground))' }}
               >
                 {restaurantName}
               </h1>
@@ -169,8 +164,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-white/10 min-h-0"
-            style={{ color: 'hsl(30 10% 55%)' }}
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-sidebar-foreground/10 min-h-0"
+            style={{ color: 'hsl(var(--sidebar-foreground) / 0.6)' }}
           >
             <ChevronLeft className={cn('w-4 h-4 transition-transform duration-300', sidebarCollapsed && 'rotate-180')} />
           </button>
@@ -193,10 +188,10 @@ export function MainLayout({ children }: MainLayoutProps) {
                       isActive ? 'text-white' : 'hover:bg-white/8',
                     )}
                     style={isActive ? {
-                      background: 'hsl(24 90% 50%)',
-                      boxShadow: '0 4px 12px -2px hsl(24 90% 50% / 0.4)',
-                      color: 'white',
-                    } : { color: 'hsl(30 10% 55%)' }}
+                      background: 'hsl(var(--sidebar-primary))',
+                      boxShadow: '0 4px 12px -2px hsl(var(--sidebar-primary) / 0.4)',
+                      color: 'hsl(var(--sidebar-primary-foreground))',
+                    } : { color: 'hsl(var(--sidebar-foreground) / 0.6)' }}
                     title={item.label}
                   >
                     <Icon className="w-5 h-5" />
@@ -226,9 +221,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                       <Link
                         key={item.path} to={item.path}
                         className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-                        style={isActive ? { background: 'hsl(24 90% 50% / 0.12)', color: 'hsl(24 90% 55%)' } : { color: 'hsl(30 10% 60%)' }}
-                        onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = 'hsl(20 18% 14%)'; e.currentTarget.style.color = 'hsl(30 15% 88%)'; } }}
-                        onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(30 10% 60%)'; } }}
+                        style={isActive ? { background: 'hsl(var(--sidebar-primary) / 0.12)', color: 'hsl(var(--sidebar-primary))' } : { color: 'hsl(var(--sidebar-foreground) / 0.7)' }}
+                        onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = 'hsl(var(--sidebar-accent))'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))'; } }}
+                        onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground) / 0.7)'; } }}
                       >
                         <div className="flex items-center gap-3"><Icon className="w-4.5 h-4.5" /><span>{item.label}</span></div>
                         {badgeCount > 0 && (
@@ -257,9 +252,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                         return (
                           <Link key={item.path} to={item.path}
                             className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-                            style={isActive ? { background: 'hsl(24 90% 50% / 0.12)', color: 'hsl(24 90% 55%)' } : { color: 'hsl(30 10% 60%)' }}
-                            onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = 'hsl(20 18% 14%)'; e.currentTarget.style.color = 'hsl(30 15% 88%)'; } }}
-                            onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(30 10% 60%)'; } }}>
+                            style={isActive ? { background: 'hsl(var(--sidebar-primary) / 0.12)', color: 'hsl(var(--sidebar-primary))' } : { color: 'hsl(var(--sidebar-foreground) / 0.7)' }}
+                            onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = 'hsl(var(--sidebar-accent))'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))'; } }}
+                            onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground) / 0.7)'; } }}>
                             <div className="flex items-center gap-3"><Icon className="w-4.5 h-4.5" /><span>{item.label}</span></div>
                             {badgeCount > 0 && (
                               <span className="min-w-[22px] h-[22px] flex items-center justify-center rounded-full text-[11px] font-bold px-1.5"
@@ -279,21 +274,21 @@ export function MainLayout({ children }: MainLayoutProps) {
         </nav>
 
         {/* User section */}
-        <div className="border-t px-3 py-3" style={{ borderColor: 'hsl(20 15% 16%)' }}>
+        <div className="border-t px-3 py-3" style={{ borderColor: 'hsl(var(--sidebar-border))' }}>
           {!sidebarCollapsed ? (
             <>
               <div className="text-xs mb-3 px-2 truncate" style={{ color: 'hsl(30 10% 50%)' }}>{user.email}</div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group" style={{ minHeight: 'unset' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(20 18% 14%)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(var(--sidebar-accent))'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
                     <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                      style={{ background: 'linear-gradient(135deg, hsl(24 90% 50% / 0.25), hsl(4 72% 58% / 0.2))', border: '2px solid hsl(24 90% 50% / 0.3)' }}>
-                      <User className="w-4 h-4" style={{ color: 'hsl(24 90% 55%)' }} />
+                      style={{ background: 'hsl(var(--sidebar-primary) / 0.12)', border: '2px solid hsl(var(--sidebar-primary) / 0.3)' }}>
+                      <User className="w-4 h-4" style={{ color: 'hsl(var(--sidebar-primary))' }} />
                     </div>
                     <div className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: 'hsl(30 15% 88%)' }}>{user.name}</p>
+                      <p className="text-sm font-medium truncate" style={{ color: 'hsl(var(--sidebar-foreground))' }}>{user.name}</p>
                       <span className="text-[10px] px-2 py-0.5 rounded-full capitalize font-medium border"
                         style={(() => { switch (user.role) { case 'admin': return { background: 'hsl(24 90% 50% / 0.12)', color: 'hsl(24 90% 55%)', borderColor: 'hsl(24 90% 50% / 0.2)' }; case 'cashier': return { background: 'hsl(152 60% 42% / 0.12)', color: 'hsl(152 60% 50%)', borderColor: 'hsl(152 60% 42% / 0.2)' }; default: return { background: 'hsl(210 75% 55% / 0.12)', color: 'hsl(210 75% 60%)', borderColor: 'hsl(210 75% 55% / 0.2)' }; } })()}>
                         {user.role}
@@ -314,8 +309,8 @@ export function MainLayout({ children }: MainLayoutProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="w-11 h-11 mx-auto rounded-full flex items-center justify-center transition-all"
-                  style={{ background: 'linear-gradient(135deg, hsl(24 90% 50% / 0.25), hsl(4 72% 58% / 0.2))', border: '2px solid hsl(24 90% 50% / 0.3)' }}>
-                  <User className="w-4.5 h-4.5" style={{ color: 'hsl(24 90% 55%)' }} />
+                  style={{ background: 'hsl(var(--sidebar-primary) / 0.12)', border: '2px solid hsl(var(--sidebar-primary) / 0.3)' }}>
+                  <User className="w-4.5 h-4.5" style={{ color: 'hsl(var(--sidebar-primary))' }} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -333,7 +328,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       </aside>
 
       {/* ===== MOBILE TOP BAR ===== */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50" style={{ background: 'hsl(20 20% 10%)', borderBottom: '1px solid hsl(20 15% 16%)' }}>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 px-safe" style={{ background: 'hsl(var(--sidebar-background))', borderBottom: '1px solid hsl(var(--sidebar-border))' }}>
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-3 min-w-0">
             <div
@@ -346,7 +341,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               <Utensils className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-sm leading-tight truncate" style={{ color: 'hsl(30 15% 92%)' }}>
+              <p className="font-bold text-sm leading-tight truncate" style={{ color: 'hsl(var(--sidebar-foreground))' }}>
                 {restaurantName}
               </p>
             </div>
@@ -370,7 +365,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <Button
               variant="ghost" size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{ color: 'hsl(30 15% 80%)' }}
+              style={{ color: 'hsl(var(--sidebar-foreground) / 0.8)' }}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -380,17 +375,17 @@ export function MainLayout({ children }: MainLayoutProps) {
 
       {/* ===== MOBILE FULL-SCREEN MENU OVERLAY ===== */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[60] flex flex-col" style={{ background: 'hsl(20 20% 10%)' }}>
+        <div className="lg:hidden fixed inset-0 z-[60] flex flex-col" style={{ background: 'hsl(var(--sidebar-background))' }}>
           {/* Menu header */}
-          <div className="flex items-center justify-between px-4 h-14 border-b" style={{ borderColor: 'hsl(20 15% 16%)' }}>
+          <div className="flex items-center justify-between px-4 h-14 border-b" style={{ borderColor: 'hsl(var(--sidebar-border))' }}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg, hsl(24 90% 50%), hsl(12 85% 48%))' }}>
                 <Utensils className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-sm" style={{ color: 'hsl(30 15% 92%)' }}>{restaurantName}</span>
+              <span className="font-bold text-sm" style={{ color: 'hsl(var(--sidebar-foreground))' }}>{restaurantName}</span>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)} style={{ color: 'hsl(30 15% 80%)' }}>
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)} style={{ color: 'hsl(var(--sidebar-foreground) / 0.8)' }}>
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -409,9 +404,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                   style={isActive ? {
                     background: 'hsl(24 90% 50%)',
                     color: 'white',
-                    boxShadow: '0 4px 12px -2px hsl(24 90% 50% / 0.4)',
+                    boxShadow: '0 4px 12px -2px hsl(var(--sidebar-primary) / 0.4)',
                   } : {
-                    color: 'hsl(30 10% 65%)',
+                    color: 'hsl(var(--sidebar-foreground) / 0.65)',
                   }}
                 >
                   <div className="flex items-center gap-3">
@@ -430,15 +425,15 @@ export function MainLayout({ children }: MainLayoutProps) {
           </nav>
 
           {/* User info + sign out */}
-          <div className="border-t p-4 space-y-3" style={{ borderColor: 'hsl(20 15% 16%)' }}>
+          <div className="border-t p-4 space-y-3" style={{ borderColor: 'hsl(var(--sidebar-border))' }}>
             <div className="flex items-center gap-3 px-2">
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: 'linear-gradient(135deg, hsl(24 90% 50% / 0.25), hsl(4 72% 58% / 0.2))', border: '2px solid hsl(24 90% 50% / 0.3)' }}>
-                <User className="w-5 h-5" style={{ color: 'hsl(24 90% 55%)' }} />
+                style={{ background: 'hsl(var(--sidebar-primary) / 0.12)', border: '2px solid hsl(var(--sidebar-primary) / 0.3)' }}>
+                <User className="w-5 h-5" style={{ color: 'hsl(var(--sidebar-primary))' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate" style={{ color: 'hsl(30 15% 90%)' }}>{user.name}</p>
-                <p className="text-xs truncate" style={{ color: 'hsl(30 10% 50%)' }}>{user.email}</p>
+                <p className="text-sm font-semibold truncate" style={{ color: 'hsl(var(--sidebar-foreground))' }}>{user.name}</p>
+                <p className="text-xs truncate" style={{ color: 'hsl(var(--sidebar-foreground) / 0.6)' }}>{user.email}</p>
               </div>
             </div>
             <button
@@ -455,7 +450,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
       {/* ===== MOBILE BOTTOM NAV BAR ===== */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe"
-        style={{ background: 'hsl(20 20% 10%)', borderTop: '1px solid hsl(20 15% 16%)' }}>
+        style={{ background: 'hsl(var(--sidebar-background))', borderTop: '1px solid hsl(var(--sidebar-border))' }}>
         <div className="flex items-center justify-around h-16 px-2">
           {mobileBottomNavItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -465,7 +460,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               <Link
                 key={item.path} to={item.path}
                 className="relative flex flex-col items-center justify-center gap-0.5 min-w-0 px-2 py-1 rounded-xl transition-all min-h-0"
-                style={isActive ? { color: 'hsl(24 90% 55%)' } : { color: 'hsl(30 10% 50%)' }}
+                style={isActive ? { color: 'hsl(var(--sidebar-primary))' } : { color: 'hsl(var(--sidebar-foreground) / 0.6)' }}
               >
                 <div className="relative">
                   <Icon className="w-5 h-5" />
@@ -503,11 +498,6 @@ export function MainLayout({ children }: MainLayoutProps) {
         <header className="hidden lg:flex items-center justify-between px-6 py-3.5 border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex-1" />
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
-              <input type="text" placeholder="Global search"
-                className="h-9 w-56 pl-9 pr-4 rounded-xl bg-muted/50 border border-border/60 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all" />
-            </div>
             <AnimatedThemeToggler />
             <div className="flex items-center gap-2.5 pl-3 border-l border-border/60">
               <div className="text-right">
