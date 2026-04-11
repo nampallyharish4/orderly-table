@@ -19,6 +19,12 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'pos_auth_user';
+const TOKEN_STORAGE_KEY = 'pos_auth_token';
+
+/** Retrieve the stored JWT token (used by api.ts interceptor). */
+export function getAuthToken(): string | null {
+  return localStorage.getItem(TOKEN_STORAGE_KEY);
+}
 
 const loadStoredAuthState = (): AuthState => {
   if (typeof window === 'undefined') {
@@ -108,7 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           window.clearTimeout(timeoutId);
 
           if (response.ok) {
-            const user = await response.json();
+            const data = await response.json();
+            const { token, ...user } = data;
+            // Store JWT token separately
+            if (token) {
+              localStorage.setItem(TOKEN_STORAGE_KEY, token);
+            }
             localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
             setState({
               user,
@@ -136,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
     setState({
       user: null,
       isAuthenticated: false,

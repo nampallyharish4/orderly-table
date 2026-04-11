@@ -4,6 +4,7 @@ import com.kaveri.pos.entity.User;
 import com.kaveri.pos.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -35,7 +39,8 @@ public class UserController {
             user.setVisibleId("user-" + System.currentTimeMillis());
             user.setName(getString(body, "name"));
             user.setEmail(getString(body, "email").toLowerCase());
-            user.setPassword(getString(body, "password"));
+            // Hash the password with BCrypt before storing
+            user.setPassword(passwordEncoder.encode(getString(body, "password")));
             user.setPhone(getString(body, "phone"));
             user.setRole(getString(body, "role"));
             user.setIsActive(true);
@@ -63,7 +68,13 @@ public class UserController {
 
             if (body.containsKey("name")) user.setName(getString(body, "name"));
             if (body.containsKey("email")) user.setEmail(getString(body, "email").toLowerCase());
-            if (body.containsKey("password")) user.setPassword(getString(body, "password"));
+            // Hash new password with BCrypt if password is being changed
+            if (body.containsKey("password")) {
+                String newPassword = getString(body, "password");
+                if (newPassword != null && !newPassword.isEmpty()) {
+                    user.setPassword(passwordEncoder.encode(newPassword));
+                }
+            }
             if (body.containsKey("phone")) user.setPhone(getString(body, "phone"));
             if (body.containsKey("role")) user.setRole(getString(body, "role"));
             if (body.containsKey("isActive")) user.setIsActive(Boolean.parseBoolean(body.get("isActive").toString()));
