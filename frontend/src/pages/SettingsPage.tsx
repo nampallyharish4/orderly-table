@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { API_BASE_URL } from '@/config';
+import { apiFetch } from '@/utils/api';
 import {
   Card,
   CardContent,
@@ -57,7 +57,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/settings`, {
+      const response = await apiFetch('/api/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

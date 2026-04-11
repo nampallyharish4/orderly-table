@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useOrders } from '@/contexts/OrderContext';
-import { API_BASE_URL } from '@/config';
+import { apiFetch } from '@/utils/api';
 import { useNavigate } from 'react-router-dom';
 import { MenuItemCard } from '@/components/menu/MenuItemCard';
 import { Button } from '@/components/ui/button';
@@ -109,7 +109,7 @@ export default function NewOrderPage() {
       setIsRecommendLoading(true);
       const itemNames = currentOrder.items.map((i) => i.menuItemName);
 
-      const response = await fetch(`${API_BASE_URL}/api/ai/recommendations`, {
+      const response = await apiFetch('/api/ai/recommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cartItemNames: itemNames }),
@@ -232,7 +232,7 @@ export default function NewOrderPage() {
 
       try {
         setIsAiLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/ai/voice-process`, {
+        const response = await apiFetch('/api/ai/voice-process', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: transcript }),

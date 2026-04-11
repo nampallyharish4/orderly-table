@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { API_BASE_URL } from '@/config';
+import { apiFetch } from '@/utils/api';
 import { useOrders } from '@/contexts/OrderContext';
 import {
   Card,
@@ -164,8 +164,8 @@ export default function MenuManagementPage() {
 
     setDeletingId(itemToDelete.id);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/menu-items/${itemToDelete.id}`,
+      const response = await apiFetch(
+        `/api/menu-items/${itemToDelete.id}`,
         { method: 'DELETE' },
       );
       if (!response.ok) throw new Error('Failed to delete');
@@ -188,8 +188,8 @@ export default function MenuManagementPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/categories/${categoryToDelete}`,
+      const response = await apiFetch(
+        `/api/categories/${categoryToDelete}`,
         { method: 'DELETE' },
       );
       if (!response.ok) throw new Error('Failed to delete category');
@@ -225,11 +225,11 @@ export default function MenuManagementPage() {
     setIsSaving(true);
     try {
       const url = editingItem
-        ? `${API_BASE_URL}/api/menu-items/${editingItem.id}`
-        : `${API_BASE_URL}/api/menu-items`;
+        ? `/api/menu-items/${editingItem.id}`
+        : `/api/menu-items`;
       const method = editingItem ? 'PATCH' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -270,7 +270,7 @@ export default function MenuManagementPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+      const response = await apiFetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(categoryFormData),
@@ -303,7 +303,7 @@ export default function MenuManagementPage() {
     }));
 
     try {
-      await fetch(`${API_BASE_URL}/api/menu-items/${item.id}`, {
+      await apiFetch(`/api/menu-items/${item.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isAvailable: nextAvailability }),
