@@ -191,11 +191,11 @@ export function hasPermission(role: UserRole, permission: string): boolean {
 export function canAccessRoute(role: UserRole, route: string): boolean {
   const routePermissions: Record<string, string[]> = {
     '/': ['admin', 'waiter', 'cashier', 'kitchen'],
-    '/tables': ['admin', 'waiter', 'cashier'],
+    '/tables': ['admin', 'waiter'],
     '/menu': ['admin'],
     '/orders': ['admin', 'waiter', 'cashier'],
     '/orders/new': ['admin', 'waiter', 'cashier'],
-    '/reservations': ['admin', 'waiter', 'cashier'],
+    '/reservations': ['admin', 'cashier'],
     '/kitchen': ['admin', 'kitchen'],
     '/billing': ['admin', 'cashier'],
     '/reports': ['admin'],

@@ -76,10 +76,26 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background text-foreground bg-orbs">
-      {/* Animated background grid */}
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background text-foreground">
+      {/* Warm background decoration */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div 
+          className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full opacity-[0.06]"
+          style={{ background: 'hsl(24 90% 50%)' , filter: 'blur(100px)' }}
+        />
+        <div 
+          className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full opacity-[0.05]"
+          style={{ background: 'hsl(4 72% 58%)', filter: 'blur(100px)' }}
+        />
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.03]"
+          style={{ background: 'hsl(272 55% 55%)', filter: 'blur(120px)' }}
+        />
+      </div>
+
+      {/* Subtle grid pattern */}
       <div
-        className="absolute inset-0 opacity-[0.05] text-foreground"
+        className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
             'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px)',
@@ -90,7 +106,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Logo */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-primary mb-5 shadow-xl shadow-primary/25 hover:scale-105 transition-transform duration-300">
+          <div 
+            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-5 hover:scale-105 transition-transform duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, hsl(24 90% 50%), hsl(12 85% 48%))',
+              boxShadow: '0 8px 24px -4px hsl(24 90% 50% / 0.35)',
+            }}
+          >
             <Utensils className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -102,7 +124,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card */}
-        <Card className="border-border/30 bg-card/80 backdrop-blur-xl shadow-2xl shadow-black/20">
+        <Card className="border-border/30 bg-card/90 backdrop-blur-xl shadow-2xl shadow-black/8 rounded-2xl">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl">Welcome back</CardTitle>
             <CardDescription>
@@ -112,7 +134,7 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/8 text-destructive text-sm border border-destructive/15">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   {error}
                 </div>
@@ -130,7 +152,7 @@ export default function LoginPage() {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-11 border-border/50 focus:border-primary/50 transition-colors"
+                    className="pl-10 h-11 border-border/50 focus:border-primary/40 transition-colors rounded-xl"
                     autoComplete="email"
                     data-testid="input-email"
                   />
@@ -149,14 +171,14 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-11 border-border/50 focus:border-primary/50 transition-colors"
+                    className="pl-10 pr-10 h-11 border-border/50 focus:border-primary/40 transition-colors rounded-xl"
                     autoComplete="current-password"
                     data-testid="input-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors min-h-0"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -169,7 +191,11 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold h-11 shadow-lg shadow-primary/25 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30"
+                className="w-full text-white font-semibold h-11 rounded-xl transition-all duration-200 hover:opacity-90 hover:shadow-xl"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(24 90% 50%), hsl(12 85% 48%))',
+                  boxShadow: '0 6px 20px -4px hsl(24 90% 50% / 0.35)',
+                }}
                 disabled={isLoading}
                 data-testid="button-signin"
               >
@@ -186,7 +212,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground/70">
+        <p className="text-center text-xs text-muted-foreground/60">
           {restaurantName} • Order Management System
         </p>
       </div>

@@ -39,6 +39,7 @@ interface OrderContextType {
     notes?: string,
     addOnIds?: string[],
   ) => void;
+  decrementItemByMenuItemId: (menuItemId: string) => void;
   removeItemFromOrder: (itemIndex: number) => void;
   updateItemQuantity: (itemIndex: number, quantity: number) => void;
   submitOrder: (
@@ -48,6 +49,7 @@ interface OrderContextType {
     expressCheckout?: boolean,
   ) => Promise<Order>;
   cancelCurrentOrder: () => void;
+  setOrderType: (orderType: OrderType) => void;
 
   updateOrderStatus: (
     orderId: string,
@@ -112,7 +114,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       setMenuItems(menuRes.data);
       setCategories(categoriesRes.data);
     } catch (error) {
-      console.error('Failed to fetch static data:', error);
+      // Failed to fetch static data
     }
   }, []);
 
@@ -175,7 +177,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         })),
       );
     } catch (error) {
-      console.error('Failed to poll data:', error);
+      // Failed to poll data
     } finally {
       setIsLoading(false);
     }
@@ -271,8 +273,6 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       notes?: string,
       addOnIds?: string[],
     ) => {
-      if (!currentOrder) return;
-
       const selectedAddOns = addOnIds
         ? menuItem.addOns
             .filter((a) => addOnIds.includes(a.id))
@@ -284,7 +284,6 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         : [];
 
       const addOnsTotal = selectedAddOns.reduce((sum, a) => sum + a.price, 0);
-      const itemTotal = (menuItem.price + addOnsTotal) * quantity;
 
       setCurrentOrder((prev) => {
         if (!prev) return null;
@@ -316,7 +315,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
             menuItemName: menuItem.name,
             quantity,
             unitPrice: menuItem.price,
-            totalPrice: itemTotal,
+            totalPrice: (menuItem.price + addOnsTotal) * quantity,
             notes,
             addOns: selectedAddOns,
             status: 'pending',
@@ -331,42 +330,62 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         };
       });
     },
-    [currentOrder],
+    [],
   );
 
-  const removeItemFromOrder = useCallback(
-    (itemIndex: number) => {
-      if (!currentOrder?.items) return;
-      setCurrentOrder((prev) => ({
+  const removeItemFromOrder = useCallback((itemIndex: number) => {
+    setCurrentOrder((prev) => {
+      if (!prev?.items) return prev;
+      return {
         ...prev,
-        items: prev?.items?.filter((_, i) => i !== itemIndex) || [],
-      }));
-    },
-    [currentOrder],
-  );
+        items: prev.items.filter((_, i) => i !== itemIndex),
+      };
+    });
+  }, []);
 
-  const updateItemQuantity = useCallback(
-    (itemIndex: number, quantity: number) => {
-      if (!currentOrder?.items || quantity < 1) return;
-      setCurrentOrder((prev) => ({
+  const updateItemQuantity = useCallback((itemIndex: number, quantity: number) => {
+    if (quantity < 1) return;
+    setCurrentOrder((prev) => {
+      if (!prev?.items) return prev;
+      return {
         ...prev,
-        items:
-          prev?.items?.map((item, i) => {
-            if (i !== itemIndex) return item;
-            const addOnsTotal = item.addOns.reduce(
-              (sum, a) => sum + a.price,
-              0,
-            );
-            return {
+        items: prev.items.map((item, i) => {
+          if (i !== itemIndex) return item;
+          const addOnsTotal = item.addOns.reduce((sum, a) => sum + a.price, 0);
+          return {
+            ...item,
+            quantity,
+            totalPrice: (item.unitPrice + addOnsTotal) * quantity,
+          };
+        }),
+      };
+    });
+  }, []);
+
+  const decrementItemByMenuItemId = useCallback((menuItemId: string) => {
+    setCurrentOrder((prev) => {
+      if (!prev?.items) return prev;
+      const items = [...prev.items];
+      // Find last instance of this item
+      for (let i = items.length - 1; i >= 0; i--) {
+        if (items[i].menuItemId === menuItemId) {
+          if (items[i].quantity > 1) {
+            const item = items[i];
+            const addOnsTotal = item.addOns.reduce((sum, a) => sum + a.price, 0);
+            items[i] = {
               ...item,
-              quantity,
-              totalPrice: (item.unitPrice + addOnsTotal) * quantity,
+              quantity: item.quantity - 1,
+              totalPrice: (item.unitPrice + addOnsTotal) * (item.quantity - 1),
             };
-          }) || [],
-      }));
-    },
-    [currentOrder],
-  );
+          } else {
+            items.splice(i, 1);
+          }
+          break;
+        }
+      }
+      return { ...prev, items };
+    });
+  }, []);
 
   const submitOrder = useCallback(
     async (
@@ -487,14 +506,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         setCurrentOrder(null);
 
         if (traceEnabled) {
-          const completedAt = performance.now();
-          const prepMs = Math.round(beforeRequestAt - startedAt);
-          const apiMs = Math.round(afterRequestAt - beforeRequestAt);
-          const stateMs = Math.round(completedAt - afterRequestAt);
-          const totalMs = Math.round(completedAt - startedAt);
-          console.info(
-            `[OrderSubmitTiming] total=${totalMs}ms prep=${prepMs}ms api=${apiMs}ms state=${stateMs}ms`,
-          );
+          // Trace logic removed for clean output
         }
 
         return parsedOrder;
@@ -516,12 +528,9 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           );
         }
         if (traceEnabled) {
-          const failedAt = performance.now();
-          const totalMs = Math.round(failedAt - startedAt);
-          console.info(`[OrderSubmitTiming] failed after ${totalMs}ms`);
+          // Trace logic removed
         }
         const errText = getApiErrorMessage(error, 'Failed to create order');
-        console.error('Failed to submit order:', errText);
         throw new Error(errText);
       }
     },
@@ -530,6 +539,10 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   const cancelCurrentOrder = useCallback(() => {
     setCurrentOrder(null);
+  }, []);
+
+  const setOrderType = useCallback((orderType: OrderType) => {
+    setCurrentOrder((prev) => prev ? { ...prev, orderType } : prev);
   }, []);
 
   const isOrderSyncing = useCallback(
@@ -655,7 +668,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         if (updatedTableId && updatedTablePayload) {
           api
             .patch(`/api/tables/${updatedTableId}`, updatedTablePayload)
-            .catch(console.error);
+            .catch(() => {});
         }
       } catch (error) {
         setOrders(previousOrders);
@@ -664,7 +677,6 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           error,
           'Failed to update order status',
         );
-        console.error('Failed to update order:', errText);
         throw new Error(errText);
       } finally {
         setSyncingOrderIds((prev) => {
@@ -954,8 +966,10 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         addItemToOrder,
         removeItemFromOrder,
         updateItemQuantity,
+        decrementItemByMenuItemId,
         submitOrder,
         cancelCurrentOrder,
+        setOrderType,
         updateOrderStatus,
         processPayment,
         updateItemStatus,

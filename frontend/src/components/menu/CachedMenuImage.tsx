@@ -158,12 +158,12 @@ export function CachedMenuImage({
     () => cacheKey || `${optimizedSrc}:${width}x${height}:q${quality}`,
     [cacheKey, optimizedSrc, width, height, quality],
   );
-  const [resolvedSrc, setResolvedSrc] = useState<string>(
-    previewSrc || optimizedSrc,
-  );
-  const [isLoaded, setIsLoaded] = useState<boolean>(
-    !previewSrc || previewSrc === optimizedSrc,
-  );
+  const [resolvedSrc, setResolvedSrc] = useState<string>(() => {
+    return objectUrlMemory.get(stableKey) || previewSrc || optimizedSrc;
+  });
+  const [isLoaded, setIsLoaded] = useState<boolean>(() => {
+    return objectUrlMemory.has(stableKey) || !previewSrc || previewSrc === optimizedSrc;
+  });
 
   useEffect(() => {
     let mounted = true;
